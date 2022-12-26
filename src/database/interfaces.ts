@@ -1,15 +1,26 @@
-import { CSLink } from "./entities/cslink.entity";
+import { CSVLink } from "./entities/csvlink.entity";
 import { Creator } from "./entities/creator.entity";
 import { Song } from "./entities/song.entity";
 import { SongVariant } from "./entities/songvariant.entity";
+import { SongName } from "./entities/songname.entity";
 
 export interface ICreatorLinkPair{
     creator: Creator,
-    link: CSLink
+    link: CSVLink
 }
 
 export interface IAllSongData{
-    song: Song,
+    song: Song[],
+    names: SongName[],
     creators: ICreatorLinkPair[],
     variants: SongVariant[]
+}
+
+export interface ISongDataArray{
+    songs: IAllSongData[]
+}
+
+export interface INewSongData{
+    title: string,
+    sheetData: string
 }

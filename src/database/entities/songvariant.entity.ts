@@ -10,4 +10,10 @@ export class SongVariant{
 
     @Column({length: 1000})
     sheet: string;
+
+    @Column({length: 1000})
+    sheetText: string;
+    
+    @Column()
+    mainNameGUID:string;
 }

@@ -1,10 +1,10 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { Repository } from "typeorm";
 import { CSLINK_REPOSITORY, CREATOR_REPOSITORY } from "../constants";
-import { CSLink } from "../entities/cslink.entity";
+import { CSVLink } from "../entities/csvlink.entity";
 import { Creator } from "../entities/creator.entity";
 import { ICreatorLinkPair } from "../interfaces";
-import { CSLinkService } from "./cslink.service";
+import { CSVLinkService } from "./csvlink.service";
 
 @Injectable()
 export class CreatorService {
@@ -12,16 +12,16 @@ export class CreatorService {
     @Inject(CREATOR_REPOSITORY)
     private authorRepository: Repository<Creator>,
     
-    private linksService: CSLinkService,
+    private linksService: CSVLinkService,
   ) {}
 
   async findByGUID(guid: string): Promise<Creator> {
     return this.authorRepository.createQueryBuilder().where("guid= :guid", {guid: guid}).getOne();
   }
 
-  async findBySong(guid: string): Promise<ICreatorLinkPair[]>{
+  async findBySVGUIDS(songGUID: string, variantGUIDS: string[]): Promise<ICreatorLinkPair[]>{
     let json : ICreatorLinkPair[] = [];
-    const links = await this.linksService.FindAllBySongGUID(guid);
+    const links = await this.linksService.FindAllBySVGUIDS(songGUID,variantGUIDS);
     
     for(let i=0; i<links.length; i++){
       const link = links[i];

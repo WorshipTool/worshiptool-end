@@ -1,8 +1,9 @@
 import { DataSource } from 'typeorm';
-import { CSLink } from './entities/cslink.entity';
+import { CSVLink } from './entities/csvlink.entity';
 import { Creator } from './entities/creator.entity';
 import { Song } from './entities/song.entity';
 import { SongVariant } from './entities/songvariant.entity';
+import { SongName } from './entities/songname.entity';
 
 export const databaseProviders = [
   {
@@ -16,7 +17,7 @@ export const databaseProviders = [
         password: '31663lookaround',
         database: 'worshiptool',
         synchronize: true,
-        entities: [Creator,Song, SongVariant, CSLink],
+        entities: [Creator,Song, SongName, SongVariant, CSVLink],
       });
 
       return dataSource.initialize();

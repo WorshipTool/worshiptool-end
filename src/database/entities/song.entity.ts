@@ -4,7 +4,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 export class Song{
   @PrimaryGeneratedColumn("uuid")
   guid: string;
-
+  
   @Column()
-  name:string;
+  mainNameGUID:string;
 }
