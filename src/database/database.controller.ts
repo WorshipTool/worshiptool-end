@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { toNamespacedPath } from 'path';
 import { Song } from './entities/song.entity';
-import { IAllSongData, INewSongData, ISongDataArray } from './interfaces';
+import { IAllSongData, ISongGetQuery, INewSongData, ISongDataArray, ISongGetResult } from './interfaces';
 import { CreatorService } from './services/creator.service';
 import { SongService } from './services/song.service';
 import { SongVariantService } from './services/songvariant.service';
@@ -50,10 +50,32 @@ export class DatabaseController {
       creators: pairs, 
       variants: variants};
   }
+  @Get()
+  async getSongs(@Query() params: ISongGetQuery):Promise<ISongGetResult>{
+    switch(params.key){
+      case "search":
+        const searched = await this.songService.search(params.body);
+        return {
+          guids: searched.map((s)=>s.guid)
+        };
+      case "all":
+        const all = await this.songService.search("");
+        return {
+          guids: all.map((s)=>s.guid)
+        };
+      case "random":
+        const random = await this.songService.random(params.count);
+        return {
+          guids: random.map((s)=>s.guid)
+        };
+      default:
+        return {guids: []}
+    }
+    
+  }
 
   @Post()
   async addNewSong(@Body() newSongData: INewSongData){
-    console.log(newSongData);
     const guid = await this.songService.createNewSong(newSongData);
     return {songGUID: guid};
   }

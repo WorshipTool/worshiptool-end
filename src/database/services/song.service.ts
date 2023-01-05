@@ -18,7 +18,8 @@ export class SongService {
     private variantRepository: Repository<SongVariant>,
   ) {}
 
-  async search(key:string): Promise<Song[]> {
+  async search(k:string): Promise<Song[]> {
+    const key = k.replace(/\s/gi, "");
     const names = await this.nameRepository.createQueryBuilder()
       .where("name like :name", {name: `%${key}%`}).getMany();
     const guids1 : string[] = names.map((name)=>{
@@ -26,7 +27,7 @@ export class SongService {
     });
 
     const variants = await this.variantRepository.createQueryBuilder()
-      .where("sheet like :key", {key: `%${key}%`}).getMany();
+      .where("sheetText like :key", {key: `%${key}%`}).getMany();
     const guids2 : string[] = variants.map((variant)=>{
       return variant.songGUID;
     });
@@ -38,6 +39,11 @@ export class SongService {
 
     return await this.songRepository.createQueryBuilder()
       .where("guid IN (:...guids)", {guids: guids}).getMany();
+  }
+
+  async random(count: number) : Promise<Song[]>{
+    const songs = await this.songRepository.createQueryBuilder().orderBy("RAND()").limit(count).getMany();
+    return songs;
   }
 
   async getNamesBySongGUID(guid: string) : Promise<SongName[]>{
@@ -63,9 +69,10 @@ export class SongService {
       guid: undefined,
       songGUID: songGUID, 
       sheet: newSongData.sheetData,
-      sheetText: newSongData.sheetData,
+      sheetText: newSongData.sheetText.replace(/\n/gi,"").replace(/\s/gi,""),
       mainNameGUID: nameGUID
     };
+
     const variantGUID = (await this.variantRepository.createQueryBuilder().insert().values(variant).execute())
                         .identifiers[0].guid;
 

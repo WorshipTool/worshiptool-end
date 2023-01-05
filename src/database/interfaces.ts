@@ -22,5 +22,16 @@ export interface ISongDataArray{
 
 export interface INewSongData{
     title: string,
-    sheetData: string
+    sheetData: string,
+    sheetText: string
+}
+
+export interface ISongGetQuery{
+    key: string,
+    body: string,
+    count: number
+}
+
+export interface ISongGetResult{
+    guids: string[]
 }
