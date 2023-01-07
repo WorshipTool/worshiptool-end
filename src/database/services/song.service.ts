@@ -38,11 +38,11 @@ export class SongService {
     if(guids.length<1)return [];
 
     return await this.songRepository.createQueryBuilder()
-      .where("guid IN (:...guids)", {guids: guids}).getMany();
+      .where("guid IN (:...guids)", {guids: guids}).andWhere("display= :display", {display: true}).getMany();
   }
 
   async random(count: number) : Promise<Song[]>{
-    const songs = await this.songRepository.createQueryBuilder().orderBy("RAND()").limit(count).getMany();
+    const songs = await this.songRepository.createQueryBuilder().andWhere("display= :display", {display: true}).orderBy("RAND()").limit(count).getMany();
     return songs;
   }
 
@@ -57,7 +57,7 @@ export class SongService {
   }
 
   async createNewSong(newSongData : INewSongData): Promise<string>{
-    const songGUID =  (await this.songRepository.createQueryBuilder().insert().values({guid: undefined, mainNameGUID: ""}).execute())
+    const songGUID =  (await this.songRepository.createQueryBuilder().insert().values({guid: undefined, mainNameGUID: "", verified: false, display: false}).execute())
                         .identifiers[0].guid;
 
     const nameGUID = (await this.nameRepository.createQueryBuilder().insert().values({guid: undefined, songGUID: songGUID, name: newSongData.title}).execute())
@@ -77,5 +77,12 @@ export class SongService {
                         .identifiers[0].guid;
 
     return songGUID;
+  }
+
+  async verifySongByGUID(guid:string){
+    return this.songRepository.createQueryBuilder().update({verified: true, display: true}).where("guid= :guid", {guid:guid}).execute();
+  }
+  async unverifySongByGUID(guid:string){
+    return this.songRepository.createQueryBuilder().update({verified: false, display: false}).where("guid= :guid", {guid:guid}).execute();
   }
 }

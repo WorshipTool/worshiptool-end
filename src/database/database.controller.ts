@@ -5,13 +5,16 @@ import { IAllSongData, ISongGetQuery, INewSongData, ISongDataArray, ISongGetResu
 import { CreatorService } from './services/creator.service';
 import { SongService } from './services/song.service';
 import { SongVariantService } from './services/songvariant.service';
+import { MessengerService} from 'src/messenger.service';
 
 @Controller("songs")
 export class DatabaseController {
   constructor(
     private readonly songService: SongService,
     private readonly creatorService: CreatorService,
-    private readonly variantsService: SongVariantService) {}
+    private readonly variantsService: SongVariantService,
+     private readonly messenger: MessengerService
+    ) {}
 
   @Get("search/:key")
   async getTest(@Param() params) : Promise<ISongDataArray|{}>{
@@ -77,6 +80,27 @@ export class DatabaseController {
   @Post()
   async addNewSong(@Body() newSongData: INewSongData){
     const guid = await this.songService.createNewSong(newSongData);
+    this.messenger.sendNewSongForVerification(newSongData, guid);
     return {songGUID: guid};
+  }
+
+  @Get("verify/:guid")
+  async verifySong(@Param() params){
+    const names = await this.songService.getNamesBySongGUID(params.guid);
+
+    this.songService.verifySongByGUID(params.guid);
+
+    
+    this.messenger.sendMessage(`Píseň *${names[0].name.toUpperCase()}* byl ověřena.`);
+    return "verified";
+  }
+  @Get("unverify/:guid")
+  async unverifySong(@Param() params){
+    const names = await this.songService.getNamesBySongGUID(params.guid);
+
+    this.songService.unverifySongByGUID(params.guid);
+
+    this.messenger.sendMessage(`Ověření písně *${names[0].name.toUpperCase()}* bylo zrušeno.`);
+    return "unverified";
   }
 }

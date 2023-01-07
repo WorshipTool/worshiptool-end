@@ -6,15 +6,18 @@ import { CSVLinkService } from "./services/csvlink.service";
 import { CreatorService } from "./services/creator.service";
 import { SongService } from "./services/song.service";
 import { SongVariantService } from "./services/songvariant.service";
+import { MessengerService } from "src/messenger.service";
+import { HttpModule } from "@nestjs/axios";
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, HttpModule],
   providers: [
     ...EntitiesProvider,
     SongVariantService,
     SongService,
     CreatorService,
-    CSVLinkService
+    CSVLinkService,
+    MessengerService
   ],
   controllers: [DatabaseController]
 })
