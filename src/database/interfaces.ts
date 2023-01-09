@@ -35,3 +35,19 @@ export interface ISongGetQuery{
 export interface ISongGetResult{
     guids: string[]
 }
+
+export interface ILoginQuery{
+    email:string,
+    password:string
+}
+
+export interface IUser{
+    name: string,
+    isAdmin: boolean,
+}
+
+export interface ILoginResult{
+    success: boolean,
+    user: IUser | null,
+    token: string
+}

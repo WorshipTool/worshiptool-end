@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { toNamespacedPath } from 'path';
 import { Song } from './entities/song.entity';
 import { IAllSongData, ISongGetQuery, INewSongData, ISongDataArray, ISongGetResult } from './interfaces';
@@ -6,6 +6,8 @@ import { CreatorService } from './services/creator.service';
 import { SongService } from './services/song.service';
 import { SongVariantService } from './services/songvariant.service';
 import { MessengerService} from 'src/messenger.service';
+import { User } from 'src/auth/user.decorator';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller("songs")
 export class DatabaseController {
@@ -53,6 +55,7 @@ export class DatabaseController {
       creators: pairs, 
       variants: variants};
   }
+  
   @Get()
   async getSongs(@Query() params: ISongGetQuery):Promise<ISongGetResult>{
     switch(params.key){
@@ -76,7 +79,8 @@ export class DatabaseController {
     }
     
   }
-
+  
+  // @UseGuards(JwtAuthGuard)
   @Post()
   async addNewSong(@Body() newSongData: INewSongData){
     const guid = await this.songService.createNewSong(newSongData);
@@ -103,4 +107,6 @@ export class DatabaseController {
     this.messenger.sendMessage(`Ověření písně *${names[0].name.toUpperCase()}* bylo zrušeno.`);
     return "unverified";
   }
+
+  
 }

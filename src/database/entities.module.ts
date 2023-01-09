@@ -8,6 +8,7 @@ import { SongService } from "./services/song.service";
 import { SongVariantService } from "./services/songvariant.service";
 import { MessengerService } from "src/messenger.service";
 import { HttpModule } from "@nestjs/axios";
+import { AuthController } from "../auth/auth.controller";
 
 @Module({
   imports: [DatabaseModule, HttpModule],
