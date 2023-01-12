@@ -3,6 +3,7 @@ import { IAllSongData, ISongGetQuery, INewSongData, ISongDataArray, ISongGetResu
 import { SongService } from '../database/services/song.service';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
+import { RequestResult, codes, makeResult, makeSuccessResult, messages } from 'src/utils/queryResultConverter';
 
 @Controller("auth")
 export class AuthController {
@@ -18,7 +19,7 @@ export class AuthController {
   }
 
   @Post("login")
-  getAuthentication(@Body() body: ILoginQuery) : ILoginResult{
+  getAuthentication(@Body() body: ILoginQuery) : RequestResult<ILoginResult>{
     
     if(body.email=="pe.pavlin@gmail.com"&&body.password=="semice"){
         const user : IUser = {
@@ -27,19 +28,19 @@ export class AuthController {
         }
         const token = this.jwtService.sign(user);
 
-        return {
+        return makeSuccessResult({
             success: true,
             user,
             token
-        };
+        });
     }
     
 
-    return{
+    return makeResult(codes[50], messages[50],{
         success: false,
         user: null,
         token: null
-    }
+    })
 
   }
 

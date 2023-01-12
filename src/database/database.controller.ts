@@ -8,7 +8,7 @@ import { SongVariantService } from './services/songvariant.service';
 import { MessengerService} from 'src/messenger.service';
 import { User } from 'src/auth/user.decorator';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { QueryResult, codes, makeResult, makeSuccessResult, messages } from 'src/utils/queryResultConverter';
+import { RequestResult, codes, makeResult, makeSuccessResult, messages } from 'src/utils/queryResultConverter';
 
 @Controller("songs")
 export class DatabaseController {
@@ -20,7 +20,7 @@ export class DatabaseController {
     ) {}
 
   @Get(":guid")
-  async getWholeSong(@Param() params): Promise<QueryResult<IAllSongData|{}>>{
+  async getWholeSong(@Param() params): Promise<RequestResult<IAllSongData|{}>>{
     const song = await this.songService.findByGUID(params.guid);
 
     if(song==null)return makeResult(codes[404], messages[404], {});
