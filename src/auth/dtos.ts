@@ -21,3 +21,12 @@ export interface SignUpResult{
     success: boolean,
     message: string
 }
+
+export function userToJWTFormat(user: User){
+    return {
+        guid: user.guid,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email
+    }
+}
