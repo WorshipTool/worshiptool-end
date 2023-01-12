@@ -33,7 +33,9 @@ export interface ISongGetQuery{
 }
 
 export interface ISongGetResult{
-    guids: string[]
+    statusCode: number,
+    message: string,
+    data: {guids: string[]}
 }
 
 export interface ILoginQuery{

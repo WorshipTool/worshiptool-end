@@ -8,10 +8,10 @@ export class SongVariant{
     @Column()
     songGUID: string;
 
-    @Column({length: 1000})
+    @Column({length: 5000})
     sheet: string;
 
-    @Column({length: 1000})
+    @Column({length: 5000})
     sheetText: string;
     
     @Column()

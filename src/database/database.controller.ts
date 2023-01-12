@@ -8,6 +8,7 @@ import { SongVariantService } from './services/songvariant.service';
 import { MessengerService} from 'src/messenger.service';
 import { User } from 'src/auth/user.decorator';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { QueryResult, codes, makeResult, makeSuccessResult, messages } from 'src/utils/queryResultConverter';
 
 @Controller("songs")
 export class DatabaseController {
@@ -18,27 +19,11 @@ export class DatabaseController {
      private readonly messenger: MessengerService
     ) {}
 
-  @Get("search/:key")
-  async getTest(@Param() params) : Promise<ISongDataArray|{}>{
-
-    const songs = await this.songService.search(params.key);
-    const dataArr = [];
-
-    for(let i=0; i<songs.length; i++){
-      const song = songs[i];
-      const songData = await this.getWholeSong({guid: song.guid});
-      dataArr.push(songData);
-    }    
-    console.log(dataArr, "data");
-
-    return {songs: dataArr};
-  }
-
   @Get(":guid")
-  async getWholeSong(@Param() params): Promise<IAllSongData|{}>{
+  async getWholeSong(@Param() params): Promise<QueryResult<IAllSongData|{}>>{
     const song = await this.songService.findByGUID(params.guid);
 
-    if(song==null)return {};
+    if(song==null)return makeResult(codes[404], messages[404], {});
 
     const names =await this.songService.getNamesBySongGUID(song.guid);
 
@@ -49,11 +34,11 @@ export class DatabaseController {
 
     const pairs = await this.creatorService.findBySVGUIDS(song.guid, vGuids);
 
-    return {
+    return makeSuccessResult({
       song: song, 
       names: names,
       creators: pairs, 
-      variants: variants};
+      variants: variants});
   }
   
   @Get()
@@ -61,31 +46,41 @@ export class DatabaseController {
     switch(params.key){
       case "search":
         const searched = await this.songService.search(params.body);
-        return {
+        return makeSuccessResult({
           guids: searched.map((s)=>s.guid)
-        };
+        });
       case "all":
         const all = await this.songService.search("");
-        return {
+        return makeSuccessResult({
           guids: all.map((s)=>s.guid)
-        };
+        });
       case "random":
         const random = await this.songService.random(params.count);
-        return {
+        return makeSuccessResult({
           guids: random.map((s)=>s.guid)
-        };
+        });
       default:
-        return {guids: []}
+        return makeSuccessResult({guids: []})
     }
     
   }
   
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   async addNewSong(@Body() newSongData: INewSongData){
+    // console.log("Length",newSongData.sheetData.length);
     const guid = await this.songService.createNewSong(newSongData);
     this.messenger.sendNewSongForVerification(newSongData, guid);
-    return {songGUID: guid};
+    return makeSuccessResult({songGUID: guid});
+  }
+
+  @Post("ansav")
+  async addNewSongAndVerify(@Body() newSongData: INewSongData){
+    console.log("Length",newSongData.sheetData.length);
+    const guid = await this.songService.createNewSong(newSongData);
+    this.verifySong({guid});
+    
+    return makeSuccessResult({songGUID: guid});
   }
 
   @Get("verify/:guid")
@@ -96,7 +91,7 @@ export class DatabaseController {
 
     
     this.messenger.sendMessage(`Píseň *${names[0].name.toUpperCase()}* byl ověřena.`);
-    return "verified";
+    return makeSuccessResult("verified");
   }
   @Get("unverify/:guid")
   async unverifySong(@Param() params){
@@ -105,7 +100,7 @@ export class DatabaseController {
     this.songService.unverifySongByGUID(params.guid);
 
     this.messenger.sendMessage(`Ověření písně *${names[0].name.toUpperCase()}* bylo zrušeno.`);
-    return "unverified";
+    return makeSuccessResult("unverified");
   }
 
   
