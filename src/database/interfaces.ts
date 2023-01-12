@@ -3,6 +3,7 @@ import { Creator } from "./entities/creator.entity";
 import { Song } from "./entities/song.entity";
 import { SongVariant } from "./entities/songvariant.entity";
 import { SongName } from "./entities/songname.entity";
+import { ROLES } from "./entities/user.entity";
 
 export interface ICreatorLinkPair{
     creator: Creator,
@@ -44,8 +45,11 @@ export interface ILoginQuery{
 }
 
 export interface IUser{
-    name: string,
-    isAdmin: boolean,
+    guid: string,
+    firstName: string,
+    lastName: string,
+    email: string,
+    role: ROLES,
 }
 
 export interface ILoginResult{

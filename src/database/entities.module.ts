@@ -9,6 +9,8 @@ import { SongVariantService } from "./services/songvariant.service";
 import { MessengerService } from "src/messenger.service";
 import { HttpModule } from "@nestjs/axios";
 import { AuthController } from "../auth/auth.controller";
+import { UserService } from "./services/user.service";
+import { AuthModule } from "src/auth/auth.module";
 
 @Module({
   imports: [DatabaseModule, HttpModule],
@@ -18,7 +20,8 @@ import { AuthController } from "../auth/auth.controller";
     SongService,
     CreatorService,
     CSVLinkService,
-    MessengerService
+    MessengerService,
+    UserService
   ],
   controllers: [DatabaseController]
 })

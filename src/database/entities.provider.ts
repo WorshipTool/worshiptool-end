@@ -1,10 +1,11 @@
 import { DataSource } from 'typeorm';
-import { CSLINK_REPOSITORY, CREATOR_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, SONG_NAMES_REPOSITORY } from './constants';
+import { CSLINK_REPOSITORY, CREATOR_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, SONG_NAMES_REPOSITORY, USER_REPOSITORY } from './constants';
 import { CSVLink } from './entities/csvlink.entity';
 import { Creator } from './entities/creator.entity';
 import { Song } from './entities/song.entity';
 import { SongVariant } from './entities/songvariant.entity';
 import { SongName } from './entities/songname.entity';
+import { User } from './entities/user.entity';
 
 export const EntitiesProvider = [
     {
@@ -31,6 +32,11 @@ export const EntitiesProvider = [
     {
         provide: SONG_NAMES_REPOSITORY,
         useFactory: (dataSource: DataSource) => dataSource.getRepository(SongName),
+        inject: ['DATA_SOURCE'],
+    },
+    {
+        provide: USER_REPOSITORY,
+        useFactory: (dataSource: DataSource) => dataSource.getRepository(User),
         inject: ['DATA_SOURCE'],
     },
 ];

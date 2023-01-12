@@ -5,6 +5,7 @@ import { jwtConstants } from './constants';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
+import { UserService } from 'src/database/services/user.service';
 
 @Module({
   imports: [

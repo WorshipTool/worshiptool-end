@@ -4,6 +4,7 @@ import { Creator } from './entities/creator.entity';
 import { Song } from './entities/song.entity';
 import { SongVariant } from './entities/songvariant.entity';
 import { SongName } from './entities/songname.entity';
+import { User } from './entities/user.entity';
 
 export const databaseProviders = [
   {
@@ -17,7 +18,8 @@ export const databaseProviders = [
         password: '31663lookaround',
         database: 'worshiptool',
         synchronize: true,
-        entities: [Creator,Song, SongName, SongVariant, CSVLink],
+        entities: [Creator,Song, SongName, SongVariant, CSVLink,
+                   User],
       });
 
       return dataSource.initialize();

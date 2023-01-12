@@ -6,7 +6,7 @@ import { CreatorService } from './services/creator.service';
 import { SongService } from './services/song.service';
 import { SongVariantService } from './services/songvariant.service';
 import { MessengerService} from 'src/messenger.service';
-import { User } from 'src/auth/user.decorator';
+import { Identity } from 'src/auth/identity.decorator';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RequestResult, codes, makeResult, makeSuccessResult, messages } from 'src/utils/queryResultConverter';
 
