@@ -10,18 +10,32 @@ export interface GetSongQuery{
 export interface GetSongResult{
     guids: string[]
 }
+export interface SongDataVariant{
+    guid:string,
+    prefferedTitle: string,
+    sheetData: string,
+    sheetText: string
+}
 
+export interface SongDataCreator{
+    name: string,
+    type: string
+}
 export interface SongData{
-    song: Song,
-    names: SongName[],
-    creators: any,
-    variants: SongVariant[]
+    guid: string,
+    mainTitle: string,
+    alternativeTitles: string[],
+    creators: SongDataCreator[],
+    variants: SongDataVariant[]
 }
 
 export interface NewSongData{
-
+    title: string,
+    sheetData: string,
+    sheetText: string
 }
 
 export interface NewSongDataProcessResult{
-    message: string
+    message: string,
+    guid: string
 }

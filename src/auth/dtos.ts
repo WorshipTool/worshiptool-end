@@ -27,6 +27,7 @@ export function userToJWTFormat(user: User){
         guid: user.guid,
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email
+        email: user.email,
+        role: user.role
     }
 }

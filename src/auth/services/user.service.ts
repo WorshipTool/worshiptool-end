@@ -31,5 +31,6 @@ export class UserService{
         await this.userRepository.createQueryBuilder()
             .insert().values(body).execute();
 
+        
     }
 }

@@ -16,4 +16,10 @@ export class SongVariant{
     
     @Column()
     mainNameGUID:string;
+
+    @Column()
+    verified: boolean;
+
+    @Column()
+    display: boolean;
 }
