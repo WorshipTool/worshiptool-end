@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { CSVLink } from "./csvlink.entity";
 
 @Entity()
 export class Creator{
@@ -7,4 +8,7 @@ export class Creator{
 
     @Column()
     name: string;
+
+    @OneToMany(()=>CSVLink, (link)=>link.creator)
+    links: CSVLink[]
 }

@@ -1,18 +1,21 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Creator } from "./creator.entity";
+import { SongVariant } from "./songvariant.entity";
+import { Song } from "./song.entity";
 
 @Entity()
 export class CSVLink{
     @PrimaryGeneratedColumn("uuid")
     guid: string;
 
-    @Column()
-    creatorGUID: string;
+    @ManyToOne(()=>Creator, (creator)=>creator.links)
+    creator: Creator;
 
-    @Column()
-    songGUID: string;
+    @ManyToOne(()=>Song, (song)=>song.links)
+    song: Song;
     
-    @Column()
-    variantGUID: string;
+    @ManyToOne(()=>SongVariant, (variant)=>variant.links)
+    variant: SongVariant;
 
     @Column()
     type: string;

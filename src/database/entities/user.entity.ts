@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { SongVariant } from "./songvariant.entity";
 
 export enum ROLES{
     "User",
@@ -26,4 +27,7 @@ export class User{
 
     @Column()
     role:ROLES; 
+
+    @OneToMany(()=>SongVariant, (variant)=>variant.createdBy)
+    variants: SongVariant[]
 }

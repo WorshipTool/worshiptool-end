@@ -2,6 +2,7 @@ import { Body, Controller, Post } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginInputData, SignUpInputData } from "./dtos";
 import { codes, formatted, messages } from "src/utils/formatted";
+import { AllowNonUser } from "./decorators/allownonuser.decorator";
 
 @Controller("auth")
 export class AuthController{
@@ -9,6 +10,7 @@ export class AuthController{
         private authService: AuthService
     ){}
 
+    @AllowNonUser()
     @Post("login")
     async login(@Body() data: LoginInputData){
         const result = await this.authService.login(data);
@@ -17,6 +19,7 @@ export class AuthController{
             result.user==null?"Wrong email or password.":messages["Success"])
     }
 
+    @AllowNonUser()
     @Post("signup")
     signup(@Body() data: SignUpInputData){
         const result = this.authService.signup(data); 

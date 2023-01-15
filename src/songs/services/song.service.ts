@@ -3,8 +3,9 @@ import { SONG_NAMES_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY } from
 import { Song } from "src/database/entities/song.entity";
 import { SongName } from "src/database/entities/songname.entity";
 import { SongVariant } from "src/database/entities/songvariant.entity";
-import { Repository } from "typeorm";
+import { In, Like, Not, Repository } from "typeorm";
 import { NewSongData } from "../dtos";
+import { ROLES, User } from "src/database/entities/user.entity";
 
 @Injectable()
 export class SongService{
@@ -17,60 +18,93 @@ export class SongService{
         private variantRepository: Repository<SongVariant>
     ){}
 
-    async search(k:string): Promise<Song[]> {
+    async search(k:string, user:User): Promise<Song[]> {
         const key = k.replace(/\s/gi, "");
-        const names = await this.nameRepository.createQueryBuilder()
-          .where("name like :name", {name: `%${key}%`}).getMany();
+        const names = await this.nameRepository.find({
+          where:{
+            name: Like(`%${key}%`),
+            variants: [
+              {
+                display:true
+              },
+              {
+                display:user?user.role!=ROLES.Admin:true
+              },
+              {
+                createdBy: user
+              }
+            ]
+          },
+          relations:{
+            song: true,
+            variants: true
+          }
+        })
         const guids1 : string[] = names.map((name)=>{
-          return name.songGUID;
+          return name.song.guid;
         });
-        const variants = await this.variantRepository.createQueryBuilder()
-                .where("sheetText like :key", {key: `%${key}%`})
-                .andWhere("display= :display", {display: true})
-                .getMany();
+        const variants = await this.variantRepository
+                .find({                  
+                  where:{
+                    sheetText: Like(`%${key}%`),
+                    display: true
+                  },
+                  relations:{
+                    song:true
+                  }
+                })
 
 
         const guids2 : string[] = variants.map((variant)=>{
-          return variant.songGUID;
+          return variant.song.guid;
         });
 
-        const guids = Array.from(new Set( guids1.concat(guids2 ))); //remove duplicates
 
-
-        if(guids.length<1)return [];
-
-        return await this.songRepository.createQueryBuilder()
-        .where("guid IN (:...guids)", {guids: guids}).getMany();
+        return await this.songRepository.find({
+            where:[{guid: In(guids1)},{guid: In(guids2)}]
+        })
         
     }
 
     async random(count: number) : Promise<Song[]>{
-        const variants = await this.variantRepository.createQueryBuilder().andWhere("display= :display", {display: true}).orderBy("RAND()").limit(count).getMany();
-        const guids = variants.map((v)=>v.songGUID);
-
-        if(guids.length==0)return [];
-
-        const songs = await this.songRepository.createQueryBuilder().where("guid IN (:...guids)",{guids}).getMany();
+        const variants = await this.variantRepository.find({
+          where:{
+            display: true
+          },
+          relations:{
+            song:true
+          },
+          order:{
+            //random should be here
+          }
+        });
+        const songs = variants.map((v)=>v.song);
         return songs;
     }
 
-    async createNewSong(newSongData : NewSongData): Promise<string>{
-        const songGUID =  (await this.songRepository.createQueryBuilder().insert().values({guid: undefined, mainNameGUID: ""}).execute())
+    async createNewSong(newSongData : NewSongData, user: User): Promise<string>{
+        const songGUID =  (await this.songRepository.createQueryBuilder().insert().values({guid: undefined}).execute())
                             .identifiers[0].guid;
+
+        const song = await this.songRepository.findOne({where:{guid: songGUID}})
     
-        const nameGUID = (await this.nameRepository.createQueryBuilder().insert().values({guid: undefined, songGUID: songGUID, name: newSongData.title}).execute())
+        const nameGUID = (await this.nameRepository.createQueryBuilder().insert().values({guid: undefined, song, name: newSongData.title}).execute())
                             .identifiers[0].guid;
+
+        const title = await this.nameRepository.createQueryBuilder().where({guid:nameGUID}).getOne();
     
-        await this.songRepository.createQueryBuilder().update({mainNameGUID: nameGUID}).where({guid: songGUID}).execute();
+        await this.songRepository.createQueryBuilder().update({mainName: title}).where({guid: songGUID}).execute();
     
         const variant : SongVariant = {
           guid: undefined,
-          songGUID: songGUID, 
+          song, 
           sheet: newSongData.sheetData,
           sheetText: newSongData.sheetText.replace(/\n/gi,"").replace(/\s/gi,""),
-          mainNameGUID: nameGUID,
-         verified: false, 
-         display: false
+          mainTitle: title,
+          verified: false, 
+          display: false,
+          createdBy: user,
+          links:[]
         };
     
         const variantGUID = (await this.variantRepository.createQueryBuilder().insert().values(variant).execute())
@@ -80,33 +114,73 @@ export class SongService{
     }
 
     async findByGUID(guid:string) : Promise<Song>{
-      return await this.songRepository.createQueryBuilder()
-      .where("guid= :guid", {guid: guid}).getOne();
+      return await this.songRepository.findOne({
+        where:{
+          guid
+        },
+        relations: {
+          mainName: true
+        }
+      })
     }
 
-    async getTitlesBySongGUID(guid:string) : Promise<SongName[]>{
-      return await this.nameRepository.createQueryBuilder()
-        .where("songGUID= :guid", {guid}).getMany();
+    async getTitlesBySong(song:Song) : Promise<SongName[]>{
+      return await this.nameRepository.find({where:{song}})
     }
 
-    async findVariantsBySongGUID(songGUID: string){
-      return await this.variantRepository.createQueryBuilder()
-        .where("songGUID=:songGUID", {songGUID})
-        .getMany();
+    async findVariantsBySong(song: Song){
+      return await this.variantRepository.find({
+        where:{
+          song
+        },
+        relations:{
+          mainTitle: true
+        }
+      })
     }
 
     async getUnverified(){
-      const variants = await this.variantRepository.createQueryBuilder()
-        .where("verified=:verified", {verified: false})
-        .getMany();
+      const variants = await this.variantRepository
+        .find({
+          where: {
+            verified: false,
+            createdBy:{
+              role: Not(ROLES.Loader)
+            }
 
-      const guids = variants.map((v)=>v.songGUID);
+          },
+          relations: {
+            song:true,
+            createdBy:true
+          }
+        })
+
+      const guids = variants.map((v)=>v.song.guid);
 
       if(guids.length==0)return [];
 
-      return await this.songRepository.createQueryBuilder()
-        .where("guid IN (:...guids)",{guids})
-        .getMany()
+      return await this.songRepository.find({where:{guid: In(guids)}})
+    }
+    async getLoaderUnverified(){
+      const variants = await this.variantRepository
+        .find({
+          where: {
+            verified: false,
+            createdBy: {
+              role: ROLES.Loader
+            }
+          },
+          relations: {
+            song:true,
+            createdBy:true
+          }
+        })
+
+      const guids = variants.map((v)=>v.song.guid);
+
+      if(guids.length==0)return [];
+
+      return await this.songRepository.find({where:{guid: In(guids)}})
     }
 
     async verifyVariantByGUID(guid:string){
@@ -118,8 +192,11 @@ export class SongService{
         .update({verified: false, display: false}).where("guid= :guid", {guid}).execute();
     }
     async deleteVariantByGUID(guid:string){
-      return await this.variantRepository.createQueryBuilder()
-        .delete().where("guid= :guid", {guid}).execute();
+      const variant = (await this.variantRepository.findOneBy({
+        guid
+      }))
+
+      return await this.variantRepository.remove(variant);
     }
 
 

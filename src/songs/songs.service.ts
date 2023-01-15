@@ -3,6 +3,7 @@ import { SongService } from "./services/song.service";
 import { GetSongQuery, GetSongResult, NewSongData, NewSongDataProcessResult, SongData } from "./dtos";
 import { RequestResult, codes, formatted } from "src/utils/formatted";
 import { CreatorService } from "./services/creator.service";
+import { User } from "src/database/entities/user.entity";
 
 @Injectable()
 export class SongsService{
@@ -12,24 +13,31 @@ export class SongsService{
     ){}
 
 
-    async processGetQuery(query: GetSongQuery): Promise<GetSongResult>{
+    async processGetQuery(query: GetSongQuery, user: User): Promise<GetSongResult>{
         switch(query.key){
             case "search":
-                const searched = await this.songService.search(query.body);
+                const searched = await this.songService.search(query.body, user);
                 return {guids: searched.map((s)=>s.guid)};
             case "all":
-                const all = await this.songService.search("");
+                const all = await this.songService.search("", user);
                 return {guids: all.map((s)=>s.guid)};
             case "random":
                 const random = await this.songService.random(query.count);
                 return {guids: random.map((s)=>s.guid)};
-            case "unverified":
-                const unverified = await this.songService.getUnverified();
-                return {guids: unverified.map((s)=>s.guid)}
             default:
               return {guids: []}
         }
           
+    }
+
+    async getUnverified(): Promise<GetSongResult>{
+        const unverified = await this.songService.getUnverified();
+        return {guids: unverified.map((s)=>s.guid)}
+    }
+
+    async getLoaderUnverified(): Promise<GetSongResult>{
+        const unverified = await this.songService.getLoaderUnverified();
+        return {guids: unverified.map((s)=>s.guid)}
     }
 
     async gatherSongData(guid: string): Promise<RequestResult<SongData>>{
@@ -37,18 +45,19 @@ export class SongsService{
 
         if(song==null) return formatted(null, codes["Not Found"]);
 
-        const titles = await this.songService.getTitlesBySongGUID(song.guid);
+        const titles = await this.songService.getTitlesBySong(song);
 
-        const mainTitleObject = titles.find((v)=>song.mainNameGUID==v.guid);
+        const mainTitleObject = titles.find((v)=>JSON.stringify(song.mainName)==JSON.stringify(v));
         if(mainTitleObject===undefined){
             return formatted(null, codes["Unknown Error"], "Title not found.");
         }
 
         const mainTitle = mainTitleObject.name;
 
-        const variantObjects = await this.songService.findVariantsBySongGUID(song.guid);
+
+        const variantObjects = await this.songService.findVariantsBySong(song);
         const variants = variantObjects.map((v)=>{
-            const titleObject = titles.find((t)=>t.guid==v.mainNameGUID);
+            const titleObject = titles.find((t)=>JSON.stringify(t)==JSON.stringify(v.mainTitle));
             if(titleObject===undefined){
                 return undefined;
             }
@@ -64,9 +73,7 @@ export class SongsService{
             return formatted(null, codes["Unknown Error"], "Title for variant not found.");
         }
 
-        const variantGUIDs : string[] = variantObjects.map((v)=>v.guid);
-
-        const creators = await this.creatorService.findAllBySVGUIDs(song.guid, variantGUIDs);
+        const creators = await this.creatorService.findAllBySongOrVariants(song, variantObjects);
 
 
         return formatted<SongData>({
@@ -79,8 +86,8 @@ export class SongsService{
 
     }
 
-    async processNewSongData(data: NewSongData):Promise<NewSongDataProcessResult>{
-        const guid = await this.songService.createNewSong(data);
+    async processNewSongData(data: NewSongData, user: User):Promise<NewSongDataProcessResult>{
+        const guid = await this.songService.createNewSong(data, user);
         return {
             guid,
             message: "New song added."

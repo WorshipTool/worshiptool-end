@@ -2,8 +2,10 @@ import { Inject, Injectable } from "@nestjs/common";
 import { CREATOR_REPOSITORY, CSLINK_REPOSITORY } from "src/database/constants";
 import { Creator } from "src/database/entities/creator.entity";
 import { CSVLink } from "src/database/entities/csvlink.entity";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { SongDataCreator } from "../dtos";
+import { Song } from "src/database/entities/song.entity";
+import { SongVariant } from "src/database/entities/songvariant.entity";
 
 @Injectable()
 export class CreatorService{
@@ -15,24 +17,24 @@ export class CreatorService{
         private CSVLinkRepository: Repository<CSVLink>
     ){}  
 
-    async findAllBySVGUIDs(songGUID: string, variantGUIDs: string[]) : Promise<SongDataCreator[]>{
-        const links = await this.CSVLinkRepository.createQueryBuilder()
-            .where("songGUID=:guid",{guid:songGUID})
-            .orWhere("variantGUID IN (:...guids)",{guids: variantGUIDs})
-            .getMany();
+    async findAllBySongOrVariants(song: Song, variants: SongVariant[]) : Promise<SongDataCreator[]>{
+        const links = await this.CSVLinkRepository.find({
+            where:[
+                {song},
+                {variant: {
+                    guid: In(variants.map((v)=>v.guid))
+                }}
+            ],
+            relations:{
+                creator: true,
+                variant: true
+            }
+        })
 
-        const creatorGUIDs = links.map((l)=>l.creatorGUID);
-
-        if(creatorGUIDs.length==0)return [];
-        
-        const creators : Creator[] = await this.creatorRepository.createQueryBuilder()
-            .where("guid IN (:...guids)",{guids: creatorGUIDs})
-            .getMany();
-
-        return creators.map((creator)=>{
+        return links.map((l)=>{
             return {
-                name: creator.name,
-                type: links.find((l)=>l.creatorGUID==creator.guid).type
+                name: l.creator.name,
+                type: l.type
             }
         })
 
