@@ -16,13 +16,13 @@ export class SongsService{
     async processGetQuery(query: GetSongQuery, user: User): Promise<GetSongResult>{
         switch(query.key){
             case "search":
-                const searched = await this.songService.search(query.body, user);
+                const searched = await this.songService.search(query.body, user, query.page);
                 return {guids: searched.map((s)=>s.guid)};
             case "all":
-                const all = await this.songService.search("", user);
+                const all = await this.songService.search("", user, query.page);
                 return {guids: all.map((s)=>s.guid)};
             case "random":
-                const random = await this.songService.random(query.count);
+                const random = await this.songService.random(query.page);
                 return {guids: random.map((s)=>s.guid)};
             default:
               return {guids: []}

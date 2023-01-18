@@ -6,6 +6,7 @@ import { SongVariant } from "src/database/entities/songvariant.entity";
 import { In, Like, Not, Repository } from "typeorm";
 import { NewSongData } from "../dtos";
 import { ROLES, User } from "src/database/entities/user.entity";
+import { skipForPage, takePerPage } from "../contants";
 
 @Injectable()
 export class SongService{
@@ -18,7 +19,7 @@ export class SongService{
         private variantRepository: Repository<SongVariant>
     ){}
 
-    async search(k:string, user:User): Promise<Song[]> {
+    async search(k:string, user:User, page:number): Promise<Song[]> {
         const key = k.replace(/\s/gi, "");
         const names = await this.nameRepository.find({
           where:{
@@ -61,12 +62,14 @@ export class SongService{
 
 
         return await this.songRepository.find({
-            where:[{guid: In(guids1)},{guid: In(guids2)}]
+            where:[{guid: In(guids1)},{guid: In(guids2)}],
+            take: takePerPage,
+            skip: skipForPage(page)
         })
         
     }
 
-    async random(count: number) : Promise<Song[]>{
+    async random(page:number) : Promise<Song[]>{
         const variants = await this.variantRepository.find({
           where:{
             display: true
@@ -76,7 +79,11 @@ export class SongService{
           },
           order:{
             //random should be here
-          }
+          },
+          take: takePerPage,
+          skip: skipForPage(page)
+          
+          
         });
         const songs = variants.map((v)=>v.song);
         return songs;

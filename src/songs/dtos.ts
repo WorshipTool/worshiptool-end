@@ -5,7 +5,7 @@ import { SongVariant } from "src/database/entities/songvariant.entity"
 export interface GetSongQuery{
     key:string,
     body:string,
-    count:number
+    page:number
 }
 export interface GetSongResult{
     guids: string[]
