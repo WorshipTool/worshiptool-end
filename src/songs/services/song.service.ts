@@ -78,10 +78,10 @@ export class SongService{
             song:true
           },
           order:{
-            //random should be here
+
           },
           take: takePerPage,
-          skip: skipForPage(page)
+          skip: Math.round(Math.random()*300)//skipForPage(page)
           
           
         });
@@ -141,7 +141,8 @@ export class SongService{
           song
         },
         relations:{
-          mainTitle: true
+          mainTitle: true,
+          createdBy:true
         }
       })
     }

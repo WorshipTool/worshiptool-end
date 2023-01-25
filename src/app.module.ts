@@ -4,11 +4,14 @@ import { SongsModule } from './songs/songs.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt/jwt-auth.guard';
+import { MessengerModule } from './messenger/messenger.module';
 
 @Module({
-  imports: [DatabaseModule, 
+  imports: [
+    DatabaseModule, 
     SongsModule, 
-    AuthModule],
+    AuthModule,
+    MessengerModule],
   controllers: [],
   providers: [
     {

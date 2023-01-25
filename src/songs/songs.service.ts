@@ -3,24 +3,23 @@ import { SongService } from "./services/song.service";
 import { GetSongQuery, GetSongResult, NewSongData, NewSongDataProcessResult, SongData } from "./dtos";
 import { RequestResult, codes, formatted } from "src/utils/formatted";
 import { CreatorService } from "./services/creator.service";
-import { User } from "src/database/entities/user.entity";
+import { ROLES, User } from "src/database/entities/user.entity";
+import { MessengerService } from "src/messenger/messenger.service";
 
 @Injectable()
 export class SongsService{
     constructor(
         private songService: SongService,
-        private creatorService: CreatorService
+        private creatorService: CreatorService,
+        private messengerService: MessengerService
     ){}
 
 
     async processGetQuery(query: GetSongQuery, user: User): Promise<GetSongResult>{
         switch(query.key){
             case "search":
-                const searched = await this.songService.search(query.body, user, query.page);
+                const searched = await this.songService.search(query.searchKey, user, query.page);
                 return {guids: searched.map((s)=>s.guid)};
-            case "all":
-                const all = await this.songService.search("", user, query.page);
-                return {guids: all.map((s)=>s.guid)};
             case "random":
                 const random = await this.songService.random(query.page);
                 return {guids: random.map((s)=>s.guid)};
@@ -65,7 +64,9 @@ export class SongsService{
                 guid: v.guid,
                 prefferedTitle: titleObject.name,
                 sheetData: v.sheet,
-                sheetText: v.sheetText
+                sheetText: v.sheetText,
+                verified: v.verified,
+                createdBy: v.createdBy.guid
             }
         })
 
@@ -88,6 +89,10 @@ export class SongsService{
 
     async processNewSongData(data: NewSongData, user: User):Promise<NewSongDataProcessResult>{
         const guid = await this.songService.createNewSong(data, user);
+
+        if(user.role==ROLES.User)
+            this.messengerService.sendMessage(`Někdo právě přidal novou píseň *${data.title}*`);
+
         return {
             guid,
             message: "New song added."
