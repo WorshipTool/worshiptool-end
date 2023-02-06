@@ -20,21 +20,6 @@ export class SongsController{
         return formatted(await this.songsService.processGetQuery(query, user));
     }
 
-    @Get("unverified")
-    async getUnverified(@User() user){
-        if(user.role!=ROLES.Admin&&user.role!=ROLES.Trustee){
-            return formatted(null, codes.Unauthorized);
-        }
-        return formatted(await this.songsService.getUnverified());
-    }
-    @Get("loaderunverified")
-    async getLoaderUnverified(@User() user){
-        if(user.role!=ROLES.Admin){
-            return formatted(null, codes.Unauthorized);
-        }
-        return formatted(await this.songsService.getLoaderUnverified());
-    }
-
     @AllowNonUser()
     @Get("data/:guid")
     async getSongData(@Param() {guid}: {guid:string}){

@@ -4,7 +4,7 @@ import { Song } from "src/database/entities/song.entity";
 import { SongName } from "src/database/entities/songname.entity";
 import { SongVariant } from "src/database/entities/songvariant.entity";
 import { In, Like, Not, Repository } from "typeorm";
-import { NewSongData } from "../dtos";
+import { NewSongData, NewSongDataToVariant} from "../dtos";
 import { ROLES, User } from "src/database/entities/user.entity";
 import { skipForPage, takePerPage } from "../contants";
 
@@ -79,34 +79,48 @@ export class SongService{
           },
           order:{
 
-          },
-          take: takePerPage,
-          skip: Math.round(Math.random()*300)//skipForPage(page)
+          }
           
           
         });
-        const songs = variants.map((v)=>v.song);
+        const index=Math.round(Math.random()*(variants.length-takePerPage));
+        const cutVariants = variants.slice(index, index+takePerPage)
+        const songs = cutVariants.map((v)=>v.song);
         return songs;
     }
 
     async createNewSong(newSongData : NewSongData, user: User): Promise<string>{
-        const songGUID =  (await this.songRepository.createQueryBuilder().insert().values({guid: undefined}).execute())
-                            .identifiers[0].guid;
 
-        const song = await this.songRepository.findOne({where:{guid: songGUID}})
+        let song;
+        
+        const r = await this.getParentSongIfExists(NewSongDataToVariant(newSongData));
+        
+        if(r){
+          if(!r.asNewVariant){
+            console.log(`Song ${r.song.mainName.name.toUpperCase()} already exists.`);
+            return r.song.guid
+          }
+          song = r.song;
+        }
+
+        if(!song){
+          const songGUID =  (await this.songRepository.createQueryBuilder().insert().values({guid: undefined}).execute())
+                              .identifiers[0].guid;
+          song = await this.songRepository.findOne({where:{guid: songGUID}})
+        }
     
         const nameGUID = (await this.nameRepository.createQueryBuilder().insert().values({guid: undefined, song, name: newSongData.title}).execute())
                             .identifiers[0].guid;
 
         const title = await this.nameRepository.createQueryBuilder().where({guid:nameGUID}).getOne();
     
-        await this.songRepository.createQueryBuilder().update({mainName: title}).where({guid: songGUID}).execute();
+        await this.songRepository.createQueryBuilder().update({mainName: title}).where({guid: song.guid}).execute();
     
         const variant : SongVariant = {
           guid: undefined,
           song, 
-          sheet: newSongData.sheetData,
-          sheetText: newSongData.sheetText.replace(/\n/gi,"").replace(/\s/gi,""),
+          sheet: newSongData.sheetData?newSongData.sheetData:"",
+          sheetText: "",//newSongData.sheetText.replace(/\n/gi,"").replace(/\s/gi,""),
           mainTitle: title,
           verified: false, 
           display: false,
@@ -117,7 +131,7 @@ export class SongService{
         const variantGUID = (await this.variantRepository.createQueryBuilder().insert().values(variant).execute())
                             .identifiers[0].guid;
     
-        return songGUID;
+        return song.guid;
     }
 
     async findByGUID(guid:string) : Promise<Song>{
@@ -204,8 +218,52 @@ export class SongService{
         guid
       }))
 
+
       return await this.variantRepository.remove(variant);
     }
 
+    async getParentSongIfExists(variant:Partial<SongVariant>):Promise<{song:Song, asNewVariant:boolean} | undefined>{
+
+      const result = await this.findMostSimilarVariant(variant);
+
+      if(result){
+        if(result.similarity>0.9)
+        return{
+          song: await this.findByGUID(result.variant.song.guid),
+          asNewVariant: result.similarity<0.97
+        };
+      }
+
+
+      return undefined;
+    }
+
+    async findMostSimilarVariant(v: Partial<SongVariant>) : Promise<{ similarity: number; variant: SongVariant; } | undefined>{
+      var stringSimilarity = require("string-similarity");
+
+      if(!v.sheet)return undefined;
+
+      const variants : SongVariant[] = await this.variantRepository.find({
+        relations: {
+          song:true
+        }
+      });
+      let variant = null;
+      let maxSim = 0;
+      for(let i=0; i<variants.length; i++){
+        const vv = variants[i];
+        var similarity = stringSimilarity.compareTwoStrings(v.sheet, vv.sheet);
+        if(similarity>maxSim){
+          maxSim=similarity;
+          variant=vv;
+        }
+      }
+
+      if(variant) return{
+        similarity: maxSim,
+        variant
+      }
+      return undefined;
+    }
 
 }

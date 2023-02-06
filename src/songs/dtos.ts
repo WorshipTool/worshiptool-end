@@ -5,8 +5,11 @@ import { SongVariant } from "src/database/entities/songvariant.entity"
 
 interface GetSongQueryBase{
     key:string,
-    conditions:any,
     page:number
+}
+
+export interface GetSongQueryConditions{
+    verified? : boolean
 }
 interface SearchSongQuery extends GetSongQueryBase{
     key: "search",
@@ -15,7 +18,19 @@ interface SearchSongQuery extends GetSongQueryBase{
 interface RandomSongQuery extends GetSongQueryBase{
     key: "random"
 }
-export type GetSongQuery = SearchSongQuery|RandomSongQuery;
+interface AllSongQuery extends GetSongQueryBase{
+    key: "all"
+}
+interface UnverifiedSongQuery extends GetSongQueryBase{
+    key: "unverified"
+}interface LoaderUnverifiedSongQuery extends GetSongQueryBase{
+    key: "loaderUnverified"
+}
+export type GetSongQuery = SearchSongQuery|
+                            RandomSongQuery|
+                            AllSongQuery|
+                            UnverifiedSongQuery|
+                            LoaderUnverifiedSongQuery;
 
 
 
@@ -45,11 +60,17 @@ export interface SongData{
 
 export interface NewSongData{
     title: string,
-    sheetData: string,
-    sheetText: string
+    sheetData: string
 }
 
 export interface NewSongDataProcessResult{
     message: string,
     guid: string
+}
+
+
+export function NewSongDataToVariant(data:NewSongData) : Partial<SongVariant>{
+    return {
+        sheet: data.sheetData
+    }
 }

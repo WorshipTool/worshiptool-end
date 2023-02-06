@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { SongService } from "./services/song.service";
-import { GetSongQuery, GetSongResult, NewSongData, NewSongDataProcessResult, SongData } from "./dtos";
+import { GetSongQuery, GetSongQueryConditions, GetSongResult, NewSongData, NewSongDataProcessResult, SongData } from "./dtos";
 import { RequestResult, codes, formatted } from "src/utils/formatted";
 import { CreatorService } from "./services/creator.service";
 import { ROLES, User } from "src/database/entities/user.entity";
@@ -16,6 +16,8 @@ export class SongsService{
 
 
     async processGetQuery(query: GetSongQuery, user: User): Promise<GetSongResult>{
+        if(query.page===undefined)query.page=0;
+
         switch(query.key){
             case "search":
                 const searched = await this.songService.search(query.searchKey, user, query.page);
@@ -23,20 +25,19 @@ export class SongsService{
             case "random":
                 const random = await this.songService.random(query.page);
                 return {guids: random.map((s)=>s.guid)};
+            case "all":
+                const all = await this.songService.search("", user, query.page);
+                return {guids: all.map((s)=>s.guid)};
+            case "unverified":
+                const unverified = await this.songService.getUnverified();
+                return {guids: unverified.map((s)=>s.guid)};
+            case "loaderUnverified":
+                const loaderUnverified = await this.songService.getLoaderUnverified();
+                return {guids: loaderUnverified.map((s)=>s.guid)};
             default:
               return {guids: []}
         }
           
-    }
-
-    async getUnverified(): Promise<GetSongResult>{
-        const unverified = await this.songService.getUnverified();
-        return {guids: unverified.map((s)=>s.guid)}
-    }
-
-    async getLoaderUnverified(): Promise<GetSongResult>{
-        const unverified = await this.songService.getLoaderUnverified();
-        return {guids: unverified.map((s)=>s.guid)}
     }
 
     async gatherSongData(guid: string): Promise<RequestResult<SongData>>{
@@ -88,6 +89,9 @@ export class SongsService{
     }
 
     async processNewSongData(data: NewSongData, user: User):Promise<NewSongDataProcessResult>{
+
+        
+
         const guid = await this.songService.createNewSong(data, user);
 
         if(user.role==ROLES.User)
