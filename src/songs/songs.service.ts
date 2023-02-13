@@ -1,17 +1,19 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { SongService } from "./services/song.service";
-import { GetSongQuery, GetSongQueryConditions, GetSongResult, NewSongData, NewSongDataProcessResult, SongData } from "./dtos";
+import { GetSongQuery, GetSongResult, SongData, SongDataVariant } from "./dtos";
 import { RequestResult, codes, formatted } from "src/utils/formatted";
 import { CreatorService } from "./services/creator.service";
 import { ROLES, User } from "src/database/entities/user.entity";
 import { MessengerService } from "src/messenger/messenger.service";
+import { MediaService } from "./services/media.service";
 
 @Injectable()
 export class SongsService{
     constructor(
         private songService: SongService,
         private creatorService: CreatorService,
-        private messengerService: MessengerService
+        private messengerService: MessengerService,
+        private mediaService: MediaService
     ){}
 
 
@@ -48,60 +50,47 @@ export class SongsService{
         const titles = await this.songService.getTitlesBySong(song);
 
         const mainTitleObject = titles.find((v)=>JSON.stringify(song.mainName)==JSON.stringify(v));
-        if(mainTitleObject===undefined){
-            return formatted(null, codes["Unknown Error"], "Title not found.");
-        }
-
-        const mainTitle = mainTitleObject.name;
 
 
         const variantObjects = await this.songService.findVariantsBySong(song);
-        const variants = variantObjects.map((v)=>{
+        const variants : SongDataVariant[] = await Promise.all(variantObjects.map(async (v)=>{
             const titleObject = titles.find((t)=>JSON.stringify(t)==JSON.stringify(v.mainTitle));
-            if(titleObject===undefined){
-                return undefined;
-            }
+
+            const creators = await this.creatorService.findAllByVariant(v);
             return {
                 guid: v.guid,
-                prefferedTitle: titleObject.name,
-                sheetData: v.sheet,
+                prefferedTitle: titleObject?titleObject.name:null,
+                sheetData: v.sheetData,
                 sheetText: v.sheetText,
                 verified: v.verified,
-                createdBy: v.createdBy.guid
+                createdBy: v.createdBy.guid,
+                sources: v.sources,
+                creators
             }
-        })
+        }));
 
-        if(variants.filter((v)=>v===undefined).length>0){
-            return formatted(null, codes["Unknown Error"], "Title for variant not found.");
-        }
+        // if(variants.filter((v)=>v===undefined).length>0){
+        //     return formatted(null, codes["Unknown Error"], "Title for variant not found.");
+        // }
 
-        const creators = await this.creatorService.findAllBySongOrVariants(song, variantObjects);
+        const songCreators = await this.creatorService.findAllBySong(song);
+
+        const media = await this.mediaService.findAllBySong(song);
 
 
         return formatted<SongData>({
             guid:song.guid,
-            mainTitle,
+            mainTitle: mainTitleObject?mainTitleObject.name:undefined,
             alternativeTitles: titles.map((t)=>t.name),
-            creators,
-            variants
+            creators:songCreators,
+            variants,
+            media,
+            tags:song.tags?song.tags.map((t)=>t.value):[]
+
         })
 
     }
 
-    async processNewSongData(data: NewSongData, user: User):Promise<NewSongDataProcessResult>{
-
-        
-
-        const guid = await this.songService.createNewSong(data, user);
-
-        if(user.role==ROLES.User)
-            this.messengerService.sendMessage(`Někdo právě přidal novou píseň *${data.title}*`);
-
-        return {
-            guid,
-            message: "New song added."
-        }
-    }
 
     async verifyVariantByGUID(guid:string){
         return await this.songService.verifyVariantByGUID(guid);

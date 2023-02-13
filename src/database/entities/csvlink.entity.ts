@@ -1,5 +1,5 @@
-import { Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Creator } from "./creator.entity";
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Creator, CreatorType } from "./creator.entity";
 import { SongVariant } from "./songvariant.entity";
 import { Song } from "./song.entity";
 
@@ -11,13 +11,16 @@ export class CSVLink{
     @ManyToOne(()=>Creator, (creator)=>creator.links)
     creator: Creator;
 
+    @Column()
+    type: CreatorType;
+    
+    @Column()
+    songOrVariant: 'song' | 'variant';
+
     @ManyToOne(()=>Song, (song)=>song.links)
-    song: Song;
+    song?: Song;
     
     @ManyToOne(()=>SongVariant, (variant)=>variant.links)
-    variant: SongVariant;
-
-    @Column()
-    type: string;
+    variant?: SongVariant;
 
 }

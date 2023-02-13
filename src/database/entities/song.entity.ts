@@ -1,7 +1,9 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { SongVariant } from "./songvariant.entity";
 import { SongName } from "./songname.entity";
 import { CSVLink } from "./csvlink.entity";
+import { Media } from "./media.entity";
+import { Tag } from "./tag.entity";
 
 @Entity()
 export class Song{
@@ -20,4 +22,11 @@ export class Song{
 
   @OneToMany(()=>CSVLink, (link)=>link.song)
   links: CSVLink[]
+
+  @OneToMany(()=>Media, (media)=>media.song)
+  media: Media[]
+
+  @ManyToMany(()=>Tag, (s)=>s.songs)
+  @JoinTable()
+  tags: Tag[]
 }

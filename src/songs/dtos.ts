@@ -1,6 +1,9 @@
+import { MediaTypes } from "src/database/entities/media.entity"
 import { Song } from "src/database/entities/song.entity"
 import { SongName } from "src/database/entities/songname.entity"
 import { SongVariant } from "src/database/entities/songvariant.entity"
+import { SongDataSource } from "./services/adding/dtos"
+import { CreatorType } from "src/database/entities/creator.entity"
 
 
 interface GetSongQueryBase{
@@ -43,34 +46,30 @@ export interface SongDataVariant{
     sheetData: string,
     sheetText: string,
     verified:boolean,
-    createdBy:string
+    createdBy:string,
+    sources: SongDataSource[],
+    creators: SongDataCreator[]
+}
+
+export interface SongDataMedia{
+    type: MediaTypes,
+    url: string
 }
 
 export interface SongDataCreator{
     name: string,
-    type: string
+    type: CreatorType
 }
+
+
 export interface SongData{
     guid: string,
     mainTitle: string,
     alternativeTitles: string[],
     creators: SongDataCreator[],
-    variants: SongDataVariant[]
+    variants: SongDataVariant[],
+    media: SongDataMedia[],
+    tags: string[]
+
 }
 
-export interface NewSongData{
-    title: string,
-    sheetData: string
-}
-
-export interface NewSongDataProcessResult{
-    message: string,
-    guid: string
-}
-
-
-export function NewSongDataToVariant(data:NewSongData) : Partial<SongVariant>{
-    return {
-        sheet: data.sheetData
-    }
-}

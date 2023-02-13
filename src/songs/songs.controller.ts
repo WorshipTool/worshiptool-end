@@ -1,17 +1,19 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { SongsService } from "./songs.service";
 import { codes, formatted } from "src/utils/formatted";
-import { GetSongQuery, NewSongData, SongData } from "./dtos";
+import { GetSongQuery} from "./dtos";
 import { JwtAuthGuard } from "src/auth/jwt/jwt-auth.guard";
 import { User } from "src/auth/decorators/user.decorator";
 import { ROLES, User as UserObject } from "src/database/entities/user.entity";
 import { AllowNonUser } from "src/auth/decorators/allownonuser.decorator";
+import { AddSongDataService } from "./services/adding/add.service";
 
 @Controller("songs")
 export class SongsController{
 
     constructor(
-        private songsService: SongsService
+        private songsService: SongsService,
+        private addService: AddSongDataService
     ){}
 
     @AllowNonUser()
@@ -27,8 +29,8 @@ export class SongsController{
     }
 
     @Post()
-    async addNewSong(@Body() data: NewSongData, @User() user : UserObject){
-        return formatted(await this.songsService.processNewSongData(data, user));
+    async addSongData(@Body() data: any, @User() user : UserObject){
+        return this.addService.processNewSongData(data, user);
     }
 
     @Post("variant/verify/:guid")

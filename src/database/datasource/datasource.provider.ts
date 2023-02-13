@@ -5,6 +5,9 @@ import { SongVariant } from "../entities/songvariant.entity";
 import { Creator } from "../entities/creator.entity";
 import { CSVLink } from "../entities/csvlink.entity";
 import { User } from "../entities/user.entity";
+import { Media } from "../entities/media.entity";
+import { Source } from "../entities/source.entity";
+import { Tag } from "../entities/tag.entity";
 
 export const datasourceProvider = [
     {
@@ -24,7 +27,10 @@ export const datasourceProvider = [
                     SongVariant,
                     Creator,
                     CSVLink,
-                    User
+                    User,
+                    Media,
+                    Source,
+                    Tag
                 ],
             });
 

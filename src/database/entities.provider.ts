@@ -1,11 +1,14 @@
 import { DataSource } from "typeorm";
-import { CREATOR_REPOSITORY, CSLINK_REPOSITORY, SONG_NAMES_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, USER_REPOSITORY } from "./constants";
+import { CREATOR_REPOSITORY, CSVLINK_REPOSITORY, MEDIA_REPOSITORY, SONG_NAMES_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, SOURCE_REPOSITORY, TAG_REPOSITORY, USER_REPOSITORY } from "./constants";
 import { SongVariant } from "./entities/songvariant.entity";
 import { Song } from "./entities/song.entity";
 import { Creator } from "./entities/creator.entity";
 import { CSVLink } from "./entities/csvlink.entity";
 import { SongName } from "./entities/songname.entity";
 import { User } from "./entities/user.entity";
+import { Media } from "./entities/media.entity";
+import { Source } from "./entities/source.entity";
+import { Tag } from "./entities/tag.entity";
 
 export const EntitiesProvider = [
     {
@@ -25,7 +28,7 @@ export const EntitiesProvider = [
         inject: ['DATA_SOURCE'],
     },
     {
-        provide: CSLINK_REPOSITORY,
+        provide: CSVLINK_REPOSITORY,
         useFactory: (dataSource: DataSource) => dataSource.getRepository(CSVLink),
         inject: ['DATA_SOURCE'],
     },
@@ -37,6 +40,21 @@ export const EntitiesProvider = [
     {
         provide: USER_REPOSITORY,
         useFactory: (dataSource: DataSource) => dataSource.getRepository(User),
+        inject: ['DATA_SOURCE'],
+    },
+    {
+        provide: MEDIA_REPOSITORY,
+        useFactory: (dataSource: DataSource) => dataSource.getRepository(Media),
+        inject: ['DATA_SOURCE'],
+    },
+    {
+        provide: SOURCE_REPOSITORY,
+        useFactory: (dataSource: DataSource) => dataSource.getRepository(Source),
+        inject: ['DATA_SOURCE'],
+    },
+    {
+        provide: TAG_REPOSITORY,
+        useFactory: (dataSource: DataSource) => dataSource.getRepository(Tag),
         inject: ['DATA_SOURCE'],
     },
 ];
