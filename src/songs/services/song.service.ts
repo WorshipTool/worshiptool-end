@@ -241,6 +241,7 @@ export class SongService{
       let maxSim = 0;
       for(let i=0; i<variants.length; i++){
         const vv = variants[i];
+        if(vv.sheetData==null)continue;
         var similarity = stringSimilarity.compareTwoStrings(sheetData, vv.sheetData);
         if(similarity>maxSim){
           maxSim=similarity;

@@ -23,10 +23,10 @@ export class Song{
   @OneToMany(()=>CSVLink, (link)=>link.song)
   links: CSVLink[]
 
-  @OneToMany(()=>Media, (media)=>media.song)
+  @OneToMany(()=>Media, (media)=>media.song, { cascade: true })
   media: Media[]
 
-  @ManyToMany(()=>Tag, (s)=>s.songs)
+  @ManyToMany(()=>Tag, (s)=>s.songs, { cascade: true })
   @JoinTable()
   tags: Tag[]
 }

@@ -101,20 +101,19 @@ export class AddSongDataService{
                     }
                 })
             }
-            
 
-            let variantData : SongVariant = undefined;
+            let variantGuid : string = undefined;
             //find same variant
             if(data.sheetData){
                 const r = await this.songService.findMostSimilarVariant(data.sheetData);
-                if(r.similarity>0.95){
+                if(r&&r.similarity>0.95){
                     //found
-                    variantData = r.variant;
+                    variantGuid = r.variant.guid;
                 }
             }
 
-            if(!variantData){
-                variantData = {
+            if(!variantGuid){
+                const variantData = {
                     guid: undefined,
                     song, 
                     sheetData: data.sheetData,
@@ -126,21 +125,13 @@ export class AddSongDataService{
                     links:[],
                     sources:sources
                 };
+                variantGuid = (await this.variantRepository.insert(variantData)).identifiers[0].guid;
             }
             
-
-      
-          const variantGuid = (await this.variantRepository.save(variantData)).guid;
           const variant = await this.variantRepository.findOne({where:{guid: variantGuid}, relations:{sources:true}});
 
           if(sources){
-                const sourcesToSave = sources.map((s)=>{
-                    return {
-                        ...s,
-                        variant: variant
-                    }
-                });
-                this.sourceRepository.save(sourcesToSave);
+                await this.sourceRepository.update({guid: In(sources.map((s)=>s.guid))},{variant: variant});
           }
         }
 
@@ -151,12 +142,18 @@ export class AddSongDataService{
             for(let i=0; i<data.media.length; i++){
                 const media = data.media[i];
 
+
                 if(!checkMediaFormat(media)){
                     console.log("Media won't be inserted, because of wrong format of url.")
                 }else{
-                    const ex = await this.mediaRepository.findOne({where:media});
+                    const ex = await this.mediaRepository.findOne({where:{
+                        ...media,
+                        song:song
+                    }});
                     if(!ex){
                         const r = await this.mediaRepository.insert({...media, song})
+                    }else{
+                        console.log("Same media in the song already exists.");
                     }
                 }
 
@@ -175,20 +172,19 @@ export class AddSongDataService{
                 })
 
                 if(!entity){
-                    entity = {
+                    const data = {
                         guid: undefined,
                         value: tag,
                         songs: []
                     }
+                    entity = await this.tagRepository.save(data);
                 }
 
-                entity = {
-                    ...entity,
-                    songs: entity.songs?[...entity.songs, song]:[song]
-                }
-
-
-                const r = await this.tagRepository.save(entity);
+                const s = await this.songRepository.findOne({where:{guid:songGuid},
+                    relations:{
+                        tags:true
+                    }});
+                await this.songRepository.save({...s, tags: s.tags?[...s.tags, entity]:[entity]})
             }
         }
 

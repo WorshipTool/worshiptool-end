@@ -7,7 +7,7 @@ export class Tag{
   @PrimaryGeneratedColumn("uuid")
   guid: string;  
 
-  @ManyToMany(()=>Song, (s)=>s.tags, { cascade: true })
+  @ManyToMany(()=>Song, (s)=>s.tags)
   songs: Song[]
 
   @Column()
