@@ -15,11 +15,11 @@ export const datasourceProvider = [
         useFactory: async () => {
         const dataSource = new DataSource({
                 type: 'mysql',
-                host: 'localhost',
-                port: 3306,
-                username: 'lookaround',
-                password: '31663lookaround',
-                database: 'worshiptool',
+                host: process.env.DATABASE_HOST || 'localhost',
+                port: parseInt(process.env.DATABASE_PORT, 10) || 3306,
+                username: process.env.DATABASE_USERNAME || 'lookaround',
+                password: process.env.DATABASE_PASSWORD || '31663lookaround',
+                database: process.env.DATABASE_DATABASE || 'worshiptool',
                 synchronize: true,
                 entities: [
                     Song,
