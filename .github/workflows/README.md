@@ -1,0 +1,1 @@
+See more deploy related info in https://bitbucket.org/tomaspavlin/project-deploy
