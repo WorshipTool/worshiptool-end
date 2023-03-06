@@ -17,8 +17,8 @@ export const datasourceProvider = [
                 type: 'mysql',
                 host: process.env.DATABASE_HOST || 'localhost',
                 port: parseInt(process.env.DATABASE_PORT, 10) || 3306,
-                username: process.env.DATABASE_USERNAME || 'lookaround',
-                password: process.env.DATABASE_PASSWORD || '31663lookaround',
+                username: process.env.DATABASE_USERNAME || 'root',
+                password: process.env.DATABASE_PASSWORD || 'semice36',
                 database: process.env.DATABASE_DATABASE || 'worshiptool',
                 synchronize: true,
                 entities: [
