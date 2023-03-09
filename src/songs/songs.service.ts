@@ -91,6 +91,10 @@ export class SongsService{
 
     }
 
+    async getCount(){
+        return await this.songService.getCount();
+    }
+
 
     async verifyVariantByGUID(guid:string){
         return await this.songService.verifyVariantByGUID(guid);

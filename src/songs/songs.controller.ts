@@ -23,6 +23,12 @@ export class SongsController{
     }
 
     @AllowNonUser()
+    @Get("count")
+    async getSongsCount(){
+        return formatted({count: await this.songsService.getCount()});
+    }
+
+    @AllowNonUser()
     @Get("data/:guid")
     async getSongData(@Param() {guid}: {guid:string}){
         return await this.songsService.gatherSongData(guid);

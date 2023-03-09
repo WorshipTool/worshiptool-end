@@ -256,4 +256,8 @@ export class SongService{
       return undefined;
     }
 
+    async getCount() : Promise<number>{
+      return await this.songRepository.count();
+    }
+
 }
