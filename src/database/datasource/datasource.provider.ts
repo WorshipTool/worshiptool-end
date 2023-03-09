@@ -20,6 +20,7 @@ export const datasourceProvider = [
                 username: process.env.DATABASE_USERNAME || 'root',
                 password: process.env.DATABASE_PASSWORD || 'semice36',
                 database: process.env.DATABASE_DATABASE || 'worshiptool',
+                charset: 'utf8mb4',
                 synchronize: true,
                 entities: [
                     Song,
