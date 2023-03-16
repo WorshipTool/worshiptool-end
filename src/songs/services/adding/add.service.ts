@@ -18,6 +18,7 @@ import { Creator, CreatorType } from "src/database/entities/creator.entity";
 import { CSVLink } from "src/database/entities/csvlink.entity";
 import checkMediaFormat from "src/utils/checkMediaFormat";
 import { SongsService } from "src/songs/songs.service";
+import convertSheetToSections from "src/sheetApi/convertSheetToSections";
 
 @Injectable()
 export class AddSongDataService{
@@ -113,11 +114,24 @@ export class AddSongDataService{
             }
 
             if(!variantGuid){
+
+                let sheetText = "";
+                if(data.sheetData){
+                    const sections = convertSheetToSections(data.sheetData);
+                    for(let i=0; i<sections.length; i++){
+                        const t=sections[i].text;
+                        if( t){
+                            sheetText+=t;
+                        }
+                    }
+                }
+                sheetText = sheetText.replace(/ /g,"").replace(/\n/g, "");
+
                 const variantData = {
                     guid: undefined,
                     song, 
                     sheetData: data.sheetData,
-                    sheetText: null,
+                    sheetText: sheetText,
                     mainTitle: title,
                     verified: false, 
                     display: false,

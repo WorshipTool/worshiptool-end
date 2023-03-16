@@ -20,7 +20,7 @@ export class SongService{
     ){}
 
     async search(k:string, user:User, page:number): Promise<Song[]> {
-        const key = k.replace(/\s/gi, "");
+        const key = k.replace(/\s/gi, "").replace(/_/gi, "");
         const names = await this.nameRepository.find({
           where:{
             name: Like(`%${key}%`),
@@ -41,6 +41,30 @@ export class SongService{
             variants: true
           }
         })
+
+
+        
+        // const names = await this.nameRepository.createQueryBuilder()
+        // .leftJoinAndSelect("song", "song.mainNameGuid = guid")
+        //   .where("name.name LIKE :key", { key: `%${key}%` })
+        //   .andWhere((qb) => {
+        //     const subQuery1 = qb
+        //       .andWhere("variant.display = :display1", { display1: true })
+        //       .getQuery();
+        //     const subQuery2 = qb
+        //       .andWhere("variant.display = :display2", { display2: user?user.role!=ROLES.Admin:true })
+        //       .getQuery();
+        //     const subQuery3 = qb
+        //       .andWhere("name.createdBy = :createdBy", { createdBy: user })
+        //       .getQuery();
+        //     return `(${subQuery1} OR ${subQuery2} OR ${subQuery3})`;
+        //   })
+        //   .getMany();
+        
+
+
+
+        
         const guids1 : string[] = names.map((name)=>{
           return name.song.guid;
         });
@@ -48,7 +72,7 @@ export class SongService{
                 .find({                  
                   where:{
                     sheetText: Like(`%${key}%`),
-                    display: true
+                    display: In([true,user?user.role!=ROLES.Admin:true])
                   },
                   relations:{
                     song:true
