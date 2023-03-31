@@ -61,7 +61,7 @@ export class SongsService{
                 guid: v.guid,
                 prefferedTitle: titleObject?titleObject.name:null,
                 sheetData: v.sheetData,
-                sheetText: v.sheetText,
+                sheetText: v.searchValue,
                 verified: v.verified,
                 createdBy: v.createdBy.guid,
                 createdByLoader: v.createdBy.role==ROLES.Loader,

@@ -29,7 +29,7 @@ export const dataSource = new DataSource({
         Source,
         Tag
     ],
-    migrations: ["dist/src/migrations/**/*{.js,.ts}"],
+    migrations: ["dist/migrations/**/*{.js,.ts}"],
     migrationsRun: true
 });
 

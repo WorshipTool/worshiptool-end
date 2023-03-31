@@ -17,7 +17,7 @@ export class SongVariant{
     sheetData: string;
 
     @Column({length: 5000, nullable:true})
-    sheetText: string;
+    searchValue: string;
     
     @ManyToOne(() => SongName, (title) => title.variants, {nullable:true})
     mainTitle:SongName;
