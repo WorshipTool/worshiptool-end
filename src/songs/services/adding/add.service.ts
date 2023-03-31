@@ -19,6 +19,7 @@ import { CSVLink } from "src/database/entities/csvlink.entity";
 import checkMediaFormat from "src/utils/checkMediaFormat";
 import { SongsService } from "src/songs/songs.service";
 import convertSheetToSections from "src/sheetApi/convertSheetToSections";
+import normalizeSearchText from "src/utils/normalizeSearchText";
 
 @Injectable()
 export class AddSongDataService{
@@ -125,7 +126,7 @@ export class AddSongDataService{
                         }
                     }
                 }
-                sheetText = sheetText.replace(/ /g,"").replace(/\n/g, "");
+                sheetText = normalizeSearchText(sheetText);
 
                 const variantData = {
                     guid: undefined,

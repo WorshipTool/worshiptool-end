@@ -7,6 +7,7 @@ import { In, Like, Not, Repository } from "typeorm";
 import { NewSongData, NewSongDataToVariant} from "./adding/dtos";
 import { ROLES, User } from "src/database/entities/user.entity";
 import { skipForPage, takePerPage } from "../contants";
+import normalizeSearchText from "src/utils/normalizeSearchText";
 
 @Injectable()
 export class SongService{
@@ -20,7 +21,7 @@ export class SongService{
     ){}
 
     async search(k:string, user:User, page:number): Promise<Song[]> {
-        const key = k.replace(/\s/gi, "").replace(/_/gi, "");
+        const key = normalizeSearchText(k);
         const names = await this.nameRepository.find({
           where:{
             name: Like(`%${key}%`),
