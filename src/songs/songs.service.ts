@@ -23,21 +23,31 @@ export class SongsService{
         switch(query.key){
             case "search":
                 const searched = await this.songService.search(query.searchKey, user, query.page);
-                return {guids: searched.map((s)=>s.guid)};
+                return {songs:  await Promise.all( searched.map(async (s)=>{
+                    return (await this.gatherSongData(s.guid)).data;
+                }))};
             case "random":
                 const random = await this.songService.random(query.page);
-                return {guids: random.map((s)=>s.guid)};
+                return {songs:  await Promise.all( random.map(async (s)=>{
+                    return (await this.gatherSongData(s.guid)).data;
+                }))};
             case "all":
                 const all = await this.songService.search("", user, query.page);
-                return {guids: all.map((s)=>s.guid)};
+                return {songs:  await Promise.all( all.map(async (s)=>{
+                    return (await this.gatherSongData(s.guid)).data;
+                }))};
             case "unverified":
                 const unverified = await this.songService.getUnverified();
-                return {guids: unverified.map((s)=>s.guid)};
+                return {songs:  await Promise.all( unverified.map(async (s)=>{
+                    return (await this.gatherSongData(s.guid)).data;
+                }))};
             case "loaderUnverified":
                 const loaderUnverified = await this.songService.getLoaderUnverified();
-                return {guids: loaderUnverified.map((s)=>s.guid)};
+                return {songs:  await Promise.all( loaderUnverified.map(async (s)=>{
+                    return (await this.gatherSongData(s.guid)).data;
+                }))};
             default:
-              return {guids: []}
+              return {songs: []}
         }
           
     }

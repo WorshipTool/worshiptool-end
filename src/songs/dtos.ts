@@ -38,7 +38,7 @@ export type GetSongQuery = SearchSongQuery|
 
 
 export interface GetSongResult{
-    guids: string[]
+    songs: SongData[]
 }
 export interface SongDataVariant{
     guid:string,
