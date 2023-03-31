@@ -64,6 +64,7 @@ export class SongsService{
                 sheetText: v.sheetText,
                 verified: v.verified,
                 createdBy: v.createdBy.guid,
+                createdByLoader: v.createdBy.role==ROLES.Loader,
                 sources: v.sources,
                 creators
             }

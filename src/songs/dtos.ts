@@ -47,6 +47,7 @@ export interface SongDataVariant{
     sheetText: string,
     verified:boolean,
     createdBy:string,
+    createdByLoader:boolean,
     sources: SongDataSource[],
     creators: SongDataCreator[]
 }
@@ -69,7 +70,7 @@ export interface SongData{
     creators: SongDataCreator[],
     variants: SongDataVariant[],
     media: SongDataMedia[],
-    tags: string[]
+    tags: string[],
 
 }
 

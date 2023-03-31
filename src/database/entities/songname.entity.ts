@@ -8,13 +8,17 @@ export class SongName{
     guid: string;
 
     @ManyToOne(()=>Song, (song)=>song.titles)
-    song: Song
+    song: Song;
 
     @Column()
-    name: string
+    name: string;
+
+    @Column()
+    searchValue: string;
+
 
     @OneToMany(()=>SongVariant, (variant)=>variant.mainTitle)
-    variants: SongVariant[]
+    variants: SongVariant[];
 
 
 }

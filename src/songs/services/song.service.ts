@@ -24,7 +24,7 @@ export class SongService{
         const key = normalizeSearchText(k);
         const names = await this.nameRepository.find({
           where:{
-            name: Like(`%${key}%`),
+            searchValue: Like(`%${key}%`),
             variants: [
               {
                 display:true
@@ -34,6 +34,11 @@ export class SongService{
               },
               {
                 createdBy: user
+              },
+              {
+                createdBy:{
+                  role: ROLES.Loader
+                }
               }
             ]
           },
@@ -71,10 +76,17 @@ export class SongService{
         });
         const variants = await this.variantRepository
                 .find({                  
-                  where:{
+                  where:[{
                     sheetText: Like(`%${key}%`),
                     display: In([true,user?user.role!=ROLES.Admin:true])
-                  },
+                  }//,
+                  // {
+                  //   sheetText: Like(`%${key}%`),
+                  //   createdBy:{
+                  //     role: ROLES.Loader
+                  // }
+                    
+                  ],
                   relations:{
                     song:true
                   }
@@ -87,7 +99,7 @@ export class SongService{
 
 
         return await this.songRepository.find({
-            where:[{guid: In(guids1)},{guid: In(guids2)}],
+            where:[{guid: In(guids1)}/*,{guid: In(guids2)}*/],
             take: takePerPage,
             skip: skipForPage(page)
         })

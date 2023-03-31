@@ -9,32 +9,34 @@ import { Media } from "../entities/media.entity";
 import { Source } from "../entities/source.entity";
 import { Tag } from "../entities/tag.entity";
 
+export const dataSource = new DataSource({
+    type: 'mysql',
+    host: process.env.DATABASE_HOST || 'localhost',
+    port: parseInt(process.env.DATABASE_PORT, 10) || 3306,
+    username: process.env.DATABASE_USERNAME || 'root',
+    password: process.env.DATABASE_PASSWORD || 'semice36',
+    database: process.env.DATABASE_DATABASE || 'worshiptool',
+    charset: 'utf8mb4',
+    synchronize: false, //set to false because of migrations
+    entities: [
+        Song,
+        SongName,
+        SongVariant,
+        Creator,
+        CSVLink,
+        User,
+        Media,
+        Source,
+        Tag
+    ],
+    migrations: ["dist/src/migrations/**/*{.js,.ts}"],
+    migrationsRun: true
+});
+
 export const datasourceProvider = [
     {
         provide: 'DATA_SOURCE',
         useFactory: async () => {
-        const dataSource = new DataSource({
-                type: 'mysql',
-                host: process.env.DATABASE_HOST || 'localhost',
-                port: parseInt(process.env.DATABASE_PORT, 10) || 3306,
-                username: process.env.DATABASE_USERNAME || 'root',
-                password: process.env.DATABASE_PASSWORD || 'semice36',
-                database: process.env.DATABASE_DATABASE || 'worshiptool',
-                charset: 'utf8mb4',
-                synchronize: true,
-                entities: [
-                    Song,
-                    SongName,
-                    SongVariant,
-                    Creator,
-                    CSVLink,
-                    User,
-                    Media,
-                    Source,
-                    Tag
-                ],
-            });
-
             return dataSource.initialize();
         }
   }
