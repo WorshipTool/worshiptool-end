@@ -35,7 +35,22 @@ export type GetSongQuery = SearchSongQuery|
                             UnverifiedSongQuery|
                             LoaderUnverifiedSongQuery;
 
+export type SearchQuery = {
+    searchKey:string,
+    page:number
+}
 
+export interface SearchSongData{
+    guid: string,
+    title: string,
+    sheetData: string,
+    verified: boolean,
+    createdByLoader: boolean,
+    createdBy: string
+}
+export interface SearchResult{
+    songs: SearchSongData[]
+}
 
 export interface GetSongResult{
     songs: SongData[]
@@ -61,6 +76,8 @@ export interface SongDataCreator{
     name: string,
     type: CreatorType
 }
+
+
 
 
 export interface SongData{

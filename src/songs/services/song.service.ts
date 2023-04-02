@@ -8,6 +8,7 @@ import { NewSongData, NewSongDataToVariant} from "./adding/dtos";
 import { ROLES, User } from "src/database/entities/user.entity";
 import { skipForPage, takePerPage } from "../contants";
 import normalizeSearchText from "src/utils/normalizeSearchText";
+import { SearchSongData } from "../dtos";
 
 @Injectable()
 export class SongService{
@@ -20,7 +21,7 @@ export class SongService{
         private variantRepository: Repository<SongVariant>
     ){}
 
-    async search(k:string, user:User, page:number): Promise<Song[]> {
+    async search(k:string, user:User, page:number): Promise<SearchSongData[]> {
         const key = normalizeSearchText(k);
         const names = await this.nameRepository.find({
           where:{
@@ -44,64 +45,78 @@ export class SongService{
           },
           relations:{
             song: true,
-            variants: true
+            variants: {
+              createdBy:true
+            }
           }
         })
 
+        const arr1 : SearchSongData[]  = names.map((name)=>{
+          if(name.variants.length>0){
+            return {
+              guid: name.song.guid,
+              title: name.name,
+              sheetData: name.variants[0].sheetData,
+              verified: name.variants[0].verified,
+              createdByLoader: name.variants[0].createdBy.role==ROLES.Loader,
+              createdBy: name.variants[0].createdBy.guid
+            }
+          }
 
-        
-        // const names = await this.nameRepository.createQueryBuilder()
-        // .leftJoinAndSelect("song", "song.mainNameGuid = guid")
-        //   .where("name.name LIKE :key", { key: `%${key}%` })
-        //   .andWhere((qb) => {
-        //     const subQuery1 = qb
-        //       .andWhere("variant.display = :display1", { display1: true })
-        //       .getQuery();
-        //     const subQuery2 = qb
-        //       .andWhere("variant.display = :display2", { display2: user?user.role!=ROLES.Admin:true })
-        //       .getQuery();
-        //     const subQuery3 = qb
-        //       .andWhere("name.createdBy = :createdBy", { createdBy: user })
-        //       .getQuery();
-        //     return `(${subQuery1} OR ${subQuery2} OR ${subQuery3})`;
-        //   })
-        //   .getMany();
-        
+          return {
+            guid: name.song.guid,
+            title: name.name,
+            sheetData: "",
+            verified: false,
+            createdByLoader: false,
+            createdBy: undefined
+          }
+          
 
-
-
-        
-        const guids1 : string[] = names.map((name)=>{
-          return name.song.guid;
         });
+
         const variants = await this.variantRepository
-                .find({                  
-                  where:[{
-                    searchValue: Like(`%${key}%`),
-                    display: In([true,user?user.role!=ROLES.Admin:true])
-                  },
-                  {
-                    searchValue: Like(`%${key}%`),
-                    createdBy:{
-                      role: ROLES.Loader
-                    }
-                  }],
-                  relations:{
-                    song:true
-                  }
-                })
-
-
-        const guids2 : string[] = variants.map((variant)=>{
-          return variant.song.guid;
-        });
-
-
-        return await this.songRepository.find({
-            where:[{guid: In(guids1)},{guid: In(guids2)}],
-            take: takePerPage,
-            skip: skipForPage(page)
+        .find({                  
+          where:[{
+            searchValue: Like(`%${key}%`),
+            display: In([true,user?user.role!=ROLES.Admin:true])
+          },
+          {
+            searchValue: Like(`%${key}%`),
+            createdBy:{
+              role: ROLES.Loader
+            }
+          }],
+          relations:{
+            song:true,
+            mainTitle:true,
+            createdBy:true
+          }
         })
+
+        const arr2 : SearchSongData[] = variants.map((v)=>({
+          guid: v.song.guid,
+          title: v.mainTitle.name,
+          sheetData: v.sheetData,
+          verified: v.verified,
+          createdBy: v.createdBy.guid,
+          createdByLoader: v.createdBy.role==ROLES.Loader
+        }))
+      
+        const merged = [...arr1, ...arr2];
+
+        const uniq : SearchSongData[] = merged.reduce((acc, curr) => {
+          const existingObj = acc.find((obj) => obj.guid === curr.guid);
+          if (!existingObj) {
+            acc.push(curr);
+          } else {
+            Object.assign(existingObj, curr);
+          }
+          return acc;
+        }, []);
+
+        return uniq;
+
         
     }
 

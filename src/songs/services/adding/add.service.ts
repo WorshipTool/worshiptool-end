@@ -86,7 +86,14 @@ export class AddSongDataService{
 
             let title = null;
             if(data.title){
-                const titleGuid = await (await this.nameRepository.insert({song, name: data.title})).identifiers[0].guid;
+                const titleData : SongName = {
+                    guid:undefined,
+                    song,
+                    name: data.title,
+                    searchValue: normalizeSearchText(data.title),
+                    variants:[]
+                }
+                const titleGuid = await (await this.nameRepository.insert(titleData)).identifiers[0].guid;
                 title = await this.nameRepository.findOne({where:{guid:titleGuid}});
 
                 song.mainName = title;
@@ -115,7 +122,6 @@ export class AddSongDataService{
             }
 
             if(!variantGuid){
-
                 let sheetText = "";
                 if(data.sheetData){
                     const sections = convertSheetToSections(data.sheetData);
@@ -128,11 +134,11 @@ export class AddSongDataService{
                 }
                 sheetText = normalizeSearchText(sheetText);
 
-                const variantData = {
+                const variantData : SongVariant = {
                     guid: undefined,
                     song, 
                     sheetData: data.sheetData,
-                    sheetText: sheetText,
+                    searchValue: sheetText,
                     mainTitle: title,
                     verified: false, 
                     display: false,
@@ -140,6 +146,7 @@ export class AddSongDataService{
                     links:[],
                     sources:sources
                 };
+                //console.log(variantData);
                 variantGuid = (await this.variantRepository.insert(variantData)).identifiers[0].guid;
             }
             

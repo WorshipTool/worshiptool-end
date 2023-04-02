@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { SongsService } from "./songs.service";
 import { codes, formatted } from "src/utils/formatted";
-import { GetSongQuery} from "./dtos";
+import { GetSongQuery, SearchQuery} from "./dtos";
 import { JwtAuthGuard } from "src/auth/jwt/jwt-auth.guard";
 import { User } from "src/auth/decorators/user.decorator";
 import { ROLES, User as UserObject } from "src/database/entities/user.entity";
@@ -20,6 +20,11 @@ export class SongsController{
     @Get()
     async getByQuery(@Query() query: GetSongQuery, @User() user){
         return formatted(await this.songsService.processGetQuery(query, user));
+    }
+    @AllowNonUser()
+    @Get("search")
+    async getBySearch(@Query() query: SearchQuery, @User() user){
+        return formatted(await this.songsService.search(query.searchKey, user, query.page))
     }
 
     @AllowNonUser()

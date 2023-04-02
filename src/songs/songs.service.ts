@@ -1,11 +1,12 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { SongService } from "./services/song.service";
-import { GetSongQuery, GetSongResult, SongData, SongDataVariant } from "./dtos";
+import { GetSongQuery, GetSongResult, SearchResult, SongData, SongDataVariant } from "./dtos";
 import { RequestResult, codes, formatted } from "src/utils/formatted";
 import { CreatorService } from "./services/creator.service";
 import { ROLES, User } from "src/database/entities/user.entity";
 import { MessengerService } from "src/messenger/messenger.service";
 import { MediaService } from "./services/media.service";
+import { Song } from "src/database/entities/song.entity";
 
 @Injectable()
 export class SongsService{
@@ -20,42 +21,37 @@ export class SongsService{
     async processGetQuery(query: GetSongQuery, user: User): Promise<GetSongResult>{
         if(query.page===undefined)query.page=0;
 
+        let songs : Song[] = [];
         switch(query.key){
-            case "search":
-                const searched = await this.songService.search(query.searchKey, user, query.page);
-                return {songs:  await Promise.all( searched.map(async (s)=>{
-                    return (await this.gatherSongData(s.guid)).data;
-                }))};
             case "random":
-                const random = await this.songService.random(query.page);
-                return {songs:  await Promise.all( random.map(async (s)=>{
-                    return (await this.gatherSongData(s.guid)).data;
-                }))};
-            case "all":
-                const all = await this.songService.search("", user, query.page);
-                return {songs:  await Promise.all( all.map(async (s)=>{
-                    return (await this.gatherSongData(s.guid)).data;
-                }))};
+                songs = await this.songService.random(query.page);
+                break;
             case "unverified":
-                const unverified = await this.songService.getUnverified();
-                return {songs:  await Promise.all( unverified.map(async (s)=>{
-                    return (await this.gatherSongData(s.guid)).data;
-                }))};
+                songs = await this.songService.getUnverified();
+                break;
             case "loaderUnverified":
-                const loaderUnverified = await this.songService.getLoaderUnverified();
-                return {songs:  await Promise.all( loaderUnverified.map(async (s)=>{
-                    return (await this.gatherSongData(s.guid)).data;
-                }))};
+                songs = await this.songService.getLoaderUnverified();
+                break;
             default:
-              return {songs: []}
+                break;
         }
+
+        return{songs: await Promise.all( songs.map(async (s)=>{
+            return (await this.gatherSongData(s.guid)).data;
+        }))};
           
+    }
+
+    async search(searchKey: string, user : User, page: number): Promise<SearchResult>{
+        if(page===undefined)page=0;
+        return {songs: await this.songService.search(searchKey, user, page)}
     }
 
     async gatherSongData(guid: string): Promise<RequestResult<SongData>>{
         const song = await this.songService.findByGUID(guid);
 
         if(song==null) return formatted(null, codes["Not Found"]);
+
 
         const titles = await this.songService.getTitlesBySong(song);
 
