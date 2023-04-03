@@ -48,7 +48,9 @@ export class SongService{
             variants: {
               createdBy:true
             }
-          }
+          },
+          skip: skipForPage(page),
+          take: takePerPage
         })
 
         const arr1 : SearchSongData[]  = names.map((name)=>{
@@ -91,7 +93,9 @@ export class SongService{
             song:true,
             mainTitle:true,
             createdBy:true
-          }
+          },
+          skip: skipForPage(page),
+          take: takePerPage
         })
 
         const arr2 : SearchSongData[] = variants.map((v)=>({
