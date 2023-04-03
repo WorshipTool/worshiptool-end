@@ -6,7 +6,7 @@ import { SongVariant } from "src/database/entities/songvariant.entity";
 import { In, Like, Not, Repository } from "typeorm";
 import { NewSongData, NewSongDataToVariant} from "./adding/dtos";
 import { ROLES, User } from "src/database/entities/user.entity";
-import { skipForPage, takePerPage } from "../contants";
+import { skipForPage, takePerPage } from '../contants';
 import normalizeSearchText from "src/utils/normalizeSearchText";
 import { SearchSongData } from "../dtos";
 
@@ -197,7 +197,8 @@ export class SongService{
           relations: {
             song:true,
             createdBy:true
-          }
+          },
+          take:takePerPage
         })
 
       const guids = variants.map((v)=>v.song.guid);
@@ -218,7 +219,8 @@ export class SongService{
           relations: {
             song:true,
             createdBy:true
-          }
+          },
+          take:takePerPage
         })
 
       const guids = variants.map((v)=>v.song.guid);
