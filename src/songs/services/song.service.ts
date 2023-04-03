@@ -23,6 +23,9 @@ export class SongService{
 
     async search(k:string, user:User, page:number): Promise<SearchSongData[]> {
         const key = normalizeSearchText(k);
+
+        if(key=="")return [];
+
         const names = await this.nameRepository.find({
           where:{
             searchValue: Like(`%${key}%`),
