@@ -22,7 +22,9 @@
     "migration:generate": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:generate -d src/database/datasource/datasource.provider.ts",
     "migration:run": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:run -d src/database/datasource/datasource.provider.ts",
     "migration:revert": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:revert -d src/database/datasource/datasource.provider.ts",
-    "migration:show": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:show -d src/database/datasource/datasource.provider.ts"
+    "migration:show": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:show -d src/database/datasource/datasource.provider.ts",
+    "migration:create": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:create"
+  
   },
   "dependencies": {
     "@nestjs/axios": "^1.0.1",
