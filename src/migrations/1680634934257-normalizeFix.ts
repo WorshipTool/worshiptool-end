@@ -1,6 +1,6 @@
 import { SongName } from "src/database/entities/songname.entity";
 import { SongVariant } from "src/database/entities/songvariant.entity";
-import convertSheetToSections from "src/sheetApi/convertSheetToSections";
+import { convertSheetToSections } from "@pepavlin/sheet-api";
 import normalizeSearchText from "src/utils/normalizeSearchText";
 import { MigrationInterface, QueryRunner } from "typeorm"
 

@@ -18,8 +18,8 @@ import { Creator, CreatorType } from "src/database/entities/creator.entity";
 import { CSVLink } from "src/database/entities/csvlink.entity";
 import checkMediaFormat from "src/utils/checkMediaFormat";
 import { SongsService } from "src/songs/songs.service";
-import convertSheetToSections from "src/sheetApi/convertSheetToSections";
 import normalizeSearchText from "src/utils/normalizeSearchText";
+import { convertSheetToSections } from "@pepavlin/sheet-api";
 
 @Injectable()
 export class AddSongDataService{

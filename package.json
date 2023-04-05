@@ -24,7 +24,6 @@
     "migration:revert": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:revert -d src/database/datasource/datasource.provider.ts",
     "migration:show": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:show -d src/database/datasource/datasource.provider.ts",
     "migration:create": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:create"
-  
   },
   "dependencies": {
     "@nestjs/axios": "^1.0.1",
@@ -33,6 +32,7 @@
     "@nestjs/jwt": "^10.0.1",
     "@nestjs/passport": "^9.0.0",
     "@nestjs/platform-express": "^8.0.0",
+    "@pepavlin/sheet-api": "^1.0.44",
     "bcrypt": "^5.1.0",
     "mysql2": "^2.3.3",
     "passport": "^0.6.0",
