@@ -52,6 +52,17 @@ export interface SearchResult{
     songs: SearchSongData[]
 }
 
+export interface ListQuery{
+    page: number
+}
+export interface ListSongData{
+    guid: string,
+    title: string
+}
+export interface ListResult{
+    songs: ListSongData[]
+}
+
 export interface GetSongResult{
     songs: SongData[]
 }

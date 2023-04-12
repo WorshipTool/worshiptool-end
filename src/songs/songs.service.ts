@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { SongService } from "./services/song.service";
-import { GetSongQuery, GetSongResult, SearchResult, SongData, SongDataVariant } from "./dtos";
+import { GetSongQuery, GetSongResult, SearchResult, SongData, SongDataVariant, ListResult } from './dtos';
 import { RequestResult, codes, formatted } from "src/utils/formatted";
 import { CreatorService } from "./services/creator.service";
 import { ROLES, User } from "src/database/entities/user.entity";
@@ -45,6 +45,12 @@ export class SongsService{
     async search(searchKey: string, user : User, page: number): Promise<SearchResult>{
         if(page===undefined)page=0;
         return {songs: await this.songService.search(searchKey, user, page)}
+    }
+
+    async list(page:number) : Promise<ListResult>{
+        if(page===undefined)page=0;
+
+        return {songs: await this.songService.list(page)};
     }
 
     async gatherSongData(guid: string): Promise<RequestResult<SongData>>{

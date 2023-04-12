@@ -8,7 +8,7 @@ import { NewSongData, NewSongDataToVariant} from "./adding/dtos";
 import { ROLES, User } from "src/database/entities/user.entity";
 import { skipForPage, takePerPage } from '../contants';
 import normalizeSearchText from "src/utils/normalizeSearchText";
-import { SearchSongData } from "../dtos";
+import { ListSongData, SearchSongData } from "../dtos";
 
 @Injectable()
 export class SongService{
@@ -145,6 +145,41 @@ export class SongService{
         const cutVariants = variants.slice(index, index+takePerPage)
         const songs = cutVariants.map((v)=>v.song);
         return songs;
+    }
+
+    async list(page:number) : Promise<ListSongData[]>{
+      const songs = await this.songRepository.find({
+        where:{
+          variants:[{
+            display:true
+          },{
+            createdBy: {
+              role: ROLES.Loader
+            }
+          }]
+        },
+        relations: {
+          variants:{
+            createdBy:true
+          },
+          mainName:true
+        },
+        order:{
+          mainName:{
+            name:"ASC"
+          }
+        },
+        take: takePerPage,
+        skip: skipForPage(page)
+      });
+
+      const data: ListSongData[] = songs.map((s)=>{
+        return {
+          guid: s.guid,
+          title: s.mainName.name
+        }
+      })
+      return data;
     }
 
     async createEmptySong(): Promise<Song>{
