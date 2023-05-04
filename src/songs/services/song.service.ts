@@ -1,7 +1,7 @@
 import { Get, Inject, Injectable } from "@nestjs/common";
 import { SONG_NAMES_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY } from "src/database/constants";
 import { Song } from "src/database/entities/song.entity";
-import { SongName } from "src/database/entities/songname.entity";
+import { SongTitle } from "src/database/entities/songtitle.entity";
 import { SongVariant } from "src/database/entities/songvariant.entity";
 import { In, Like, Not, Repository } from "typeorm";
 import { NewSongData, NewSongDataToVariant} from "./adding/dtos";
@@ -16,7 +16,7 @@ export class SongService{
         @Inject(SONG_REPOSITORY)
         private songRepository: Repository<Song>,
         @Inject(SONG_NAMES_REPOSITORY)
-        private nameRepository: Repository<SongName>,
+        private nameRepository: Repository<SongTitle>,
         @Inject(SONG_VARIANTS_REPOSITORY)
         private variantRepository: Repository<SongVariant>
     ){}
@@ -29,12 +29,12 @@ export class SongService{
         const names = await this.nameRepository.find({
           where:{
             searchValue: Like(`%${key}%`),
-            variants: [
+            variant: [
               {
-                display:true
+                verified:true
               },
               {
-                display:user?user.role!=ROLES.Admin:true
+                verified:user?user.role!=ROLES.Admin:true
               },
               {
                 createdBy: user
@@ -47,9 +47,9 @@ export class SongService{
             ]
           },
           relations:{
-            song: true,
-            variants: {
-              createdBy:true
+            variant: {
+              createdBy:true,
+              song:true
             }
           },
           skip: skipForPage(page),
@@ -57,24 +57,13 @@ export class SongService{
         })
 
         const arr1 : SearchSongData[]  = names.map((name)=>{
-          if(name.variants.length>0){
-            return {
-              guid: name.song.guid,
-              title: name.name,
-              sheetData: name.variants[0].sheetData,
-              verified: name.variants[0].verified,
-              createdByLoader: name.variants[0].createdBy.role==ROLES.Loader,
-              createdBy: name.variants[0].createdBy.guid
-            }
-          }
-
           return {
-            guid: name.song.guid,
-            title: name.name,
-            sheetData: "",
-            verified: false,
-            createdByLoader: false,
-            createdBy: undefined
+            guid: name.variant.song.guid,
+            title: name.title,
+            sheetData: name.variant.sheetData,
+            verified: name.variant.verified,
+            createdByLoader: name.variant.createdBy.role==ROLES.Loader,
+            createdBy: name.variant.createdBy.guid
           }
           
 
@@ -84,7 +73,7 @@ export class SongService{
         .find({                  
           where:[{
             searchValue: Like(`%${key}%`),
-            display: In([true,user?user.role!=ROLES.Admin:true])
+            verified: In([true,user?user.role!=ROLES.Admin:true])
           },
           {
             searchValue: Like(`%${key}%`),
@@ -94,7 +83,7 @@ export class SongService{
           }],
           relations:{
             song:true,
-            mainTitle:true,
+            prefferedTitle:true,
             createdBy:true
           },
           skip: skipForPage(page),
@@ -103,7 +92,7 @@ export class SongService{
 
         const arr2 : SearchSongData[] = variants.map((v)=>({
           guid: v.song.guid,
-          title: v.mainTitle.name,
+          title: v.prefferedTitle?v.prefferedTitle.title:undefined,
           sheetData: v.sheetData,
           verified: v.verified,
           createdBy: v.createdBy.guid,
@@ -130,7 +119,7 @@ export class SongService{
     async random(page:number) : Promise<Song[]>{
         const variants = await this.variantRepository.find({
           where:{
-            display: true
+            verified: true
           },
           relations:{
             song:true
@@ -151,7 +140,7 @@ export class SongService{
       const songs = await this.songRepository.find({
         where:{
           variants:[{
-            display:true
+            verified:true
           },{
             createdBy: {
               role: ROLES.Loader
@@ -162,11 +151,11 @@ export class SongService{
           variants:{
             createdBy:true
           },
-          mainName:true
+          mainTitle:true
         },
         order:{
-          mainName:{
-            name:"ASC"
+          mainTitle:{
+            title:"ASC"
           }
         },
         take: takePerPage,
@@ -176,7 +165,7 @@ export class SongService{
       const data: ListSongData[] = songs.map((s)=>{
         return {
           guid: s.guid,
-          title: s.mainName.name
+          title: s.mainTitle.title
         }
       })
       return data;
@@ -196,14 +185,22 @@ export class SongService{
           guid
         },
         relations: {
-          mainName: true,
+          mainTitle: true,
           tags:true
         }
       })
     }
 
-    async getTitlesBySong(song:Song) : Promise<SongName[]>{
-      return await this.nameRepository.find({where:{song}})
+    async getTitlesByVariant(variant:SongVariant) : Promise<SongTitle[]>{
+      return await this.nameRepository.find({where:{
+        variant
+      },
+      relations: {
+        variant:{
+          song:true
+        }
+      }
+    })
     }
 
     async findVariantsBySong(song: Song){
@@ -212,7 +209,7 @@ export class SongService{
           song
         },
         relations:{
-          mainTitle: true,
+          prefferedTitle: true,
           createdBy:true,
           sources: true
         }
@@ -267,11 +264,11 @@ export class SongService{
 
     async verifyVariantByGUID(guid:string){
       return await this.variantRepository.createQueryBuilder()
-        .update({verified: true, display: true}).where("guid= :guid", {guid}).execute();
+        .update({verified: true}).where("guid= :guid", {guid}).execute();
     }
     async unverifyVariantByGUID(guid:string){
       return await this.variantRepository.createQueryBuilder()
-        .update({verified: false, display: false}).where("guid= :guid", {guid}).execute();
+        .update({verified: false}).where("guid= :guid", {guid}).execute();
     }
     async deleteVariantByGUID(guid:string){
       const variant = (await this.variantRepository.findOneBy({
@@ -290,12 +287,12 @@ export class SongService{
           where:{
             variants:[],
             tags:[],
-            mainName:{
-              name: data.title
+            mainTitle:{
+              title: data.title
             }
           },
           relations:{
-            mainName: true
+            mainTitle: true
           }
         })
 
@@ -353,6 +350,26 @@ export class SongService{
 
     async getCount() : Promise<number>{
       return await this.songRepository.count();
+    }
+
+    async mergeByGuids(guid1:string, guid2: string) : Promise<string>{
+      const song1 = await this.songRepository.findOne({where:{guid:guid1}});
+      const result = await this.variantRepository.update({
+        song:{
+          guid: guid2
+        }
+      },{song: song1});
+
+      if(result.affected<1)return undefined;
+
+      const song2 = (await this.songRepository.findOneBy({
+        guid:guid2
+      }))
+
+
+      await this.songRepository.remove(song2);
+
+      return guid1;
     }
 
 }

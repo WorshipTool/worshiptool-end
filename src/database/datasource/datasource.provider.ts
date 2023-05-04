@@ -1,6 +1,6 @@
 import { DataSource } from "typeorm";
 import { Song } from "../entities/song.entity";
-import { SongName } from "../entities/songname.entity";
+import { SongTitle } from "../entities/songtitle.entity";
 import { SongVariant } from "../entities/songvariant.entity";
 import { Creator } from "../entities/creator.entity";
 import { CSVLink } from "../entities/csvlink.entity";
@@ -20,7 +20,7 @@ export const dataSource = new DataSource({
     synchronize: false, //set to false because of migrations
     entities: [
         Song,
-        SongName,
+        SongTitle,
         SongVariant,
         Creator,
         CSVLink,

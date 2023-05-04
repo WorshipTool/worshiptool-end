@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { SongService } from "./services/song.service";
-import { GetSongQuery, GetSongResult, SearchResult, SongData, SongDataVariant, ListResult } from './dtos';
+import { GetSongQuery, GetSongResult, SearchResult, SongData, SongDataVariant, ListResult, PostMergeResult } from './dtos';
 import { RequestResult, codes, formatted } from "src/utils/formatted";
 import { CreatorService } from "./services/creator.service";
 import { ROLES, User } from "src/database/entities/user.entity";
@@ -59,19 +59,20 @@ export class SongsService{
         if(song==null) return formatted(null, codes["Not Found"]);
 
 
-        const titles = await this.songService.getTitlesBySong(song);
 
-        const mainTitleObject = titles.find((v)=>JSON.stringify(song.mainName)==JSON.stringify(v));
+        const mainTitleObject = song.mainTitle;
 
 
         const variantObjects = await this.songService.findVariantsBySong(song);
         const variants : SongDataVariant[] = await Promise.all(variantObjects.map(async (v)=>{
-            const titleObject = titles.find((t)=>JSON.stringify(t)==JSON.stringify(v.mainTitle));
+            const titles = await this.songService.getTitlesByVariant(v);
+            const titleObject = titles.find((t)=>JSON.stringify(t)==JSON.stringify(v.prefferedTitle));
 
             const creators = await this.creatorService.findAllByVariant(v);
             return {
                 guid: v.guid,
-                prefferedTitle: titleObject?titleObject.name:null,
+                prefferedTitle: titleObject?titleObject.title:null,
+                titles,
                 sheetData: v.sheetData,
                 sheetText: v.searchValue,
                 verified: v.verified,
@@ -82,20 +83,13 @@ export class SongsService{
             }
         }));
 
-        // if(variants.filter((v)=>v===undefined).length>0){
-        //     return formatted(null, codes["Unknown Error"], "Title for variant not found.");
-        // }
-
-        const songCreators = await this.creatorService.findAllBySong(song);
-
         const media = await this.mediaService.findAllBySong(song);
 
 
         return formatted<SongData>({
             guid:song.guid,
-            mainTitle: mainTitleObject?mainTitleObject.name:undefined,
-            alternativeTitles: titles.map((t)=>t.name),
-            creators:songCreators,
+            mainTitle: mainTitleObject?mainTitleObject.title:undefined,
+            creators:[],
             variants,
             media,
             tags:song.tags?song.tags.map((t)=>t.value):[]
@@ -117,5 +111,16 @@ export class SongsService{
     }
     async deleteVariantByGUID(guid:string){
         return await this.songService.deleteVariantByGUID(guid);
+    }
+
+    async mergeByGuids(guid1:string, guid2:string) : Promise<RequestResult<PostMergeResult>>{
+        if(guid1===guid2) return formatted(undefined, codes["Unknown Error"], "Guids are the same.");
+
+        const result = await this.songService.mergeByGuids(guid1, guid2);
+        if(!result){
+            return formatted(undefined, codes["Unknown Error"], "Cant merge this two songs");
+        }
+
+        return formatted({guid: result}, codes["Success"]);
     }
 }

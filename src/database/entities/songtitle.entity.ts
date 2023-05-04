@@ -3,22 +3,18 @@ import { SongVariant } from "./songvariant.entity";
 import { Song } from "./song.entity";
 
 @Entity()
-export class SongName{
+export class SongTitle{
     @PrimaryGeneratedColumn("uuid")
     guid: string;
 
-    @ManyToOne(()=>Song, (song)=>song.titles)
-    song: Song;
-
     @Column()
-    name: string;
+    title: string;
 
     @Column()
     searchValue: string;
 
-
-    @OneToMany(()=>SongVariant, (variant)=>variant.mainTitle)
-    variants: SongVariant[];
+    @ManyToOne(()=>SongVariant, (variant)=>variant.titles, {nullable:true})
+    variant: SongVariant;
 
 
 }

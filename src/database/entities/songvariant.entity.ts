@@ -1,17 +1,20 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
-import { SongName } from "./songname.entity";
+import { SongTitle } from "./songtitle.entity";
 import { Song } from "./song.entity";
 import { CSVLink } from "./csvlink.entity";
 import { Source } from "./source.entity";
+import { note } from "@pepavlin/sheet-api";
+
+export enum VariantType{
+    "Original",
+    "Translation"
+}
 
 @Entity()
 export class SongVariant{
     @PrimaryGeneratedColumn("uuid")
     guid: string;
-
-    @ManyToOne(()=>Song, (song)=>song.variants)
-    song: Song;
 
     @Column({length: 5000, nullable:true})
     sheetData: string;
@@ -19,14 +22,24 @@ export class SongVariant{
     @Column({length: 5000, nullable:true})
     searchValue: string;
     
-    @ManyToOne(() => SongName, (title) => title.variants, {nullable:true})
-    mainTitle:SongName;
-
     @Column()
     verified: boolean;
 
-    @Column()
-    display: boolean;
+    @Column({nullable:true})
+    toneKey: note
+
+    @Column({nullable:true})
+    type: VariantType
+    
+    @OneToOne(()=>SongTitle)
+    @JoinColumn()
+    prefferedTitle:SongTitle;
+
+    @OneToMany(()=>SongTitle, (title)=>title.variant)
+    titles: SongTitle[]
+    
+    @ManyToOne(()=>Song, (song)=>song.variants)
+    song: Song;
 
     @ManyToOne(() => User, (user) => user.variants)
     createdBy: User

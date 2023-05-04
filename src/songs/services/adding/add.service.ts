@@ -10,7 +10,7 @@ import { CREATOR_REPOSITORY, CSVLINK_REPOSITORY, MEDIA_REPOSITORY, SONG_NAMES_RE
 import { In, Repository } from "typeorm";
 import { Song } from "src/database/entities/song.entity";
 import { SongVariant } from "src/database/entities/songvariant.entity";
-import { SongName } from "src/database/entities/songname.entity";
+import { SongTitle } from "src/database/entities/songtitle.entity";
 import { Source } from "src/database/entities/source.entity";
 import { Media } from "src/database/entities/media.entity";
 import { Tag } from "src/database/entities/tag.entity";
@@ -30,7 +30,7 @@ export class AddSongDataService{
         @Inject(SONG_VARIANTS_REPOSITORY)
         private variantRepository: Repository<SongVariant>,
         @Inject(SONG_NAMES_REPOSITORY)
-        private nameRepository: Repository<SongName>,
+        private nameRepository: Repository<SongTitle>,
         @Inject(SOURCE_REPOSITORY)
         private sourceRepository: Repository<Source>,
         @Inject(MEDIA_REPOSITORY)
@@ -68,10 +68,6 @@ export class AddSongDataService{
                 const r = await this.songRepository.insert({});
                 songGuid = r.identifiers[0].guid;
             }
-
-
-
-
         }
 
         //check if song exists
@@ -80,23 +76,23 @@ export class AddSongDataService{
             return formatted(undefined, codes["Not Found"], "Song wasn't found.");
         }
 
+        let variant = undefined;
         //create new variant
         if(data.sheetData||data.title||data.source){
 
 
-            let title = null;
+            let title : SongTitle = null;
             if(data.title){
-                const titleData : SongName = {
+                const titleData : SongTitle = {
                     guid:undefined,
-                    song,
-                    name: data.title,
-                    searchValue: normalizeSearchText(data.title),
-                    variants:[]
+                    variant: undefined,
+                    title: data.title,
+                    searchValue: normalizeSearchText(data.title)
                 }
                 const titleGuid = await (await this.nameRepository.insert(titleData)).identifiers[0].guid;
                 title = await this.nameRepository.findOne({where:{guid:titleGuid}});
 
-                song.mainName = title;
+                song.mainTitle = title;
                 this.songRepository.save(song);
             }
 
@@ -139,18 +135,25 @@ export class AddSongDataService{
                     song, 
                     sheetData: data.sheetData,
                     searchValue: sheetText,
-                    mainTitle: title,
+                    prefferedTitle: title,
                     verified: false, 
-                    display: false,
                     createdBy: user,
                     links:[],
-                    sources:sources
+                    titles:[title],
+                    sources:sources,
+                    toneKey: null,
+                    type: null
                 };
                 //console.log(variantData);
-                variantGuid = (await this.variantRepository.insert(variantData)).identifiers[0].guid;
+                const variant : any = (await this.variantRepository.insert(variantData)).identifiers[0];
+                variantGuid = variant.guid;
+                title.variant = variant;
+                await this.nameRepository.save(title);
             }
             
-          const variant = await this.variantRepository.findOne({where:{guid: variantGuid}, relations:{sources:true}});
+            variant = await this.variantRepository.findOne({where:{guid: variantGuid}, relations:{sources:true}});
+
+            
 
           if(sources){
                 await this.sourceRepository.update({guid: In(sources.map((s)=>s.guid))},{variant: variant});
@@ -234,8 +237,7 @@ export class AddSongDataService{
                 let link : CSVLink = {
                     guid: undefined,
                     creator: entity,
-                    song: song,
-                    songOrVariant: "song",
+                    variant: variant,
                     type: creator.type
                 }
 

@@ -4,7 +4,7 @@ import { SongVariant } from "./entities/songvariant.entity";
 import { Song } from "./entities/song.entity";
 import { Creator } from "./entities/creator.entity";
 import { CSVLink } from "./entities/csvlink.entity";
-import { SongName } from "./entities/songname.entity";
+import { SongTitle } from "./entities/songtitle.entity";
 import { User } from "./entities/user.entity";
 import { Media } from "./entities/media.entity";
 import { Source } from "./entities/source.entity";
@@ -34,7 +34,7 @@ export const EntitiesProvider = [
     },
     {
         provide: SONG_NAMES_REPOSITORY,
-        useFactory: (dataSource: DataSource) => dataSource.getRepository(SongName),
+        useFactory: (dataSource: DataSource) => dataSource.getRepository(SongTitle),
         inject: ['DATA_SOURCE'],
     },
     {

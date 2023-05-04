@@ -17,28 +17,10 @@ export class CreatorService{
         private CSVLinkRepository: Repository<CSVLink>
     ){}  
 
-    async findAllBySong(song: Song) : Promise<SongDataCreator[]>{
-        const links = await this.CSVLinkRepository.find({
-            where:{
-                songOrVariant: "song",
-                song
-            },
-            relations:{
-                creator: true,
-                song:true
-            }
-        })
-
-        return links.map((l)=>({
-            name:l.creator.name,
-            type: l.type
-        }))
-    }
 
     async findAllByVariant(variant: SongVariant) : Promise<SongDataCreator[]>{
         const links = await this.CSVLinkRepository.find({
             where:{
-                songOrVariant: "variant",
                 variant
             },
             relations:{

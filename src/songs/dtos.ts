@@ -1,6 +1,6 @@
 import { MediaTypes } from "src/database/entities/media.entity"
 import { Song } from "src/database/entities/song.entity"
-import { SongName } from "src/database/entities/songname.entity"
+import { SongTitle } from "src/database/entities/songtitle.entity"
 import { SongVariant } from "src/database/entities/songvariant.entity"
 import { SongDataSource } from "./services/adding/dtos"
 import { CreatorType } from "src/database/entities/creator.entity"
@@ -66,6 +66,17 @@ export interface ListResult{
 export interface GetSongResult{
     songs: SongData[]
 }
+
+export interface PostMergeBody{
+    guid1: string,
+    guid2: string
+}
+export interface PostMergeResult{
+    guid: string
+}
+
+
+
 export interface SongDataVariant{
     guid:string,
     prefferedTitle: string,
@@ -88,13 +99,9 @@ export interface SongDataCreator{
     type: CreatorType
 }
 
-
-
-
 export interface SongData{
     guid: string,
     mainTitle: string,
-    alternativeTitles: string[],
     creators: SongDataCreator[],
     variants: SongDataVariant[],
     media: SongDataMedia[],

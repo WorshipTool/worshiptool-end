@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { SongsService } from "./songs.service";
 import { codes, formatted } from "src/utils/formatted";
-import { GetSongQuery, SearchQuery, ListQuery } from './dtos';
+import { GetSongQuery, SearchQuery, ListQuery, PostMergeBody } from './dtos';
 import { JwtAuthGuard } from "src/auth/jwt/jwt-auth.guard";
 import { User } from "src/auth/decorators/user.decorator";
 import { ROLES, User as UserObject } from "src/database/entities/user.entity";
@@ -43,6 +43,12 @@ export class SongsController{
     @Get("data/:guid")
     async getSongData(@Param() {guid}: {guid:string}){
         return await this.songsService.gatherSongData(guid);
+    }
+
+    @AllowNonUser()
+    @Post("merge")
+    async mergeTwoVariants(@Body() {guid1, guid2}:PostMergeBody){
+        return this.songsService.mergeByGuids(guid1, guid2);
     }
 
     @Post()

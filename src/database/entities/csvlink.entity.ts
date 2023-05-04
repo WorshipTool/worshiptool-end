@@ -13,14 +13,8 @@ export class CSVLink{
 
     @Column()
     type: CreatorType;
-    
-    @Column()
-    songOrVariant: 'song' | 'variant';
 
-    @ManyToOne(()=>Song, (song)=>song.links)
-    song?: Song;
-    
     @ManyToOne(()=>SongVariant, (variant)=>variant.links)
-    variant?: SongVariant;
+    variant: SongVariant;
 
 }
