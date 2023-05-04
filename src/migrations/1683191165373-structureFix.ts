@@ -4,6 +4,7 @@ export class structureFix1683191165373 implements MigrationInterface {
     name = 'structureFix1683191165373'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+        return;
         await queryRunner.query(`ALTER TABLE \`song_title\` DROP FOREIGN KEY \`FK_6a51c211f78e1a9c16408308de9\``);
         await queryRunner.query(`DROP INDEX \`FK_24ce6357a1d13a95e6906157d98\` ON \`csv_link\``);
         await queryRunner.query(`DROP INDEX \`FK_003e7fdd3840878daab5dbdd8d1\` ON \`song_variant\``);
@@ -26,6 +27,7 @@ export class structureFix1683191165373 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        return;
         await queryRunner.query(`ALTER TABLE \`song\` DROP FOREIGN KEY \`FK_f583fe5fd40f734f11ddb385b5b\``);
         await queryRunner.query(`ALTER TABLE \`song_variant\` DROP FOREIGN KEY \`FK_05e38b820f762eafcd6523e86bc\``);
         await queryRunner.query(`ALTER TABLE \`song_title\` DROP FOREIGN KEY \`FK_42050ab0d4cb38445f67f639c82\``);
