@@ -72,7 +72,7 @@ export class SongsService{
             return {
                 guid: v.guid,
                 prefferedTitle: titleObject?titleObject.title:null,
-                titles,
+                titles: titles.map((t)=>t.title),
                 sheetData: v.sheetData,
                 sheetText: v.searchValue,
                 verified: v.verified,

@@ -80,6 +80,7 @@ export interface PostMergeResult{
 export interface SongDataVariant{
     guid:string,
     prefferedTitle: string,
+    titles: string[],
     sheetData: string,
     sheetText: string,
     verified:boolean,
