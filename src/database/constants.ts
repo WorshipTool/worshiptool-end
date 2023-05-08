@@ -7,3 +7,5 @@ export const USER_REPOSITORY = "USERS";
 export const MEDIA_REPOSITORY = "MEDIA";
 export const SOURCE_REPOSITORY = "SOURCE";
 export const TAG_REPOSITORY = "TAG";
+export const PLAYLIST_REPOSITORY = "PLAYLIST";
+export const GROUP_REPOSITORY = "GROUP";

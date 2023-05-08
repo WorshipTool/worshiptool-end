@@ -27,7 +27,9 @@ export class UserService{
             password: hash,
             role: ROLES.User,
             guid: undefined,
-            variants: []
+            variants: [],
+            playlists:[],
+            groups:[]
         }
         await this.userRepository.createQueryBuilder()
             .insert().values(body).execute();

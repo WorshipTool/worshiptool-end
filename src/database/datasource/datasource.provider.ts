@@ -8,6 +8,8 @@ import { User } from "../entities/user.entity";
 import { Media } from "../entities/media.entity";
 import { Source } from "../entities/source.entity";
 import { Tag } from "../entities/tag.entity";
+import { Playlist } from '../entities/playlist.entity';
+import { Group } from '../entities/group.entity';
 
 export const dataSource = new DataSource({
     type: 'mysql',
@@ -27,7 +29,9 @@ export const dataSource = new DataSource({
         User,
         Media,
         Source,
-        Tag
+        Tag,
+        Playlist,
+        Group
     ],
     migrations: ["dist/migrations/**/*{.js,.ts}"],
     migrationsRun: true

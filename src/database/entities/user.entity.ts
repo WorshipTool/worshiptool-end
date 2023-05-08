@@ -1,5 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { SongVariant } from "./songvariant.entity";
+import { Playlist } from './playlist.entity';
+import { Group } from './group.entity';
 
 export enum ROLES{
     "User",
@@ -30,4 +32,10 @@ export class User{
 
     @OneToMany(()=>SongVariant, (variant)=>variant.createdBy)
     variants: SongVariant[]
+
+    @OneToMany(()=>Playlist, (p)=>p.owner)
+    playlists: Playlist[]
+
+    @OneToMany(()=>Group, (g)=>g.admin)
+    groups: Group[]
 }

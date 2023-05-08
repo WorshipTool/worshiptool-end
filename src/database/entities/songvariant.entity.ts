@@ -1,10 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
 import { SongTitle } from "./songtitle.entity";
 import { Song } from "./song.entity";
 import { CSVLink } from "./csvlink.entity";
 import { Source } from "./source.entity";
 import { note } from "@pepavlin/sheet-api";
+import { Playlist } from './playlist.entity';
 
 export enum VariantType{
     "Original",
@@ -49,4 +50,7 @@ export class SongVariant{
 
     @OneToMany(()=>Source, (source)=>source.variant)
     sources: Source[]
+
+    @ManyToMany(()=>Playlist, (p)=>p.songs)
+    playlists: Playlist[]
 }
