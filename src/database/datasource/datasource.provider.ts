@@ -17,7 +17,7 @@ export const dataSource = new DataSource({
     password: process.env.DATABASE_PASSWORD || 'semice36',
     database: process.env.DATABASE_DATABASE || 'worshiptool',
     charset: 'utf8mb4',
-    synchronize: true, //set to false because of migrations
+    synchronize: false, //set to false because of migrations
     entities: [
         Song,
         SongTitle,
