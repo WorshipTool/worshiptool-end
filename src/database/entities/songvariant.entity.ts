@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
 import { SongTitle } from "./songtitle.entity";
 import { Song } from "./song.entity";
@@ -51,6 +51,8 @@ export class SongVariant{
     @OneToMany(()=>Source, (source)=>source.variant)
     sources: Source[]
 
-    @ManyToMany(()=>Playlist, (p)=>p.songs)
+
+    @ManyToMany(()=>Playlist, (p)=>p.songs,{ cascade: true })
+    @JoinTable()
     playlists: Playlist[]
 }

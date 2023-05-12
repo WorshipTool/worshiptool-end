@@ -13,7 +13,7 @@ export class Playlist{
     @ManyToMany(()=>SongVariant, (v)=>v.playlists)
     songs: SongVariant[]
 
-    @ManyToOne(()=>User, (u)=>u.playlists)
+    @ManyToOne(()=>User, (u)=>u.playlists,{ cascade: true })
     owner: User;
 
 

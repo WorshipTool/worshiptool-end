@@ -8,6 +8,7 @@ import { CreatorService } from "src/songs/services/creator.service";
 import { MediaService } from "src/songs/services/media.service";
 import { SourceService } from "src/songs/services/source.service";
 import { AddSongDataService } from "src/songs/services/adding/add.service";
+import { PlaylistService } from '../songs/services/playlists/playlist.service';
 
 @Module({
     imports: [DatasourceModule],
@@ -18,7 +19,8 @@ import { AddSongDataService } from "src/songs/services/adding/add.service";
         UserService,
         MediaService,
         SourceService,
-        AddSongDataService
+        AddSongDataService,
+        PlaylistService
         
     ],
     exports: [
@@ -27,7 +29,8 @@ import { AddSongDataService } from "src/songs/services/adding/add.service";
         UserService,
         MediaService,
         SourceService,
-        AddSongDataService
+        AddSongDataService,
+        PlaylistService
     ],
     controllers: []
 })

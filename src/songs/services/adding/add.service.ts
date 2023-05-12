@@ -138,7 +138,7 @@ export class AddSongDataService{
                     prefferedTitle: title,
                     verified: false, 
                     createdBy: user,
-                    links:[],
+                    links: [],
                     titles:[title],
                     sources:sources,
                     toneKey: null,

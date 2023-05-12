@@ -7,6 +7,8 @@ import { ROLES, User } from "src/database/entities/user.entity";
 import { MessengerService } from "src/messenger/messenger.service";
 import { MediaService } from "./services/media.service";
 import { Song } from "src/database/entities/song.entity";
+import { GetPlaylistsResult, PostCreatePlaylistBody, PostCreatePlaylistResult } from './services/playlists/dtos';
+import { PlaylistService } from './services/playlists/playlist.service';
 
 @Injectable()
 export class SongsService{
@@ -14,7 +16,8 @@ export class SongsService{
         private songService: SongService,
         private creatorService: CreatorService,
         private messengerService: MessengerService,
-        private mediaService: MediaService
+        private mediaService: MediaService,
+        private playlistService: PlaylistService
     ){}
 
 
@@ -122,5 +125,34 @@ export class SongsService{
         }
 
         return formatted({guid: result}, codes["Success"]);
+    }
+
+    async getPlaylistsByUser(user: User) : Promise<RequestResult<GetPlaylistsResult>>{
+        const pls = await this.playlistService.getPlaylistByUser(user);
+        return formatted(pls, codes["Success"])
+    }
+
+    async createPlaylist(body: PostCreatePlaylistBody,user: User) : Promise<RequestResult<PostCreatePlaylistResult>>{
+        const result = await this.playlistService.createPlaylist(body, user);
+        return formatted(result, codes.Success);
+    }
+
+    async deletePlaylist(guid:string, user:User){
+        return await this.playlistService.deletePlaylist(guid, user);
+    }   
+    
+    async getSongsInPlaylist(guid: string){
+        return await this.playlistService.getSongsInPlaylist(guid);
+    }
+
+    async addVariantToPlaylist(variantGuid:string, playlistGuid:string, user: User){
+        return await this.playlistService.addVariantToPlaylist(variantGuid, playlistGuid, user);
+    }
+    async removeVariantFromPlaylist(variantGuid:string, playlistGuid:string, user: User){
+        return await this.playlistService.removeVariantFromPlaylist(variantGuid, playlistGuid, user);
+    }
+
+    async isVariantInPlaylist(variant:string, playlist:string){
+        return await this.playlistService.isVariantInPlaylist(variant, playlist);
     }
 }
