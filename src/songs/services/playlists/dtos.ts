@@ -26,7 +26,8 @@ export interface GetSongsInPlaylistParams{
     guid: string
 }
 export interface GetSongsInPlaylistResult{
-    guids: string[]
+    guids: string[],
+    title: string
 }
 
 export interface PostAddVariantToPlaylistBody{

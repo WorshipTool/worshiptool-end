@@ -84,7 +84,8 @@ export class PlaylistService{
         //     .getMany();
 
         return formatted({
-            guids: playlist.songs.map(v=>v.song.guid)
+            guids: playlist.songs.map(v=>v.song.guid),
+            title: playlist.title
         }, codes.Success)
     }
 
