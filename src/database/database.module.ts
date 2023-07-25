@@ -9,6 +9,7 @@ import { MediaService } from "src/songs/services/media.service";
 import { SourceService } from "src/songs/services/source.service";
 import { AddSongDataService } from "src/songs/services/adding/add.service";
 import { PlaylistService } from '../songs/services/playlists/playlist.service';
+import { GroupService } from "src/group/group.service";
 
 @Module({
     imports: [DatasourceModule],
@@ -20,7 +21,7 @@ import { PlaylistService } from '../songs/services/playlists/playlist.service';
         MediaService,
         SourceService,
         AddSongDataService,
-        PlaylistService
+        PlaylistService,
         
     ],
     exports: [
@@ -30,7 +31,8 @@ import { PlaylistService } from '../songs/services/playlists/playlist.service';
         MediaService,
         SourceService,
         AddSongDataService,
-        PlaylistService
+        PlaylistService,
+        ...EntitiesProvider
     ],
     controllers: []
 })
