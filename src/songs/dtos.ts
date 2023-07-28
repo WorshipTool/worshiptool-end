@@ -107,3 +107,8 @@ export interface SongData{
 
 }
 
+export interface PostRenamePlaylistBody{
+    guid: string,
+    title: string
+    
+}

@@ -200,4 +200,23 @@ export class PlaylistService{
 
        return formatted(variants);
     }
+
+    async renamePlaylist(guid: string, title: string, user: User) : Promise<RequestResult<any>>{
+        if(!guid) return formatted(undefined, codes['Bad Request'], "Guid is undefined");
+
+        const playlist = await this.playlistRepository.findOne({
+            where:{
+                guid
+            },
+            relations:{
+                owner:true
+            }
+        });
+        if(!playlist) return formatted(undefined, codes['Not Found'], "Playlist not found");
+        if(playlist.owner.guid!==user.guid) return formatted(null, codes.Unauthorized);
+
+        playlist.title = title;
+        await this.playlistRepository.save(playlist);
+        return formatted(undefined, codes.Success);
+    }
 }

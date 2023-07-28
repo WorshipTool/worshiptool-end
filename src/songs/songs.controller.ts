@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { SongsService } from "./songs.service";
 import { codes, formatted } from "src/utils/formatted";
-import { GetSongQuery, SearchQuery, ListQuery, PostMergeBody } from './dtos';
+import { GetSongQuery, SearchQuery, ListQuery, PostMergeBody, PostRenamePlaylistBody } from './dtos';
 import { JwtAuthGuard } from "src/auth/jwt/jwt-auth.guard";
 import { User } from "src/auth/decorators/user.decorator";
 import { ROLES, User as UserObject } from "src/database/entities/user.entity";
@@ -135,6 +135,11 @@ export class SongsController{
     @Delete("playlist/remove")
     async removeVariantFromPlaylistDelete(@Query() query: DeleteRemoveVariantFromPlaylistQuery, @User() user: UserObject){
         return this.songsService.removeVariantFromPlaylist(query.variant, query.playlist, user)
+    }
+
+    @Post("playlist/rename")
+    async renamePlaylist(@Body() body: PostRenamePlaylistBody, @User() user: UserObject){
+        return this.playlistService.renamePlaylist(body.guid, body.title, user);
     }
 
     @Get("isinplaylist")
