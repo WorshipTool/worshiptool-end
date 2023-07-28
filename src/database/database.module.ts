@@ -10,6 +10,7 @@ import { SourceService } from "src/songs/services/source.service";
 import { AddSongDataService } from "src/songs/services/adding/add.service";
 import { PlaylistService } from '../songs/services/playlists/playlist.service';
 import { GroupService } from "src/group/group.service";
+import { MessengerModule } from "src/messenger/messenger.module";
 
 @Module({
     imports: [DatasourceModule],

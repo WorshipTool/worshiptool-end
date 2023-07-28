@@ -7,9 +7,11 @@ import { JwtModule, JwtService } from "@nestjs/jwt/dist";
 import { PassportModule } from "@nestjs/passport";
 import { secret } from "./jwt/constants";
 import { JwtStrategy } from "./jwt/jwt.strategy";
+import { MessengerModule } from "src/messenger/messenger.module";
 
 @Module({
     imports: [
+        MessengerModule,
         DatabaseModule,
         PassportModule,
         JwtModule.register({
