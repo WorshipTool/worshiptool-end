@@ -9,6 +9,8 @@ import { ROLES, User } from "src/database/entities/user.entity";
 import { skipForPage, takePerPage } from '../contants';
 import normalizeSearchText from "src/utils/normalizeSearchText";
 import { ListSongData, SearchSongData } from "../dtos";
+import { SongVariantDTO } from "src/dtos/SongVariantDTO";
+import { mapSourceToDTO } from "src/dtos/SourceDTO";
 
 @Injectable()
 export class SongService{
@@ -21,28 +23,36 @@ export class SongService{
         private variantRepository: Repository<SongVariant>
     ){}
 
-    async search(k:string, user:User, page:number): Promise<SearchSongData[]> {
-        const key = normalizeSearchText(k);
+    async search({searchKey, page, playlist}: {searchKey: string, page: number, playlist?: string}, user:User): Promise<SearchSongData[]> {
+        const key = normalizeSearchText(searchKey);
 
         if(key=="")return [];
+
+        const conditionsSame = {
+          playlists: playlist?[{guid: playlist}]:undefined
+        };
 
         const names = await this.nameRepository.find({
           where:{
             searchValue: Like(`%${key}%`),
             variant: [
               {
-                verified:true
+                verified:true,
+                ...conditionsSame
               },
               {
-                verified:user?user.role!=ROLES.Admin:true
+                verified:user?user.role!=ROLES.Admin:true,
+                ...conditionsSame
               },
               {
-                createdBy: user
+                createdBy: user,
+                ...conditionsSame
               },
               {
                 createdBy:{
                   role: ROLES.Loader
-                }
+                },
+                ...conditionsSame
               }
             ]
           },
@@ -56,30 +66,28 @@ export class SongService{
           take: takePerPage
         })
 
-        const arr1 : SearchSongData[]  = names.map((name)=>{
+        const arr1 : SearchSongData[]  = await Promise.all(names.map(async (name)=>{
           return {
             guid: name.variant.song.guid,
-            title: name.title,
-            sheetData: name.variant.sheetData,
-            verified: name.variant.verified,
-            createdByLoader: name.variant.createdBy.role==ROLES.Loader,
-            createdBy: name.variant.createdBy.guid
+            variant: await this.getVariantByGuid(name.variant.guid)
           }
           
 
-        });
+        }));
 
         const variants = await this.variantRepository
         .find({                  
           where:[{
             searchValue: Like(`%${key}%`),
-            verified: In([true,user?user.role!=ROLES.Admin:true])
+            verified: In([true,user?user.role!=ROLES.Admin:true]),
+            ...conditionsSame
           },
           {
             searchValue: Like(`%${key}%`),
             createdBy:{
               role: ROLES.Loader
-            }
+            },
+            ...conditionsSame
           }],
           relations:{
             song:true,
@@ -90,14 +98,10 @@ export class SongService{
           take: takePerPage
         })
 
-        const arr2 : SearchSongData[] = variants.map((v)=>({
+        const arr2 : SearchSongData[] = await Promise.all(variants.map(async (v)=>({
           guid: v.song.guid,
-          title: v.prefferedTitle?v.prefferedTitle.title:undefined,
-          sheetData: v.sheetData,
-          verified: v.verified,
-          createdBy: v.createdBy.guid,
-          createdByLoader: v.createdBy.role==ROLES.Loader
-        }))
+          variant: await this.getVariantByGuid(v.guid)
+        })));
       
         const merged = [...arr1, ...arr2];
 
@@ -116,13 +120,13 @@ export class SongService{
         
     }
 
-    async random(page:number) : Promise<Song[]>{
+    async random(page:number) : Promise<SongVariant[]>{
         const variants = await this.variantRepository.find({
           where:{
             verified: true
           },
           relations:{
-            song:true
+            song:true,
           },
           order:{
 
@@ -132,8 +136,8 @@ export class SongService{
         });
         const index=Math.round(Math.random()*(variants.length-takePerPage));
         const cutVariants = variants.slice(index, index+takePerPage)
-        const songs = cutVariants.map((v)=>v.song);
-        return songs;
+        // const songs = cutVariants.map((v)=>v.song);
+        return cutVariants;
     }
 
     async list(page:number) : Promise<ListSongData[]>{
@@ -216,7 +220,7 @@ export class SongService{
       })
     }
 
-    async getUnverified(){
+    async getUnverified() : Promise<SongVariant[]>{
       const variants = await this.variantRepository
         .find({
           where: {
@@ -233,11 +237,7 @@ export class SongService{
           take:takePerPage
         })
 
-      const guids = variants.map((v)=>v.song.guid);
-
-      if(guids.length==0)return [];
-
-      return await this.songRepository.find({where:{guid: In(guids)}})
+        return variants;
     }
     async getLoaderUnverified(){
       const variants = await this.variantRepository
@@ -255,11 +255,8 @@ export class SongService{
           take:takePerPage
         })
 
-      const guids = variants.map((v)=>v.song.guid);
+        return variants;
 
-      if(guids.length==0)return [];
-
-      return await this.songRepository.find({where:{guid: In(guids)}})
     }
 
     async verifyVariantByGUID(guid:string){
@@ -372,4 +369,46 @@ export class SongService{
       return guid1;
     }
 
+    async getRandomVariant() : Promise<SongVariantDTO>{
+      const variants = await this.variantRepository.find();
+      const index = Math.round(Math.random()*(variants.length-1));
+      return this.getVariantByGuid(variants[index].guid);
+    }
+
+    async getVariantByGuid(guid:string) : Promise<SongVariantDTO | undefined>{
+      const variant = await this.variantRepository.findOne({
+        where:{
+          guid
+        },
+        relations:{
+          song:true,
+          createdBy:true,
+          prefferedTitle:true,
+          sources:true,
+          titles:true,
+          links:true,
+        }
+      });
+      if(!variant)return undefined;
+
+      return {
+        guid: variant.guid,
+        songGuid: variant.song.guid,
+        prefferedTitle: variant.prefferedTitle.title,
+        titles: variant.titles.map((t)=>t.title),
+        sheetData: variant.sheetData,
+        sheetText: variant.searchValue,
+        verified: variant.verified,
+        createdByGuid: variant.createdBy.guid,
+        createdByLoader: variant.createdBy.role==ROLES.Loader,
+        sources: variant.sources.map((s)=>mapSourceToDTO(s)),
+        creators: variant.links?.map((l)=>({
+          name: l.creator.name,
+          type: l.type
+        }))
+
+      };
+    }
+
+    
 }

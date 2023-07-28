@@ -4,6 +4,7 @@ import { SongTitle } from "src/database/entities/songtitle.entity"
 import { SongVariant } from "src/database/entities/songvariant.entity"
 import { SongDataSource } from "./services/adding/dtos"
 import { CreatorType } from "src/database/entities/creator.entity"
+import { SongVariantDTO } from "src/dtos/SongVariantDTO"
 
 
 interface GetSongQueryBase{
@@ -42,11 +43,7 @@ export type SearchQuery = {
 
 export interface SearchSongData{
     guid: string,
-    title: string,
-    sheetData: string,
-    verified: boolean,
-    createdByLoader: boolean,
-    createdBy: string
+    variant: SongVariantDTO
 }
 export interface SearchResult{
     songs: SearchSongData[]

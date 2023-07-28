@@ -9,6 +9,7 @@ import { MediaService } from "./services/media.service";
 import { Song } from "src/database/entities/song.entity";
 import { GetPlaylistsResult, PostCreatePlaylistBody, PostCreatePlaylistResult } from './services/playlists/dtos';
 import { PlaylistService } from './services/playlists/playlist.service';
+import { SongVariant } from "src/database/entities/songvariant.entity";
 
 @Injectable()
 export class SongsService{
@@ -21,33 +22,37 @@ export class SongsService{
     ){}
 
 
-    async processGetQuery(query: GetSongQuery, user: User): Promise<GetSongResult>{
+    async processGetQuery(query: GetSongQuery, user: User): Promise<SearchResult>{
         if(query.page===undefined)query.page=0;
 
-        let songs : Song[] = [];
+
+        let variants : SongVariant[] = [];
         switch(query.key){
             case "random":
-                songs = await this.songService.random(query.page);
+                variants = await this.songService.random(query.page);
                 break;
             case "unverified":
-                songs = await this.songService.getUnverified();
+                variants = await this.songService.getUnverified();
                 break;
             case "loaderUnverified":
-                songs = await this.songService.getLoaderUnverified();
+                variants = await this.songService.getLoaderUnverified();
                 break;
             default:
                 break;
         }
-
-        return{songs: await Promise.all( songs.map(async (s)=>{
-            return (await this.gatherSongData(s.guid)).data;
+        return{songs: await Promise.all( variants.map(async (s)=>{
+            const data = await this.songService.getVariantByGuid(s.guid);;
+            return {
+                guid: data.songGuid,
+                variant: data
+            }
         }))};
           
     }
 
     async search(searchKey: string, user : User, page: number): Promise<SearchResult>{
         if(page===undefined)page=0;
-        return {songs: await this.songService.search(searchKey, user, page)}
+        return {songs: await this.songService.search({searchKey, page}, user)}
     }
 
     async list(page:number) : Promise<ListResult>{
@@ -141,8 +146,8 @@ export class SongsService{
         return await this.playlistService.deletePlaylist(guid, user);
     }   
     
-    async getSongsInPlaylist(guid: string){
-        return await this.playlistService.getSongsInPlaylist(guid);
+    async getVariantsInPlaylist(guid: string){
+        return await this.playlistService.getVariantsInPlaylist(guid);
     }
 
     async addVariantToPlaylist(variantGuid:string, playlistGuid:string, user: User){
@@ -154,5 +159,9 @@ export class SongsService{
 
     async isVariantInPlaylist(variant:string, playlist:string){
         return await this.playlistService.isVariantInPlaylist(variant, playlist);
+    }
+
+    async getRandomVariant(){
+        return await this.songService.getRandomVariant();
     }
 }

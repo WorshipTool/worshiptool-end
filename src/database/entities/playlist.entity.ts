@@ -16,5 +16,8 @@ export class Playlist{
     @ManyToOne(()=>User, (u)=>u.playlists,{ cascade: true })
     owner: User;
 
+    @Column({default: false})
+    isSelection: boolean;
+
 
 }

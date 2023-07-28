@@ -1,3 +1,4 @@
+import { SongVariantDTO } from "src/dtos/SongVariantDTO"
 
 export interface PlaylistData{
     guid:string,
@@ -20,13 +21,16 @@ export interface PostCreatePlaylistBody{
 export interface PostDeletePlaylistBody{
     guid: string
 }
+export interface DeletePlaylistQuery{
+    guid :string
+}
 export type PostDeletePlaylistResult = boolean;
 
 export interface GetSongsInPlaylistParams{
     guid: string
 }
-export interface GetSongsInPlaylistResult{
-    guids: string[],
+export interface GetVariantsInPlaylistResult{
+    variants: SongVariantDTO[],
     title: string
 }
 
@@ -34,11 +38,19 @@ export interface PostAddVariantToPlaylistBody{
     variant: string,
     playlist: string
 }
-export interface DeleteRemoveVariantFromPlaylistBody{
+export interface DeleteRemoveVariantFromPlaylistQuery{
     variant: string,
     playlist: string
 }
+
+
 export interface GetIsVariantInPlaylistQuery{
     variant: string,
     playlist: string
+}
+
+export interface GetSearchInPlaylistQuery{
+    searchKey: string,
+    page?: number,
+    guid: string
 }
