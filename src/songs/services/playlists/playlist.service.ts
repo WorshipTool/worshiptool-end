@@ -1,8 +1,8 @@
 import { Playlist } from 'src/database/entities/playlist.entity';
-import { PLAYLIST_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY } from '../../../database/constants';
+import { PLAYLIST_ITEMS_REPOSITORY, PLAYLIST_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY } from '../../../database/constants';
 import { In, Repository } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
-import { GetPlaylistsResult, GetVariantsInPlaylistResult, PostCreatePlaylistBody, PostCreatePlaylistResult, PostDeletePlaylistResult } from './dtos';
+import { GetPlaylistsResult, GetSearchInPlaylistResult, GetVariantsInPlaylistResult, PostCreatePlaylistBody, PostCreatePlaylistResult, PostDeletePlaylistResult } from './dtos';
 import { User } from 'src/database/entities/user.entity';
 import { formatted, codes, RequestResult } from '../../../utils/formatted';
 import { Song } from 'src/database/entities/song.entity';
@@ -10,6 +10,8 @@ import { SongVariant } from '../../../database/entities/songvariant.entity';
 import normalizeSearchText from 'src/utils/normalizeSearchText';
 import { SearchSongData } from 'src/songs/dtos';
 import { SongService } from '../song.service';
+import { PlaylistItem } from 'src/database/entities/playlistitem.entity';
+import { PlaylistItemDTO } from 'src/dtos/PlaylistItemDTO';
 
 @Injectable()
 export class PlaylistService{
@@ -20,6 +22,10 @@ export class PlaylistService{
 
         @Inject(SONG_VARIANTS_REPOSITORY)
         private variantRepository: Repository<SongVariant>,
+
+
+        @Inject(PLAYLIST_ITEMS_REPOSITORY)
+        private itemRepository: Repository<PlaylistItem>,
 
         private songService: SongService
     ){}  
@@ -45,7 +51,6 @@ export class PlaylistService{
     async createPlaylist(body: PostCreatePlaylistBody, user: User) : Promise<PostCreatePlaylistResult>{
         const playlistData : Partial<Playlist> = {
             title: body.title,
-            songs: [],
             owner: user
         }
         const playlistGuid = await (await this.playlistRepository.insert(playlistData)).identifiers[0].guid;
@@ -77,24 +82,34 @@ export class PlaylistService{
         const playlist = await this.playlistRepository.findOne({
             where:{
                 guid
-            },
-            relations:{
-                songs:{
-                    song:true
-                }
             }
         })
 
         if(!playlist) return formatted(undefined, codes['Not Found'], "Playlist not found");
 
-        const variants = [];
-        for(const song of playlist.songs){
-            const dto = await this.songService.getVariantByGuid(song.guid);
-            variants.push(dto);
-        }
+        const results = await this.itemRepository.find({
+            where:{
+                playlist
+            },
+            relations:{
+                variant:true
+            },
+            order:{
+                order: 'ASC'
+            }
+        })
+
+        const items : PlaylistItemDTO[] = await Promise.all(results.map(async (item)=>{
+            return {
+                guid: item.guid,
+                order: item.order,
+                toneKey: item.toneKey,
+                variant: await this.songService.getVariantByGuid(item.variant.guid)
+            }
+        }));
 
         return formatted({
-            variants,
+            items,
             title: playlist.title
         }, codes.Success)
     }
@@ -116,19 +131,33 @@ export class PlaylistService{
         const variant = await this.variantRepository.findOne({
             where:{
                 guid: variantGuid
-            },
-            relations: {
-                playlists:true
             }
         });
 
 
         if(!variant) return formatted(undefined, codes['Not Found'], "Variant not found");
 
-        if(variant.playlists.filter((p)=>p.guid==playlist.guid).length>0)
+        const existingItem = await this.itemRepository.findOne({
+            where:{
+                playlist, variant
+            }
+        })
+
+        if(existingItem)
             return formatted(undefined, codes['Already Added'], "Variant already exists in playlist");
-        variant.playlists.push(playlist);
-        this.variantRepository.save(variant);
+
+        const items = await this.itemRepository.find({
+            where:{
+                playlist
+            }
+        })
+        const item = await this.itemRepository.create({
+            playlist, variant,
+            order: items.length
+        });
+
+        await this.itemRepository.save(item);
+
 
         return formatted(undefined, codes.Success);
     }
@@ -151,42 +180,40 @@ export class PlaylistService{
         const variant = await this.variantRepository.findOne({
             where:{
                 guid: variantGuid
-            },
-            relations: {
-                playlists:true
             }
         });
 
-
+        
         if(!variant) return formatted(null, codes['Not Found'], "Variant not found");
+        const item = await this.itemRepository.findOne({
+            where:{
+                playlist, variant
+            }
+        })
 
-        if(variant.playlists.filter((p)=>p.guid==playlist.guid).length==0)
-            return formatted(null, codes['Not Found'], "Variant not found in playlist");
+        if(!item) return formatted(null, codes['Not Found'], "Variant not found in playlist");
 
-        variant.playlists = variant.playlists.filter((p)=>p.guid!=playlist.guid);
-        this.variantRepository.save(variant);
+        await this.itemRepository.remove(item);
 
         return formatted(null, codes.Success);
     }
 
     async isVariantInPlaylist(variant:string, playlist:string) : Promise<RequestResult<boolean>>{
-        const v = await this.variantRepository.findOne({
+        const existingItem = await this.itemRepository.findOne({
             where:{
-                guid:variant
-            },
-            relations:{
-                playlists:true
+                variant: {
+                    guid: variant
+                },
+                playlist: {
+                    guid: playlist
+                }
             }
         });
-        if(!v) return formatted(false, codes['Not Found'])
-        const ps = v.playlists.filter((p)=>{
-            return p.guid==playlist
-        });
-        if(ps.length>0) return formatted(true);
-        return formatted(false);
+       
+        return formatted(existingItem !== null,);
     }
 
-    async searchInPlaylist(guid: string, searchKey: string, page: number, user: User) : Promise<RequestResult<SearchSongData[]>>{
+    async searchInPlaylist(guid: string, searchKey: string, page: number, user: User) : Promise<RequestResult<GetSearchInPlaylistResult[]>>{
         if(!guid) return formatted(undefined, codes['Bad Request'], "Guid is undefined");
 
         if(searchKey===undefined)searchKey="";
@@ -198,7 +225,34 @@ export class PlaylistService{
             playlist: guid
        }, user);
 
-       return formatted(variants);
+       const variantGuids = variants.map((v)=>v.variant.guid);
+
+       const results = await this.itemRepository.find({
+              where:{
+                    variant: {
+                        guid: In(variantGuids)
+                    }
+                },
+                relations:{
+                    variant:true
+                }
+            });
+
+
+        const items : PlaylistItemDTO[] = await Promise.all(results.map(async (item)=>{
+            return {
+                guid: item.guid,
+                order: item.order,
+                toneKey: item.toneKey,
+                variant: await this.songService.getVariantByGuid(item.variant.guid)
+            }
+        }));
+
+
+       return formatted({
+            guid,
+            items
+        });
     }
 
     async renamePlaylist(guid: string, title: string, user: User) : Promise<RequestResult<any>>{

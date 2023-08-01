@@ -1,5 +1,5 @@
 import { Get, Inject, Injectable } from "@nestjs/common";
-import { SONG_NAMES_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY } from "src/database/constants";
+import { PLAYLIST_ITEMS_REPOSITORY, SONG_NAMES_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY } from "src/database/constants";
 import { Song } from "src/database/entities/song.entity";
 import { SongTitle } from "src/database/entities/songtitle.entity";
 import { SongVariant } from "src/database/entities/songvariant.entity";
@@ -11,6 +11,7 @@ import normalizeSearchText from "src/utils/normalizeSearchText";
 import { ListSongData, SearchSongData } from "../dtos";
 import { SongVariantDTO } from "src/dtos/SongVariantDTO";
 import { mapSourceToDTO } from "src/dtos/SourceDTO";
+import { PlaylistItem } from "src/database/entities/playlistitem.entity";
 
 @Injectable()
 export class SongService{
@@ -20,7 +21,9 @@ export class SongService{
         @Inject(SONG_NAMES_REPOSITORY)
         private nameRepository: Repository<SongTitle>,
         @Inject(SONG_VARIANTS_REPOSITORY)
-        private variantRepository: Repository<SongVariant>
+        private variantRepository: Repository<SongVariant>,
+        @Inject(PLAYLIST_ITEMS_REPOSITORY)
+        private itemsRepository: Repository<PlaylistItem>
     ){}
 
     async search({searchKey, page, playlist}: {searchKey: string, page: number, playlist?: string}, user:User): Promise<SearchSongData[]> {
@@ -28,8 +31,24 @@ export class SongService{
 
         if(key=="")return [];
 
+        
+
+        const playlistItems = await this.itemsRepository.find({
+          where:{
+            playlist:{
+              guid: playlist
+            }
+          },
+          relations:{
+            variant:true
+          }
+        })
+
         const conditionsSame = {
-          playlists: playlist?[{guid: playlist}]:undefined
+          guid: playlist?
+            In(playlistItems.map(i=>i.variant.guid))
+            :
+            undefined
         };
 
         const names = await this.nameRepository.find({
@@ -65,6 +84,7 @@ export class SongService{
           skip: skipForPage(page),
           take: takePerPage
         })
+
 
         const arr1 : SearchSongData[]  = await Promise.all(names.map(async (name)=>{
           return {
@@ -104,6 +124,7 @@ export class SongService{
         })));
       
         const merged = [...arr1, ...arr2];
+
 
         const uniq : SearchSongData[] = merged.reduce((acc, curr) => {
           const existingObj = acc.find((obj) => obj.guid === curr.guid);

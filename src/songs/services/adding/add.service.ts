@@ -143,7 +143,7 @@ export class AddSongDataService{
                     sources:sources,
                     toneKey: null,
                     type: null,
-                    playlists: []
+                    playlistItems: []
                 };
                 //console.log(variantData);
                 const variant : any = (await this.variantRepository.insert(variantData)).identifiers[0];

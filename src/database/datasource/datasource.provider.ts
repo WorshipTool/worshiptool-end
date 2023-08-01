@@ -10,6 +10,7 @@ import { Source } from "../entities/source.entity";
 import { Tag } from "../entities/tag.entity";
 import { Playlist } from '../entities/playlist.entity';
 import { Group } from '../entities/group.entity';
+import { PlaylistItem } from "../entities/playlistitem.entity";
 
 export const dataSource = new DataSource({
     type: 'mysql',
@@ -31,7 +32,8 @@ export const dataSource = new DataSource({
         Source,
         Tag,
         Playlist,
-        Group
+        Group,
+        PlaylistItem
     ],
     migrations: ["dist/migrations/**/*{.js,.ts}"],
     migrationsRun: true

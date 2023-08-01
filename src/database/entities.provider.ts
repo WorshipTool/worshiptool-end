@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { CREATOR_REPOSITORY, CSVLINK_REPOSITORY, MEDIA_REPOSITORY, PLAYLIST_REPOSITORY, SONG_NAMES_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, SOURCE_REPOSITORY, TAG_REPOSITORY, USER_REPOSITORY, GROUP_REPOSITORY } from './constants';
+import { CREATOR_REPOSITORY, CSVLINK_REPOSITORY, MEDIA_REPOSITORY, PLAYLIST_REPOSITORY, SONG_NAMES_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, SOURCE_REPOSITORY, TAG_REPOSITORY, USER_REPOSITORY, GROUP_REPOSITORY, PLAYLIST_ITEMS_REPOSITORY } from './constants';
 import { SongVariant } from "./entities/songvariant.entity";
 import { Song } from "./entities/song.entity";
 import { Creator } from "./entities/creator.entity";
@@ -11,6 +11,7 @@ import { Source } from "./entities/source.entity";
 import { Tag } from "./entities/tag.entity";
 import { Playlist } from './entities/playlist.entity';
 import { Group } from './entities/group.entity';
+import { PlaylistItem } from "./entities/playlistitem.entity";
 
 export const EntitiesProvider = [
     {
@@ -67,6 +68,11 @@ export const EntitiesProvider = [
     {
         provide: GROUP_REPOSITORY,
         useFactory: (dataSource: DataSource) => dataSource.getRepository(Group),
+        inject: ['DATA_SOURCE'],
+    },
+    {
+        provide: PLAYLIST_ITEMS_REPOSITORY,
+        useFactory: (dataSource: DataSource) => dataSource.getRepository(PlaylistItem),
         inject: ['DATA_SOURCE'],
     }
 ];

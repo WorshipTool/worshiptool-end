@@ -1,3 +1,4 @@
+import { PlaylistItem } from "src/database/entities/playlistitem.entity"
 import { SongVariantDTO } from "src/dtos/SongVariantDTO"
 
 export interface PlaylistData{
@@ -30,7 +31,7 @@ export interface GetSongsInPlaylistParams{
     guid: string
 }
 export interface GetVariantsInPlaylistResult{
-    variants: SongVariantDTO[],
+    items: PlaylistItem[],
     title: string
 }
 
@@ -53,4 +54,9 @@ export interface GetSearchInPlaylistQuery{
     searchKey: string,
     page?: number,
     guid: string
+}
+
+export interface GetSearchInPlaylistResult{
+    guid: string,
+    items: PlaylistItem[]
 }

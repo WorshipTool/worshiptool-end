@@ -32,7 +32,7 @@ export class GroupService{
     }
 
     async createGroupSelection(owner: User, name: string) : Promise<Playlist>{
-        const result =  await this.playlistRepository.createQueryBuilder().insert().values({title: `${name} Selection`, songs: [], owner, isSelection: true}).execute();
+        const result =  await this.playlistRepository.createQueryBuilder().insert().values({title: `${name} Selection`, owner, isSelection: true}).execute();
         const guid = (result.identifiers[0].guid)
         return await this.playlistRepository.findOne({where:{guid}});
     }

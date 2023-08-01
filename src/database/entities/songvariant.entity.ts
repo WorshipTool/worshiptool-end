@@ -6,6 +6,7 @@ import { CSVLink } from "./csvlink.entity";
 import { Source } from "./source.entity";
 import { note } from "@pepavlin/sheet-api";
 import { Playlist } from './playlist.entity';
+import { PlaylistItem } from "./playlistitem.entity";
 
 export enum VariantType{
     "Original",
@@ -51,8 +52,8 @@ export class SongVariant{
     @OneToMany(()=>Source, (source)=>source.variant)
     sources: Source[]
 
+    @OneToMany(()=>PlaylistItem, (item)=>item.variant, { cascade: true })
+    playlistItems: PlaylistItem[]
 
-    @ManyToMany(()=>Playlist, (p)=>p.songs,{ cascade: true })
-    @JoinTable()
-    playlists: Playlist[]
+
 }
