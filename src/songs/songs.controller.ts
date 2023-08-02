@@ -7,10 +7,11 @@ import { User } from "src/auth/decorators/user.decorator";
 import { ROLES, User as UserObject } from "src/database/entities/user.entity";
 import { AllowNonUser } from "src/auth/decorators/allownonuser.decorator";
 import { AddSongDataService } from "./services/adding/add.service";
-import { GetSongsInPlaylistParams, PostCreatePlaylistBody, PostAddVariantToPlaylistBody, GetIsVariantInPlaylistQuery, PostDeletePlaylistBody, DeletePlaylistQuery, DeleteRemoveVariantFromPlaylistQuery, GetSearchInPlaylistQuery } from './services/playlists/dtos';
+import { GetSongsInPlaylistParams, PostCreatePlaylistBody, PostAddVariantToPlaylistBody, GetIsVariantInPlaylistQuery, PostDeletePlaylistBody, DeletePlaylistQuery, DeleteRemoveVariantFromPlaylistQuery, GetSearchInPlaylistQuery, PostReorderPlaylistBody, PostTransposePlaylistItemBody } from './services/playlists/dtos';
 import { query } from "express";
 import { AllowOnlyAdmin } from "src/auth/decorators/allowonlyadmin.decorator";
 import { PlaylistService } from "./services/playlists/playlist.service";
+import { Chord } from "@pepavlin/sheet-api";
 
 @Controller("songs")
 export class SongsController{
@@ -156,6 +157,16 @@ export class SongsController{
     @Get("playlist/search")
     async searchInPlaylist(@Query() params: GetSearchInPlaylistQuery, @User() user: UserObject){
         return await this.playlistService.searchInPlaylist(params.guid, params.searchKey, params.page, user);
+    }
+
+    @Post("playlist/reorder")
+    async reorderPlaylist(@Body() body: PostReorderPlaylistBody, @User() user: UserObject){
+        return await this.playlistService.reorderPlaylist(body.guid, body.items, user);
+    }
+
+    @Post("playlist/item/transpose")
+    async transposePlaylistItem(@Body() body: PostTransposePlaylistItemBody, @User() user: UserObject){
+        return await this.playlistService.transposePlaylistItem(body.guid, body.key, user);
     }
 
 

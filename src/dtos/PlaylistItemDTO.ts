@@ -6,3 +6,8 @@ export interface PlaylistItemDTO {
     order: number;
     variant: SongVariantDTO;
 }
+
+export interface ReorderPlaylistItemDTO{
+    guid: string;
+    order: number;
+}

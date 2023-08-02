@@ -3,7 +3,7 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "start",
+			"script": "start:dev",
 			"problemMatcher": [],
 			"label": "npm: start",
 			"detail": "nest start",

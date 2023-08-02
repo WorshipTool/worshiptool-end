@@ -1,7 +1,4 @@
-import { SongTitle } from "src/database/entities/songtitle.entity";
-import { SongVariant } from "src/database/entities/songvariant.entity";
-import { convertSheetToSections } from "@pepavlin/sheet-api";
-import normalizeSearchText from "src/utils/normalizeSearchText";
+
 import { MigrationInterface, QueryRunner } from "typeorm"
 
 export class normalizeFix1680634934257 implements MigrationInterface {

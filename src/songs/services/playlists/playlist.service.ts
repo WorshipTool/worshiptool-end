@@ -11,7 +11,8 @@ import normalizeSearchText from 'src/utils/normalizeSearchText';
 import { SearchSongData } from 'src/songs/dtos';
 import { SongService } from '../song.service';
 import { PlaylistItem } from 'src/database/entities/playlistitem.entity';
-import { PlaylistItemDTO } from 'src/dtos/PlaylistItemDTO';
+import { PlaylistItemDTO, ReorderPlaylistItemDTO } from 'src/dtos/PlaylistItemDTO';
+import { Chord, note } from '@pepavlin/sheet-api';
 
 @Injectable()
 export class PlaylistService{
@@ -271,6 +272,100 @@ export class PlaylistService{
 
         playlist.title = title;
         await this.playlistRepository.save(playlist);
+        return formatted(undefined, codes.Success);
+    }
+
+    async reorderPlaylist(guid: string, items: ReorderPlaylistItemDTO[], user: User) : Promise<RequestResult<any>>{
+        if(!guid) return formatted(undefined, codes['Bad Request'], "Guid is undefined");
+        if(items.length==0) return formatted(undefined, codes['Bad Request'], "No items to reorder");
+
+        // check if all items order number is unique
+        const orderNumbers = items.map((i)=>i.order);
+        if(orderNumbers.length !== new Set(orderNumbers).size) return formatted(undefined, codes['Bad Request'], "Item's order are not unique");
+
+        const playlist = await this.playlistRepository.findOne({
+            where:{
+                guid
+            },
+            relations:{
+                owner:true
+            }
+        });
+
+        if(!playlist) return formatted(undefined, codes['Not Found'], "Playlist not found");
+        if(playlist.owner.guid!==user.guid) return formatted(null, codes.Unauthorized);
+
+        
+        const existingItems = await this.itemRepository.find({
+            where:{
+                playlist
+            }
+        });
+
+        const existingItemGuids = existingItems.map((i)=>i.guid);
+
+        const itemsToSave = items.filter((i)=> existingItemGuids.includes(i.guid) && i.order);
+
+        let outCount = 0;
+        let savedCount = 0;
+
+        await Promise.all(itemsToSave.map(async (item)=>{
+            const existingItem = existingItems.find((i)=>i.guid===item.guid);
+
+            // if items order is out of bounds, ignore it
+            if(item.order<0 || item.order>=existingItems.length){
+                outCount++;
+                return;
+            };
+
+
+            if(existingItem){
+
+                const itemWithThatOrder = existingItems.find((i)=>i.order===item.order);
+                if(itemWithThatOrder){
+                    itemWithThatOrder.order = existingItem.order;
+                    await this.itemRepository.save(itemWithThatOrder);
+                }
+
+                existingItem.order = item.order;
+                await this.itemRepository.save(existingItem);
+                savedCount++;
+            }
+        }));
+
+        if(savedCount==0){
+            if(outCount>0) return formatted(undefined, codes['Bad Request'], "No items changed, because all items were out of bounds");
+            return formatted(undefined, codes['Bad Request'], "No items changed")
+        };
+
+        if(outCount>0) return formatted(undefined, codes['Success'], "Reordered, but some items ignored as out of bounds");
+
+        return formatted(undefined);
+    }
+
+    async transposePlaylistItem(guid: string, keyChord: string, user: User) : Promise<RequestResult<any>>{
+        if(!guid) return formatted(undefined, codes['Bad Request'], "Guid is undefined");
+        if(!keyChord) return formatted(undefined, codes['Bad Request'], "Key chord is undefined");
+        
+        const chord = new Chord(keyChord);
+
+        const existingItem = await this.itemRepository.findOne({
+            where:{
+                guid
+            },
+            relations:{
+                playlist:{
+                    owner:true
+                }
+            }
+        });
+
+        if(!existingItem) return formatted(undefined, codes['Not Found'], "Item not found");
+        if(existingItem.playlist.owner.guid!==user.guid) return formatted(null, codes.Unauthorized);
+
+        existingItem.toneKey = chord.data.rootNote;
+        await this.itemRepository.save(existingItem);
+
         return formatted(undefined, codes.Success);
     }
 }

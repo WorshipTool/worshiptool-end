@@ -19,7 +19,7 @@ import { CSVLink } from "src/database/entities/csvlink.entity";
 import checkMediaFormat from "src/utils/checkMediaFormat";
 import { SongsService } from "src/songs/songs.service";
 import normalizeSearchText from "src/utils/normalizeSearchText";
-import { convertSheetToSections } from "@pepavlin/sheet-api";
+import { Sheet } from "@pepavlin/sheet-api";
 
 @Injectable()
 export class AddSongDataService{
@@ -120,7 +120,8 @@ export class AddSongDataService{
             if(!variantGuid){
                 let sheetText = "";
                 if(data.sheetData){
-                    const sections = convertSheetToSections(data.sheetData);
+                    const sheet = new Sheet(data.sheetData);
+                    const sections = sheet.sections
                     for(let i=0; i<sections.length; i++){
                         const t=sections[i].text;
                         if( t){

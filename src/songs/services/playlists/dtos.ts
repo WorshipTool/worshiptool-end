@@ -1,4 +1,5 @@
 import { PlaylistItem } from "src/database/entities/playlistitem.entity"
+import { ReorderPlaylistItemDTO } from "src/dtos/PlaylistItemDTO"
 import { SongVariantDTO } from "src/dtos/SongVariantDTO"
 
 export interface PlaylistData{
@@ -60,3 +61,13 @@ export interface GetSearchInPlaylistResult{
     guid: string,
     items: PlaylistItem[]
 }
+
+export interface PostReorderPlaylistBody{
+    guid: string,
+    items: ReorderPlaylistItemDTO[]
+}
+
+export interface PostTransposePlaylistItemBody{
+    guid: string,
+    key:  string,
+}   
