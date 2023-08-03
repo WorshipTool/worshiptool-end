@@ -1,6 +1,6 @@
 import { Playlist } from 'src/database/entities/playlist.entity';
 import { PLAYLIST_ITEMS_REPOSITORY, PLAYLIST_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY } from '../../../database/constants';
-import { In, Repository } from 'typeorm';
+import { In, MoreThan, Repository } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { GetPlaylistsResult, GetSearchInPlaylistResult, GetVariantsInPlaylistResult, PostCreatePlaylistBody, PostCreatePlaylistResult, PostDeletePlaylistResult } from './dtos';
 import { User } from 'src/database/entities/user.entity';
@@ -194,6 +194,20 @@ export class PlaylistService{
 
         if(!item) return formatted(null, codes['Not Found'], "Variant not found in playlist");
 
+        // Move all items after this one one position down
+        const itemsAfter = await this.itemRepository.find({
+            where:{
+                playlist,
+                order: MoreThan(item.order)
+            }
+        })
+
+        await Promise.all(itemsAfter.map(async (item)=>{
+            item.order--;
+            await this.itemRepository.save(item);
+        }))
+
+
         await this.itemRepository.remove(item);
 
         return formatted(null, codes.Success);
@@ -332,6 +346,8 @@ export class PlaylistService{
                 savedCount++;
             }
         }));
+
+
 
         if(savedCount==0){
             if(outCount>0) return formatted(undefined, codes['Bad Request'], "No items changed, because all items were out of bounds");
