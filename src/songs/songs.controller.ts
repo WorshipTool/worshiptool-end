@@ -156,7 +156,8 @@ export class SongsController{
 
     @Get("playlist/search")
     async searchInPlaylist(@Query() params: GetSearchInPlaylistQuery, @User() user: UserObject){
-        return await this.playlistService.searchInPlaylist(params.guid, params.searchKey, params.page, user);
+        const result =  await this.playlistService.searchInPlaylist(params.guid, params.searchKey, params.page, user);
+        return result;
     }
 
     @Post("playlist/reorder")

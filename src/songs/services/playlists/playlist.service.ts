@@ -228,7 +228,7 @@ export class PlaylistService{
         return formatted(existingItem !== null,);
     }
 
-    async searchInPlaylist(guid: string, searchKey: string, page: number, user: User) : Promise<RequestResult<GetSearchInPlaylistResult[]>>{
+    async searchInPlaylist(guid: string, searchKey: string, page: number, user: User) : Promise<RequestResult<GetSearchInPlaylistResult>>{
         if(!guid) return formatted(undefined, codes['Bad Request'], "Guid is undefined");
 
         if(searchKey===undefined)searchKey="";
@@ -246,6 +246,9 @@ export class PlaylistService{
               where:{
                     variant: {
                         guid: In(variantGuids)
+                    },
+                    playlist: {
+                        guid
                     }
                 },
                 relations:{
