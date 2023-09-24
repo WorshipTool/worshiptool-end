@@ -20,7 +20,11 @@ export class MessengerController{
         else
             message += "někdo (neví se kdo) ";
         message += "ti poslal zpětnou vazbu: \\n";
-        message += "*"+ body.message + "*" ;
+
+        const lines = body.message.split("\\n");
+        lines.forEach(line=>{
+            message += "*" + line.trim() + "*\\n";
+        })
         this.messengerService.sendMessage(message);
 
         return formatted(undefined, codes.Success, "Message sent")
