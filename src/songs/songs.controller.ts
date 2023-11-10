@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { SongsService } from "./songs.service";
 import { codes, formatted } from "src/utils/formatted";
 import { GetSongQuery, SearchQuery, ListQuery, PostMergeBody, PostRenamePlaylistBody } from './dtos';
@@ -12,6 +12,13 @@ import { query } from "express";
 import { AllowOnlyAdmin } from "src/auth/decorators/allowonlyadmin.decorator";
 import { PlaylistService } from "./services/playlists/playlist.service";
 import { Chord } from "@pepavlin/sheet-api";
+import express from "express";
+import {spawnSync} from 'child_process';
+import { FileInterceptor } from "@nestjs/platform-express";
+import { diskStorage } from "multer";
+import {v4} from "uuid"; 
+import * as fs from 'fs'
+import { ParserService } from "./services/parser.service";
 
 @Controller("songs")
 export class SongsController{
@@ -19,7 +26,8 @@ export class SongsController{
     constructor(
         private songsService: SongsService,
         private addService: AddSongDataService,
-        private playlistService: PlaylistService
+        private playlistService: PlaylistService,
+        private parserService: ParserService
     ){}
 
     @AllowNonUser()
@@ -168,6 +176,61 @@ export class SongsController{
     @Post("playlist/item/transpose")
     async transposePlaylistItem(@Body() body: PostTransposePlaylistItemBody, @User() user: UserObject){
         return await this.playlistService.transposePlaylistItem(body.guid, body.key, user);
+    }
+
+    @AllowNonUser()
+    @Get("test")
+    async Test(){
+
+        const pythonProcess = await spawnSync('python3', [
+            'src/pythonscripts/Test.py'
+          ]);
+         const result = pythonProcess.stdout?.toString()?.trim();
+         const error = pythonProcess.stderr?.toString()?.trim();
+
+        if(error.length>0)
+            return formatted(
+                undefined,
+                codes["Unknown Error"],
+                error
+            )
+            
+        return formatted(
+            result
+        )
+    }
+
+    @AllowNonUser()
+    @Post("parse")
+    @UseInterceptors(
+        FileInterceptor('file', {
+          storage: diskStorage({
+            destination: 'public/temp',
+            filename: (req, file, cb) => {
+              cb(null, v4() + "."+file.originalname.split(".").pop());
+            },
+          }),
+        })
+    )
+    async parse(@UploadedFile() file: Express.Multer.File){
+        if(!file){
+            return formatted(
+                undefined,
+                codes["Bad Request"],
+                "No file provided"
+            )
+        }
+
+        const result = this.parserService.parse(file.path);
+
+        try{
+            fs.unlinkSync(file.path);
+        }catch(e){
+            console.log("Error while deleting file:", e);
+        }
+
+        return result;
+
     }
 
 

@@ -21,6 +21,7 @@ export class UserService{
     }
 
     async addNewUser(data: SignUpInputData){
+        console.log("data:",data)
         const hash = bcrypt.hashSync(data.password, saltRounds)
         const body : User = {
             ...data,

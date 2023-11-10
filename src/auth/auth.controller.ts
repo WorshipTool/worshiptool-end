@@ -22,6 +22,7 @@ export class AuthController{
     @AllowNonUser()
     @Post("signup")
     signup(@Body() data: SignUpInputData){
+        console.log(data)
         const result = this.authService.signup(data); 
         return result;
     }

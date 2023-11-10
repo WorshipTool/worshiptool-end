@@ -5,6 +5,7 @@ import { DatabaseModule } from "src/database/database.module";
 import { SongService } from "./services/song.service";
 import { MessengerModule } from "src/messenger/messenger.module";
 import { AddSongDataService } from "./services/adding/add.service";
+import { ParserService } from "./services/parser.service";
 
 @Module({
     imports: [
@@ -12,6 +13,6 @@ import { AddSongDataService } from "./services/adding/add.service";
         MessengerModule
     ],
     controllers: [SongsController],
-    providers: [SongsService]
+    providers: [SongsService, ParserService]
 })
 export class SongsModule{}
