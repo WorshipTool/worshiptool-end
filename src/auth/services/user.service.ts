@@ -1,8 +1,8 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { USER_REPOSITORY } from "src/database/constants";
-import { ROLES, User } from "src/database/entities/user.entity";
+import { LOGIN_TYPE, ROLES, User } from "src/database/entities/user.entity";
 import { Repository } from "typeorm";
-import { SignUpInputData } from "../dtos";
+import { PostGoogleLoginBody, SignUpInputData } from "../dtos";
 import * as bcrypt from "bcrypt"
 import { saltRounds } from "../constants";
 
@@ -21,7 +21,6 @@ export class UserService{
     }
 
     async addNewUser(data: SignUpInputData){
-        console.log("data:",data)
         const hash = bcrypt.hashSync(data.password, saltRounds)
         const body : User = {
             ...data,
@@ -30,11 +29,69 @@ export class UserService{
             guid: undefined,
             variants: [],
             playlists:[],
-            groups:[]
+            groups:[],
+            loginType: LOGIN_TYPE.Email,
+            googleId: null
         }
         await this.userRepository.createQueryBuilder()
             .insert().values(body).execute();
 
         
+    }
+
+    async loginOrSignupWithGoogle(data: PostGoogleLoginBody) : Promise<{user:User, justCreated: boolean, googlefirst: boolean}>{
+
+        const user = await this.userRepository.findOne({where:{
+            email: data.email
+        }});
+
+        if(user){
+            if(user.loginType===LOGIN_TYPE.Google)
+                return {
+                    user,
+                    justCreated: false,
+                    googlefirst: false
+                }
+            else{
+                await this.userRepository.update(user.guid, {
+                    loginType: LOGIN_TYPE.Google,
+                    googleId: data.userToken
+                })
+                return {
+                    user: await this.userRepository.findOne({
+                        where:{
+                            guid: user.guid
+                        }
+                    }),
+                    justCreated: false,
+                    googlefirst: true
+                }
+            }
+        }
+
+        
+        const body : User = {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            password: null,
+            role: ROLES.User,
+            guid: undefined,
+            variants: [],
+            playlists:[],
+            groups:[],
+            loginType: LOGIN_TYPE.Google,
+            googleId: data.userToken
+        }
+        await this.userRepository.createQueryBuilder()
+            .insert().values(body).execute();
+
+        return {
+            user: await this.userRepository.findOne({where:{
+                googleId: data.userToken
+            }}),
+            justCreated: true,
+            googlefirst: true
+        }
     }
 }

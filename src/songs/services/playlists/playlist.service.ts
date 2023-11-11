@@ -32,9 +32,10 @@ export class PlaylistService{
     ){}  
 
     async getPlaylistByUser(user: User) : Promise<GetPlaylistsResult>{
+        console.log("user:",user)
         const playlists = await this.playlistRepository.find({
             where:{
-                owner: user,
+                owner: {guid: user.guid},
                 isSelection: false
             }
         })

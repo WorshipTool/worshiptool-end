@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "./services/user.service";
-import { LoginInputData, LoginResult, SignUpInputData, SignUpResult, userToJWTFormat } from "./dtos";
+import { LoginInputData, LoginResult, PostGoogleLoginBody, SignUpInputData, SignUpResult, userToJWTFormat } from "./dtos";
 import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import { User } from "src/database/entities/user.entity";
-import { RequestResult, codes, messages } from "src/utils/formatted";
+import { RequestResult, codes, formatted, messages } from "src/utils/formatted";
 import { MessengerService } from "src/messenger/messenger.service";
 
 @Injectable()
@@ -24,6 +24,7 @@ export class AuthService{
             }
         }
 
+
         const same = await bcrypt.compare(data.password, user.password);
         if(!same){
             return{
@@ -32,12 +33,16 @@ export class AuthService{
             }
         }
 
+        return this.loginWithJwt(user);
+        
+    }
+
+    loginWithJwt(user: User){
         const token = this.jwtService.sign(userToJWTFormat(user));
         return {
             user,
             token
         }
-        
     }
 
     async signup(data: SignUpInputData) : Promise<RequestResult<any>>{
@@ -56,6 +61,23 @@ export class AuthService{
             message: messages[0],
             data: null
         };
+    }
+
+    async loginWithGoogle(data: PostGoogleLoginBody){
+        const {user, justCreated, googlefirst} = await this.userService.loginOrSignupWithGoogle(data);
+
+        if(justCreated){
+            this.messengerService.sendMessage(`Ahoj, do aplikace se právě (pomocí Google) zaregistroval nový uživatel (${data.firstName} ${data.lastName})`)
+        }else if(googlefirst){
+            this.messengerService.sendMessage(`Ahoj, do aplikace se právě (poprvé pomocí Google) přihlásil uživatel (${data.firstName} ${data.lastName})`)
+        }
+
+        return formatted(
+            this.loginWithJwt({...user, ...data}),
+            codes.Success,
+            justCreated?"Successfully signed up.":"Successfully logged in."
+
+        )
     }
 
     

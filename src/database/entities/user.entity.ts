@@ -10,6 +10,11 @@ export enum ROLES{
     "Admin"
 }
 
+export enum LOGIN_TYPE{
+    "Email",
+    "Google"
+}
+
 @Entity()
 export class User{
     @PrimaryGeneratedColumn("uuid")
@@ -21,11 +26,17 @@ export class User{
     @Column()
     lastName:string; 
 
-    @Column()
+    @Column({nullable:true})
     email:string; 
 
-    @Column()
+    @Column({nullable:true})
     password:string; 
+
+    @Column({default:  LOGIN_TYPE.Email})
+    loginType: LOGIN_TYPE;
+
+    @Column({nullable:true})
+    googleId: string;
 
     @Column()
     role:ROLES; 

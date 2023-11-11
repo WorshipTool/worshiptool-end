@@ -10,6 +10,13 @@ export interface LoginResult{
     token: string
 }
 
+export interface PostGoogleLoginBody{
+    userToken: string,
+    email: string
+    firstName: string,
+    lastName: string
+}
+
 export interface SignUpInputData{
     firstName: string,
     lastName: string,
