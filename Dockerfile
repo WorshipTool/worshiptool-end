@@ -35,6 +35,10 @@ FROM node:16-alpine as production
 # Optionally authenticate NPM registry
 # RUN npm set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
 
+
+# Instalace Pythonu
+RUN apk add --no-cache python3
+
 WORKDIR /app
 
 # Copy dependencies files
@@ -45,6 +49,9 @@ RUN npm ci --omit=dev
 
 # Copy production build
 COPY --from=development /app/dist/ ./dist/
+
+# Copy application sources
+COPY src/ /app/src/
 
 # Expose application port
 EXPOSE 3000
