@@ -26,10 +26,18 @@ export class ParserService{
     async parse(inputImagePath: string){
         const PARSER_SCRIPT_PATH = 'src/pythonscripts/image-parser/main.py'
 
-        const TEMP_IMAGES_FOLDER_PATH = 'public/temp/images'
-        const DETECTION_MODEL_PATH = 'src/pythonscripts/parser/240frames.pt'
+        const TEMP_IMAGES_FOLDER_PATH = 'public/temp'
+        const DETECTION_MODEL_PATH = 'src/pythonscripts/image-parser/240frames.pt'
         const OUTPUT_RESULT_PATH = `public/temp/${v4()}.json`
         
+        // Create public folder if it doesn't exist
+        if (!fs.existsSync('public')){
+            fs.mkdirSync('public');
+        }
+
+        if (!fs.existsSync(TEMP_IMAGES_FOLDER_PATH)){
+            fs.mkdirSync(TEMP_IMAGES_FOLDER_PATH);
+        }
 
         const pythonProcess = await spawnSync('python3', [
             PARSER_SCRIPT_PATH,
