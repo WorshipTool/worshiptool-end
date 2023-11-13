@@ -35,7 +35,7 @@ FROM node:16-alpine as production
 
 
 # Instalace Pythonu a dalsich balicku
-RUN apk add --no-cache python3 libstdc++
+RUN apk add --no-cache python3 py3-pip libstdc++
 RUN apk add --no-cache build-base
 RUN pip install torch===1.13.0+cpu torchvision===0.2.2 -f https://download.pytorch.org/whl/torch_stable.html
 
