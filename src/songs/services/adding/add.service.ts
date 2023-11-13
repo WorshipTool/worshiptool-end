@@ -110,11 +110,11 @@ export class AddSongDataService{
             let variantGuid : string = undefined;
             //find same variant
             if(data.sheetData){
-                const r = await this.songService.findMostSimilarVariant(data.sheetData);
-                if(r&&r.similarity>0.95){
-                    //found
-                    variantGuid = r.variant.guid;
-                }
+                // const r = await this.songService.findMostSimilarVariant(data.sheetData);
+                // if(r&&r.similarity>0.95){
+                //     //found
+                //     variantGuid = r.variant.guid;
+                // }
             }
 
             if(!variantGuid){
