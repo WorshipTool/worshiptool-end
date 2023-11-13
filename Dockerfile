@@ -8,8 +8,6 @@ FROM node:16-alpine as development
 # RUN npm set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
 
 
-# Instalace Pythonu
-RUN apk add --no-cache python3
 
 WORKDIR /app
 
@@ -36,8 +34,10 @@ FROM node:16-alpine as production
 # RUN npm set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
 
 
-# Instalace Pythonu
-RUN apk add --no-cache python3
+# Instalace Pythonu a dalsich balicku
+RUN apk add --no-cache python3 libstdc++
+RUN apk add --no-cache build-base
+RUN pip install torch===1.13.0+cpu torchvision===0.2.2 -f https://download.pytorch.org/whl/torch_stable.html
 
 WORKDIR /app
 
