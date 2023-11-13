@@ -7,6 +7,10 @@ FROM node:16-alpine as development
 # Optionally authenticate NPM registry
 # RUN npm set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
 
+
+# Instalace Pythonu
+RUN apk add --no-cache python3
+
 WORKDIR /app
 
 # Copy configuration files
@@ -17,7 +21,7 @@ COPY package*.json ./
 RUN npm ci
 
 # Copy application sources (.ts, .tsx, js)
-COPY src/ src/
+COPY src/ /app/src/
 
 # Build application (produces dist/ folder)
 RUN npm run build
