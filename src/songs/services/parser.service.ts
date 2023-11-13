@@ -49,6 +49,7 @@ export class ParserService{
         const result = pythonProcess.stdout?.toString()?.trim();
         const error = pythonProcess.stderr?.toString()?.trim();
 
+        console.log(pythonProcess)
         console.log(result);
         console.log(error);
 
