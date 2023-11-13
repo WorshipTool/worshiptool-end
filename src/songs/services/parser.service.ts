@@ -49,6 +49,8 @@ export class ParserService{
         const result = pythonProcess.stdout?.toString()?.trim();
         const error = pythonProcess.stderr?.toString()?.trim();
 
+        console.log(result);
+        console.log(error);
 
         // Read output json file and delete it
         const outputData = fs.readFileSync(OUTPUT_RESULT_PATH, 'utf8');
