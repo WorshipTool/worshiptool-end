@@ -32,9 +32,7 @@ FROM node:16-buster as production
 # RUN npm set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
 
 # Instalace Pythonu a dalších balíčků
-RUN apt-get update && apt-get install -y python3 python3-pip libstdc++
-RUN apt-get install -y build-essential
-RUN pip install torch===2.1.0+cpu torchvision===0.2.2 torchaudio==2.1.0+cpu  -f https://download.pytorch.org/whl/torch_stable.html
+RUN apt-get update && apt-get install -y python3 python3-pip libstdc++6
 
 WORKDIR /app
 
