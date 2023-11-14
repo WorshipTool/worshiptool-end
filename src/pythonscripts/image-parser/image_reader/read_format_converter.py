@@ -1,3 +1,5 @@
+from typing import List
+
 from .read_word_data import ReadWordData, Bounds
 
 class ReadFormatConverter:
@@ -16,7 +18,7 @@ class ReadFormatConverter:
         )
 
     def convert_to_custom_format(input):
-        words : list[ReadWordData] = []
+        words : List[ReadWordData] = []
         for i in range(len(input["text"])):
             wordData = ReadFormatConverter.getWordDataWithIndex(i, input)
 

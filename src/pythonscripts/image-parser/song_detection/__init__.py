@@ -1,3 +1,5 @@
+from typing import List
+
 import torch
 from PIL import Image
 import cv2 as cv
@@ -14,7 +16,7 @@ def prepare_model(modelPath: str):
     model = torch.hub.load('ultralytics/yolov5', 'custom', path=modelPath, force_reload=False)
     modelReady = True
 
-def detect(imagePath: str, tempFolderPath: str,show: bool = False) -> list[CustomDetect]:
+def detect(imagePath: str, tempFolderPath: str,show: bool = False) -> List[CustomDetect]:
     if not modelReady:
         print("Model not ready. Please call prepare_model() first.")
         return []
@@ -36,7 +38,7 @@ def detect(imagePath: str, tempFolderPath: str,show: bool = False) -> list[Custo
     cropedImages = results.crop(save=False)
 
 
-    formattedResults : list[CustomDetect] = []
+    formattedResults : List[CustomDetect] = []
 
     for crop in cropedImages:
         imageData = crop["im"]

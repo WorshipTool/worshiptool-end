@@ -1,7 +1,9 @@
+from typing import List
+
 from .word import Word
 
 class Line:
-    def __init__(self, centerY : float, chordLinePossibility: float, words: list[Word]):
+    def __init__(self, centerY : float, chordLinePossibility: float, words: List[Word]):
         self.centerY = centerY
         self.chordLinePossibility = chordLinePossibility
         self.words = words  
