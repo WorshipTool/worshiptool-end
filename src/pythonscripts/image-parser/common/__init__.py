@@ -1,3 +1,5 @@
+from typing import List
+
 import json
 import sys
 
@@ -10,14 +12,14 @@ def write_json_to_file(data, file_path):
     with open(file_path, 'w') as outfile:
         outfile.write(jsonString)
 
-def load_argument (key: str, allKeys: list[str], returnMultipleValues: bool = False):
+def load_argument (key: str, allKeys: List[str], returnMultipleValues: bool = False):
     args = sys.argv
 
     if key not in args:
         print("Key" + key + " is missing in arguments")
         sys.exit()
 
-    values : list[str] = []
+    values : List[str] = []
 
     keyIndex = args.index(key)
     for index, arg in enumerate(args):
