@@ -1,6 +1,6 @@
 import re
 import math
-from typing import List
+from typing import List, Tuple
 
 from .sheet import Sheet
 from image_reader.read_word_data import ReadWordData
@@ -19,7 +19,7 @@ def is_it_chord(chord):
     else:
         return False
 
-def get_title_from_sections(sections: List[Section]) -> tuple[str, List[Section]]:
+def get_title_from_sections(sections: List[Section]) -> Tuple[str, List[Section]]:
     if len(sections) == 0 or len(sections[0].lines) == 0:
         return "Název písně", sections
     
