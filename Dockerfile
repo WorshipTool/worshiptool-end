@@ -1,5 +1,5 @@
 # Building layer
-FROM node:14-debian as development
+FROM ubuntu:22.04 as development
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ COPY src/ /app/src/
 RUN npm run build
 
 # Runtime (production) layer
-FROM node:14-debian as production
+FROM ubuntu:22.04 as production
 
 WORKDIR /app
 
