@@ -1,5 +1,5 @@
 # Building layer
-FROM node:14-debian as development
+FROM node:16-buster as development
 
 WORKDIR /app
 
@@ -17,7 +17,8 @@ COPY src/ /app/src/
 RUN npm run build
 
 # Runtime (production) layer
-FROM node:14-debian as production
+FROM node:16-buster as production
+
 
 WORKDIR /app
 
