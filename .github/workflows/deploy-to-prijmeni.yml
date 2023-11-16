@@ -15,6 +15,14 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: "Cancel already running action"
+        uses: potiuk/cancel-workflow-runs@master
+        with:
+          cancelMode: allDuplicates
+          cancelFutureDuplicates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+    
       - uses: actions/checkout@v3
 
       - name: Login to Docker Hub
