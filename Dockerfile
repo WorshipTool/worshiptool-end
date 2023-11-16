@@ -1,5 +1,5 @@
 # Building layer
-FROM node:20-buster as development
+FROM node:21-bullseye as development
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ COPY src/ /app/src/
 RUN npm run build
 
 # Runtime (production) layer
-FROM node:20-buster as production
+FROM node:21-bullseye as production
 
 
 WORKDIR /app
