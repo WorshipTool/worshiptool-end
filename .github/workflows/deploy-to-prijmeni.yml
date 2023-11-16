@@ -15,7 +15,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: "Cancel already running action"
+      - name: "Cancel already running action."
         uses: potiuk/cancel-workflow-runs@master
         with:
           cancelMode: allDuplicates
