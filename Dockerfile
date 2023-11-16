@@ -1,5 +1,5 @@
 # Building layer
-FROM ubuntu:22.04 as development
+FROM node:20-buster as development
 
 WORKDIR /app
 
@@ -17,7 +17,8 @@ COPY src/ /app/src/
 RUN npm run build
 
 # Runtime (production) layer
-FROM ubuntu:22.04 as production
+FROM node:20-buster as production
+
 
 WORKDIR /app
 
