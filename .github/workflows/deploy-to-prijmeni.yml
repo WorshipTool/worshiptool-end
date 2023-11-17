@@ -38,3 +38,9 @@ jobs:
       - name: Redeploy application
         run: |
           ssh "${SERVER_USERNAME}@${SERVER_URL}" "cd /root/project-deploy/worshiptool && bash ./redeploy.sh" 
+          name: Deploy Stage
+      - uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'https://chvalotce.cz/sendmessage'
+          method: 'POST'
+          data: '{"message": "Nová verze backendu byla právě nasazena."}'
