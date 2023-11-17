@@ -30,4 +30,14 @@ export class MessengerController{
         return formatted(undefined, codes.Success, "Message sent")
     }
 
+    @AllowNonUser()
+    @Post("sendmessage")
+    postMessage(@Body() body: {message: string}){
+        if(!body.message){
+            return formatted(undefined, codes["Bad Request"], "Message is empty")
+        }
+        this.messengerService.sendMessage(body.message);
+        return formatted(undefined, codes.Success, "Message sent")
+    }
+
 }
