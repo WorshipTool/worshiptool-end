@@ -35,10 +35,12 @@ jobs:
           key: ${{ secrets.PRIJMENI_SSH_KEY }}
           known_hosts: ${{ secrets.PRIJMENI_SSH_KNOWN_HOSTS }}
           name: Deploy Stage
+          
       - name: Redeploy application
         run: |
           ssh "${SERVER_USERNAME}@${SERVER_URL}" "cd /root/project-deploy/worshiptool && bash ./redeploy.sh" 
           name: Deploy Stage
+          
       - name: Send message to Messenger
         uses: fjogeleit/http-request-action@v1
         with:
