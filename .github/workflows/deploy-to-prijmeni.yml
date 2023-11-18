@@ -38,3 +38,13 @@ jobs:
       - name: Redeploy application
         run: |
           ssh "${SERVER_USERNAME}@${SERVER_URL}" "cd /root/project-deploy/worshiptool && bash ./redeploy.sh" 
+      
+      - name: Send message to Messenger
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'https://chvalotce.cz/api/sendmessage'
+          method: 'POST'
+          customHeaders: '{"Content-Type": "application/x-www-form-urlencoded"}'
+          data: '{"message": "Nová verze backendu byla právě spuštěna."}'
+          timeout: 30000
+          preventFailureOnNoResponse: true
