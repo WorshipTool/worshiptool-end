@@ -40,8 +40,11 @@ jobs:
           ssh "${SERVER_USERNAME}@${SERVER_URL}" "cd /root/project-deploy/worshiptool && bash ./redeploy.sh" 
           name: Deploy Stage
       - name: Send message to Messenger
-        uses: dkershner6/post-api-call-action@v1
+        uses: fjogeleit/http-request-action@v1
         with:
-          url: 'https://chvalotce.cz/sendmessage'
-          headers: '{"Content-Type": "application/x-www-form-urlencoded"}'
-          data: '{"message": "Nová verze backendu byla právě nasazena."}'
+          url: 'https://chvalotce.cz/api/sendmessage'
+          method: 'POST'
+          customHeaders: '{"Content-Type": "application/x-www-form-urlencoded"}'
+          data: '{"message": "Nová verze backendu byla právě spuštěna."}'
+          timeout: 30000
+          preventFailureOnNoResponse: true
