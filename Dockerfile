@@ -23,7 +23,7 @@ FROM node:21-bullseye-slim as production
 
 WORKDIR /app
 
-ENV TESSDATA_PREFIX=/usr/share/tessdata
+ENV TESSDATA_PREFIX=/usr/share/tessdata/
 
 # Copy dependencies files
 COPY package*.json ./
