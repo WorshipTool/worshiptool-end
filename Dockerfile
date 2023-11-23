@@ -23,7 +23,25 @@ FROM node:21-bullseye-slim as production
 
 WORKDIR /app
 
+# -------------------- Install dependencies for python ------------------
+
+# Aktualizace balíčků a instalace potřebných nástrojů
+RUN apt-get update && \
+    apt-get install -y python3-pip libopencv-dev python3-opencv tesseract-ocr wget
+
+# Aktualizace pip a instalace Python knihoven
+RUN pip3 install --upgrade setuptools pip && \
+    pip3 install --pre torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html && \
+    pip3 install pytesseract pandas requests ultralytics
+
+# Vytvoření adresáře pro tessdata a stažení trénovaných dat pro Tesseract
 ENV TESSDATA_PREFIX=/usr/share/tessdata/
+
+RUN mkdir -p $TESSDATA_PREFIX && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/ces.traineddata -O $TESSDATA_PREFIX/ces.traineddata && \
+    wget https://github.com/tesseract-ocr/tessdata/raw/main/slk.traineddata -O $TESSDATA_PREFIX/slk.traineddata
+
+# -------------------- End of python dependencies ------------------
 
 # Copy dependencies files
 COPY package*.json ./
