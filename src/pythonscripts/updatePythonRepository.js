@@ -16,7 +16,7 @@ exec(`rimraf ${repoPath}`, (error, stdout, stderr) => {
     return;
   }
 
-  exec(`mkdir ${repoName}`, ()=>{
+  exec(`cd ${repoPath}/.. && mkdir ${repoName}`, ()=>{
     console.log(`Folder ${repoPath} has been successfully prepared for cloning...`);
   
     // Clone the repository
