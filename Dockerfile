@@ -28,7 +28,7 @@ WORKDIR /app
 # Aktualizace balíčků a instalace potřebných nástrojů
 # Aktualizace balíčků a instalace potřebných nástrojů
 RUN apt-get update && \
-    apt-get install -y python3-pip libopencv-dev python3-opencv tesseract-ocr wget
+    apt-get install -y python3-pip libopencv-dev python3-opencv tesseract-ocr wget git
 
 
 # Instalace Python knihoven ze souboru requirements.txt
