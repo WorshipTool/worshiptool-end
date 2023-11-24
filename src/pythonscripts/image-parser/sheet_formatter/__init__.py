@@ -1,6 +1,5 @@
 import re
 import math
-from typing import List, Tuple
 
 from .sheet import Sheet
 from image_reader.read_word_data import ReadWordData
@@ -19,7 +18,7 @@ def is_it_chord(chord):
     else:
         return False
 
-def get_title_from_sections(sections: List[Section]) -> Tuple[str, List[Section]]:
+def get_title_from_sections(sections: list[Section]) -> tuple[str, list[Section]]:
     if len(sections) == 0 or len(sections[0].lines) == 0:
         return "Název písně", sections
     
@@ -53,13 +52,13 @@ def get_title_from_sections(sections: List[Section]) -> Tuple[str, List[Section]
     #         break
     # return title.strip(), lines
 
-def split_lines_to_sections(lines: List[Line]) -> List[Section]:
+def split_lines_to_sections(lines: list[Line]) -> list[Section]:
 
     # Calculate average Y line distance
     minLineDistance = 0
     maxLineDistance = 0
     avgLineDistance = 0
-    lineDistances : List[float] = []
+    lineDistances : list[float] = []
 
     for index, line in enumerate(lines):
         if(index==0): continue
@@ -77,7 +76,7 @@ def split_lines_to_sections(lines: List[Line]) -> List[Section]:
 
     # Split lines to sections by distance threshold
     distanceThreshold = avgLineDistance*1.5
-    sections : List[Section] = []
+    sections : list[Section] = []
     for index, line in enumerate(lines):
         if(index==0): isNewSection = True
         else: 
@@ -106,7 +105,7 @@ def filter_lines(lines, show=False):
     return lines
 
 
-def lines_to_formatted_string(lines: List[Line]) -> str:
+def lines_to_formatted_string(lines: list[Line]) -> str:
     data = ""
 
     for lineIndex, line in enumerate(lines):
@@ -165,7 +164,7 @@ def lines_to_formatted_string(lines: List[Line]) -> str:
     data = data[:-1]
     return data
 
-def sections_to_formatted_string(sections: List[Section]) -> str:
+def sections_to_formatted_string(sections: list[Section]) -> str:
     sectionCountPerName : dict[str, int]= {}
 
     sectionStrings = []
@@ -187,8 +186,8 @@ def sections_to_formatted_string(sections: List[Section]) -> str:
         
     return  "\n\n".join(sectionStrings)
 
-def read_word_list_to_lines(wordData: List[ReadWordData]) -> List[Line]:
-    outputLines : List[Line] = []
+def read_word_list_to_lines(wordData: list[ReadWordData]) -> list[Line]:
+    outputLines : list[Line] = []
 
     for word in wordData:
         text = word.text
@@ -218,7 +217,7 @@ def read_word_list_to_lines(wordData: List[ReadWordData]) -> List[Line]:
             outputLines[i].words.append(word)
     return outputLines
 
-def format(input: List[ReadWordData], inputImagePath: str, cropedImageData) -> Sheet:
+def format(input: list[ReadWordData], inputImagePath: str, cropedImageData) -> Sheet:
     lines = read_word_list_to_lines(input)
 
     sections = split_lines_to_sections(lines)
