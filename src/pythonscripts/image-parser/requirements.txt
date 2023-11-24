@@ -1,7 +1,0 @@
-torch
-torchvision
-torchaudio
-pytesseract
-pandas
-requests
-ultralytics
