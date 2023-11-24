@@ -31,7 +31,7 @@ RUN apt-get update && \
     apt-get install -y python3-pip libopencv-dev python3-opencv tesseract-ocr wget
 
 
-Instalace Python knihoven ze souboru requirements.txt
+# Instalace Python knihoven ze souboru requirements.txt
 RUN pip3 install --upgrade setuptools pip && \
     pip3 install -r /app/src/pythonscripts/image-parser/requirements.txt
 
