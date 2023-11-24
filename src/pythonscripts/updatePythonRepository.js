@@ -13,7 +13,7 @@ exec(`rimraf ${repoPath}`, (error, stdout, stderr) => {
     console.error(`Error while deleting folder: ${error}`);
     return;
   }
-
+  exec(`mkdir ${repoUrl}`)
   console.log(`Folder ${repoPath} has been successfully prepared for cloning...`);
 
   // Clone the repository
