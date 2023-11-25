@@ -8,7 +8,6 @@ const repoPath = path.resolve(__dirname, 'image-parser');
 // Set the repository URL
 const repoUrl = 'https://github.com/WorshipTool/image-parser.git';
 
-
 // Remove the folder regardless of errors
 exec(`rimraf ${repoPath}`, (error, stdout, stderr) => {
   if (error) {
@@ -16,8 +15,18 @@ exec(`rimraf ${repoPath}`, (error, stdout, stderr) => {
     return;
   }
 
-  exec(`cd ${repoPath}/.. && mkdir ${repoName}`, ()=>{
+  console.log(stdout)
+  console.log(stderr)
+
+  
+
+  exec(`cd ${repoPath}/.. && mkdir ${repoName}`, (error, stdout, stderr)=>{
+
+    console.log(stdout)
+    console.log(stderr)
+  
     console.log(`Folder ${repoPath} has been successfully prepared for cloning...`);
+  
   
     // Clone the repository
     exec(`git clone ${repoUrl} ${repoPath}`, (error, stdout, stderr) => {
@@ -25,6 +34,11 @@ exec(`rimraf ${repoPath}`, (error, stdout, stderr) => {
         console.error(`Error while cloning the repository: ${error}`);
         return;
       }
+
+
+      console.log(stdout)
+      console.log(stderr)
+    
   
       console.log(`Repository has been successfully cloned to ${repoPath}.`);
     });
