@@ -8,6 +8,8 @@ const repoPath = path.resolve(__dirname, 'image-parser');
 // Set the repository URL
 const repoUrl = 'https://github.com/WorshipTool/image-parser.git';
 
+console.log("Repo path: " + repoPath)
+
 // Remove the folder regardless of errors
 exec(`rimraf ${repoPath}`, (error, stdout, stderr) => {
   if (error) {
