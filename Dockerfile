@@ -12,7 +12,7 @@ COPY package*.json ./
 RUN npm ci
 
 # # Copy application sources (.ts, .tsx, js)
-# COPY src/ /app/src/
+COPY src/ /app/src/
 
 RUN npm install rimraf -g
 
