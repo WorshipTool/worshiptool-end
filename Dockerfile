@@ -15,7 +15,7 @@ RUN npm ci
 COPY src/ /app/src/
 
 # Install git to be able to install dependencies from git repositories
-RUN apt-get install -y git
+RUN apt-get update && apt-get install -y git
 
 # Build application (produces dist/ folder)
 RUN npm run build
