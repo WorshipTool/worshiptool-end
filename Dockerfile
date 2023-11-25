@@ -29,7 +29,6 @@ FROM node:21-bullseye-slim as production
 WORKDIR /app
 
 
-RUN npm install rimraf -g
 
 # -------------------- Install dependencies for python ------------------
 
@@ -38,6 +37,8 @@ RUN npm install rimraf -g
 RUN apt-get update && \
     apt-get install -y python3-pip libopencv-dev python3-opencv tesseract-ocr wget git
 
+# Clonování repozitáře s parserem
+RUN npm run update-parser-repository
 
 # Instalace Python knihoven ze souboru requirements.txt
 RUN pip3 install --upgrade setuptools pip && \
