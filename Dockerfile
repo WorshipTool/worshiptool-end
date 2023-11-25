@@ -14,6 +14,9 @@ RUN npm ci
 # Copy application sources (.ts, .tsx, js)
 COPY src/ /app/src/
 
+# Install git to be able to install dependencies from git repositories
+RUN apt-get install -y git
+
 # Build application (produces dist/ folder)
 RUN npm run build
 
@@ -28,7 +31,7 @@ WORKDIR /app
 # Aktualizace balíčků a instalace potřebných nástrojů
 # Aktualizace balíčků a instalace potřebných nástrojů
 RUN apt-get update && \
-    apt-get install -y python3-pip libopencv-dev python3-opencv tesseract-ocr wget git
+    apt-get install -y python3-pip libopencv-dev python3-opencv tesseract-ocr wget
 
 
 # Instalace Python knihoven ze souboru requirements.txt
