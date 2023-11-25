@@ -14,6 +14,8 @@ RUN npm ci
 # Copy application sources (.ts, .tsx, js)
 COPY src/ /app/src/
 
+RUN npm install rimraf -g
+
 # Install git to be able to install dependencies from git repositories
 RUN apt-get update && apt-get install -y git
 
