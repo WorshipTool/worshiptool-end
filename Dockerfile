@@ -11,8 +11,8 @@ COPY package*.json ./
 # Install dependencies from package-lock.json, see https://docs.npmjs.com/cli/v7/commands/npm-ci
 RUN npm ci
 
-# Copy application sources (.ts, .tsx, js)
-COPY src/ /app/src/
+# # Copy application sources (.ts, .tsx, js)
+# COPY src/ /app/src/
 
 RUN npm install rimraf -g
 
@@ -37,8 +37,6 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y python3-pip libopencv-dev python3-opencv tesseract-ocr wget git
 
-# Clonování repozitáře s parserem
-RUN npm run update-parser-repository
 
 # Instalace Python knihoven ze souboru requirements.txt
 # RUN pip3 install --upgrade setuptools pip && \
@@ -60,8 +58,11 @@ RUN npm ci --omit=dev
 # Copy production build
 COPY --from=development /app/dist/ ./dist/
 
-# Copy application sources
-COPY src/ /app/src/
+# Copy production build
+COPY --from=development /app/src/pythonscripts/ ./src/pythonscripts/
+
+# # Copy application sources
+# COPY src/ /app/src/
 
 # Expose application port
 EXPOSE 3000
