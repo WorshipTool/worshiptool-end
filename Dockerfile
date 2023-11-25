@@ -30,6 +30,20 @@ WORKDIR /app
 
 
 
+# Copy dependencies files
+COPY package*.json ./
+
+# Install runtime dependencies (without dev/test dependencies)
+RUN npm ci --omit=dev
+
+# Copy production build
+COPY --from=development /app/dist/ ./dist/
+
+# Copy production build
+COPY --from=development /app/src/pythonscripts/ ./src/pythonscripts/
+
+
+
 # -------------------- Install dependencies for python ------------------
 
 # Aktualizace balíčků a instalace potřebných nástrojů
@@ -49,17 +63,6 @@ RUN mkdir -p $TESSDATA_PREFIX && \
     wget https://github.com/tesseract-ocr/tessdata/raw/main/slk.traineddata -O $TESSDATA_PREFIX/slk.traineddata
 # -------------------- End of python dependencies ------------------
 
-# Copy dependencies files
-COPY package*.json ./
-
-# Install runtime dependencies (without dev/test dependencies)
-RUN npm ci --omit=dev
-
-# Copy production build
-COPY --from=development /app/dist/ ./dist/
-
-# Copy production build
-COPY --from=development /app/src/pythonscripts/ ./src/pythonscripts/
 
 # # Copy application sources
 # COPY src/ /app/src/
