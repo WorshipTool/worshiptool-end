@@ -53,8 +53,9 @@ RUN apt-get update && \
 
 
 # Instalace Python knihoven ze souboru requirements.txt
-# RUN pip3 install --upgrade setuptools pip && \
-#     pip3 install -r /app/src/pythonscripts/image-parser/requirements.txt
+RUN pip3 install --upgrade setuptools pip && \
+    pip3 install --pre torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html && \
+    pip3 install pytesseract pandas requests ultralytics
 
 # Vytvoření adresáře pro tessdata a stažení trénovaných dat pro Tesseract
 ENV TESSDATA_PREFIX /usr/share/tesseract-ocr/4.00/tessdata
