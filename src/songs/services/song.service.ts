@@ -431,5 +431,19 @@ export class SongService{
       };
     }
 
-    
+    async getSongListOfUser(user: User) : Promise<SongVariantDTO[]>{
+      const variants =  await this.variantRepository.find({
+        where:{
+          createdBy: user
+        },
+        order: {
+          verified: "DESC"
+        
+        }
+      })
+
+      return await Promise.all(variants.map(async (v)=>{
+        return await this.getVariantByGuid(v.guid);
+      }))
+    }
 }

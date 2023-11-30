@@ -233,5 +233,12 @@ export class SongsController{
 
     }
 
+    @Get("mysongs")
+    async getSongListOfUser(@User() user: UserObject){
+        return formatted({
+            variants: await this.songsService.getSongListOfUser(user)
+        });
+    }
+
 
 }

@@ -10,6 +10,7 @@ import { Song } from "src/database/entities/song.entity";
 import { GetPlaylistsResult, PostCreatePlaylistBody, PostCreatePlaylistResult } from './services/playlists/dtos';
 import { PlaylistService } from './services/playlists/playlist.service';
 import { SongVariant } from "src/database/entities/songvariant.entity";
+import { SongVariantDTO } from "src/dtos/SongVariantDTO";
 
 @Injectable()
 export class SongsService{
@@ -163,5 +164,9 @@ export class SongsService{
 
     async getRandomVariant(){
         return await this.songService.getRandomVariant();
+    }
+
+    async getSongListOfUser(user: User) : Promise<SongVariantDTO[]>{
+        return await this.songService.getSongListOfUser(user);
     }
 }
