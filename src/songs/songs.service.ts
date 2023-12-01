@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { SongService } from "./services/song.service";
-import { GetSongQuery, GetSongResult, SearchResult, SongData, SongDataVariant, ListResult, PostMergeResult } from './dtos';
+import { GetSongQuery, GetSongResult, SearchResult, SongData, SongDataVariant, ListResult, PostMergeResult, PostEditVariantBody } from './dtos';
 import { RequestResult, codes, formatted } from "src/utils/formatted";
 import { CreatorService } from "./services/creator.service";
 import { ROLES, User } from "src/database/entities/user.entity";
@@ -168,5 +168,9 @@ export class SongsService{
 
     async getSongListOfUser(user: User) : Promise<SongVariantDTO[]>{
         return await this.songService.getSongListOfUser(user);
+    }
+
+    async editVariant(body: PostEditVariantBody, user: User){
+        return await this.songService.editVariant(body, user);
     }
 }
