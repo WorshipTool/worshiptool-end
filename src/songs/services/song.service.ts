@@ -8,10 +8,12 @@ import { NewSongData, NewSongDataToVariant} from "./adding/dtos";
 import { ROLES, User } from "src/database/entities/user.entity";
 import { skipForPage, takePerPage } from '../contants';
 import normalizeSearchText from "src/utils/normalizeSearchText";
-import { ListSongData, SearchSongData } from "../dtos";
+import { ListSongData, PostEditVariantBody, SearchSongData } from "../dtos";
 import { SongVariantDTO } from "src/dtos/SongVariantDTO";
 import { mapSourceToDTO } from "src/dtos/SourceDTO";
 import { PlaylistItem } from "src/database/entities/playlistitem.entity";
+import { codes, formatted } from "src/utils/formatted";
+import { Sheet } from "@pepavlin/sheet-api";
 
 @Injectable()
 export class SongService{
@@ -445,5 +447,50 @@ export class SongService{
       return await Promise.all(variants.map(async (v)=>{
         return await this.getVariantByGuid(v.guid);
       }))
+    }
+
+    async editVariant(body: PostEditVariantBody, user: User){
+      const variant = await this.variantRepository.findOne({
+        where:{
+          guid: body.guid
+        },
+        relations:{
+          song:true,
+          createdBy:true,
+          prefferedTitle:true,
+          sources:true,
+          titles:true,
+          links:true,
+        }
+      });
+
+      if(variant.createdBy.guid!=user.guid && 
+        !(user.role==ROLES.Admin && variant.createdBy.role==ROLES.Loader))
+        return formatted(null, codes.Unauthorized, "User doesn't have permission to edit this variant");
+
+      if(!variant) 
+        return formatted(null, codes["Not Found"], "Variant not found");
+
+      if(variant.verified)
+        return formatted(null, codes["Bad Request"], "Cannot edit verified variant");
+
+      variant.sheetData = body.sheetData;
+      const sheetText = (new Sheet(body.sheetData)).sections.map((s)=>s.text).join("");
+      variant.searchValue = normalizeSearchText(sheetText);
+
+      await this.variantRepository.save(variant);
+
+      // Edit preferred title
+      const title = await this.nameRepository.findOne({
+        where:{
+          guid: variant.prefferedTitle.guid
+        }
+      });
+      title.title = body.title;
+      title.searchValue = normalizeSearchText(body.title);
+      const r = await this.nameRepository.save(title);
+
+
+      return formatted(null);
     }
 }

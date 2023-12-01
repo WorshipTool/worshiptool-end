@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { SongsService } from "./songs.service";
 import { codes, formatted } from "src/utils/formatted";
-import { GetSongQuery, SearchQuery, ListQuery, PostMergeBody, PostRenamePlaylistBody } from './dtos';
+import { GetSongQuery, SearchQuery, ListQuery, PostMergeBody, PostRenamePlaylistBody, PostEditVariantBody } from './dtos';
 import { JwtAuthGuard } from "src/auth/jwt/jwt-auth.guard";
 import { User } from "src/auth/decorators/user.decorator";
 import { ROLES, User as UserObject } from "src/database/entities/user.entity";
@@ -238,6 +238,12 @@ export class SongsController{
         return formatted({
             variants: await this.songsService.getSongListOfUser(user)
         });
+    }
+
+    @Post("edit")
+    async editVariant(@Body() body: PostEditVariantBody, @User() user: UserObject){
+        console.log(body);
+        return this.songsService.editVariant(body, user);
     }
 
 

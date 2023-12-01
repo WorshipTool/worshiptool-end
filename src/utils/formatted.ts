@@ -12,7 +12,8 @@ export const codes = {
     "Not Found": 404,
     "Already Added": 409,
     "This name is already taken": 410,
-    "Email Already Exists": 471
+    "Email Already Exists": 471,
+    "Not Implemented": 501,
 }
 
 export const messages = {
@@ -23,7 +24,8 @@ export const messages = {
     [404] : "Not Found",
     [409] : "Already Added",
     [410] : "This name is already taken",
-    [471] : "Email Already Exists"
+    [471] : "Email Already Exists",
+    [501] : "Not Implemented"
 }
 
 export function formatted<T>(data:T, statusCode?:number, message?:string) : RequestResult<any>{

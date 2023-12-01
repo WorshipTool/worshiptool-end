@@ -112,3 +112,9 @@ export interface PostRenamePlaylistBody{
     title: string
     
 }
+
+export interface PostEditVariantBody{
+    guid: string,
+    sheetData: string,
+    title: string
+}
