@@ -153,8 +153,6 @@ export class SongService{
           }
           
         }); 
-
-        console.log(variants);
         
         const result = variants.sort(()=>Math.random()-0.5).slice(0, takePerPage);
         return result;
