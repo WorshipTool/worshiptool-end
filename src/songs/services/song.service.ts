@@ -154,8 +154,8 @@ export class SongService{
           
         }); 
         
-        const result = variants.sort(()=>Math.random()-0.5).slice(0, takePerPage);
-        return result;
+        const random = variants.sort(()=>Math.random()-0.5)
+        return random.slice(0, takePerPage);;
     }
 
     async list(page:number) : Promise<ListSongData[]>{
