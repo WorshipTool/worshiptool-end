@@ -153,11 +153,10 @@ export class SongService{
           }
           
         }); 
-
-        console.log(variants);
         
-        const result = variants.sort(()=>Math.random()-0.5).slice(0, takePerPage);
-        return result;
+        const random = variants.sort(()=>Math.random()-0.5)
+        console.log("Random: ", random);
+        return random.slice(0, takePerPage);;
     }
 
     async list(page:number) : Promise<ListSongData[]>{

@@ -41,13 +41,20 @@ export class SongsService{
             default:
                 break;
         }
-        return{songs: await Promise.all( variants.map(async (s)=>{
+
+        console.log("Variants before: ", variants)
+
+        const songs = await Promise.all( variants.map(async (s)=>{
             const data = await this.songService.getVariantByGuid(s.guid);;
             return {
                 guid: data.songGuid,
                 variant: data
             }
-        }))};
+        }));
+
+        console.log("Variants after: ", songs)
+
+        return {songs}
           
     }
 
