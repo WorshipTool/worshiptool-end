@@ -157,10 +157,9 @@ export class SongService{
           
           
         });
-        const index=Math.round(Math.random()*(variants.length-takePerPage));
-        const cutVariants = variants.slice(index, index+takePerPage)
-        // const songs = cutVariants.map((v)=>v.song);
-        return cutVariants;
+        
+        const result = variants.sort(()=>Math.random()-0.5).slice(0, takePerPage);
+        return result;
     }
 
     async list(page:number) : Promise<ListSongData[]>{
