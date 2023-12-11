@@ -156,6 +156,7 @@ export class SongService{
         
         const random = variants.sort(()=>Math.random()-0.5)
         console.log("Random: ", random);
+        return random;
         return random.slice(0, takePerPage);;
     }
 
