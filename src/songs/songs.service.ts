@@ -42,7 +42,6 @@ export class SongsService{
                 break;
         }
 
-        console.log("Variants before: ", variants)
 
         const songs = await Promise.all( variants.map(async (s)=>{
             const data = await this.songService.getVariantByGuid(s.guid);;
@@ -52,7 +51,6 @@ export class SongsService{
             }
         }));
 
-        console.log("Variants after: ", songs)
 
         return {songs}
           
