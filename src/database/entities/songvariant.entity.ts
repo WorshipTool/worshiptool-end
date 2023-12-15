@@ -55,5 +55,8 @@ export class SongVariant{
     @OneToMany(()=>PlaylistItem, (item)=>item.variant, { cascade: true })
     playlistItems: PlaylistItem[]
 
+    @Column({default: false})
+    deleted: boolean
+
 
 }

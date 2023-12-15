@@ -6,6 +6,7 @@ import { SongService } from "./services/song.service";
 import { MessengerModule } from "src/messenger/messenger.module";
 import { AddSongDataService } from "./services/adding/add.service";
 import { ParserService } from "./services/parser.service";
+import { PlaylistService } from "./services/playlists/playlist.service";
 
 @Module({
     imports: [

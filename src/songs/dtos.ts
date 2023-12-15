@@ -84,7 +84,8 @@ export interface SongDataVariant{
     createdBy:string,
     createdByLoader:boolean,
     sources: SongDataSource[],
-    creators: SongDataCreator[]
+    creators: SongDataCreator[],
+    deleted:boolean
 }
 
 export interface SongDataMedia{

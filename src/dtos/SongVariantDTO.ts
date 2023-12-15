@@ -12,6 +12,7 @@ export interface SongVariantDTO{
     createdByGuid:string,
     createdByLoader:boolean,
     sources: SourceDTO[],
-    creators: CreatorDTO[]
+    creators: CreatorDTO[],
+    deleted:boolean
 }
 
