@@ -1,3 +1,4 @@
+
 import { Playlist } from 'src/database/entities/playlist.entity';
 import { PLAYLIST_ITEMS_REPOSITORY, PLAYLIST_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY } from '../../../database/constants';
 import { In, MoreThan, Repository } from 'typeorm';
@@ -32,7 +33,6 @@ export class PlaylistService{
     ){}  
 
     async getPlaylistByUser(user: User) : Promise<GetPlaylistsResult>{
-        console.log("user:",user)
         const playlists = await this.playlistRepository.find({
             where:{
                 owner: {guid: user.guid},
@@ -116,104 +116,6 @@ export class PlaylistService{
         }, codes.Success)
     }
 
-    async addVariantToPlaylist(variantGuid: string, playlistGuid: string, user: User) : Promise<RequestResult<any>> {
-
-        const playlist = await this.playlistRepository.findOne({
-            where:{
-                guid: playlistGuid
-            },
-            relations:{
-                owner:true
-            }
-        });
-        if(!playlist) return formatted(undefined, codes['Not Found'], "Playlist not found");
-        if(!playlist.owner) return formatted(undefined, codes.Unauthorized, "Playlist has no owner");
-        if(playlist.owner.guid!==user.guid) return formatted(null, codes.Unauthorized);
-
-        const variant = await this.variantRepository.findOne({
-            where:{
-                guid: variantGuid
-            }
-        });
-
-
-        if(!variant) return formatted(undefined, codes['Not Found'], "Variant not found");
-
-        const existingItem = await this.itemRepository.findOne({
-            where:{
-                playlist, variant
-            }
-        })
-
-        if(existingItem)
-            return formatted(undefined, codes['Already Added'], "Variant already exists in playlist");
-
-        const items = await this.itemRepository.find({
-            where:{
-                playlist
-            }
-        })
-        const item = await this.itemRepository.create({
-            playlist, variant,
-            order: items.length
-        });
-
-        await this.itemRepository.save(item);
-
-
-        return formatted(undefined, codes.Success);
-    }
-
-    async removeVariantFromPlaylist(variantGuid:string, playlistGuid:string, user:User) : Promise<RequestResult<any>> {
-        if(!variantGuid || !playlistGuid) return formatted(undefined, codes['Bad Request'], "Missing parameters");
-
-        const playlist = await this.playlistRepository.findOne({
-            where:{
-                guid: playlistGuid
-            },
-            relations:{
-                owner:true
-            }
-        });
-
-        if(!playlist) return formatted(undefined, codes['Not Found'], "Playlist not found");
-        if(playlist.owner.guid!==user.guid) return formatted(null, codes.Unauthorized);
-
-        const variant = await this.variantRepository.findOne({
-            where:{
-                guid: variantGuid
-            }
-        });
-
-        
-        if(!variant) return formatted(null, codes['Not Found'], "Variant not found");
-        const item = await this.itemRepository.findOne({
-            where:{
-                playlist, variant
-            }
-        })
-
-        if(!item) return formatted(null, codes['Not Found'], "Variant not found in playlist");
-
-        // Move all items after this one one position down
-        const itemsAfter = await this.itemRepository.find({
-            where:{
-                playlist,
-                order: MoreThan(item.order)
-            }
-        })
-
-        await Promise.all(itemsAfter.map(async (item)=>{
-            item.order--;
-            await this.itemRepository.save(item);
-        }))
-
-
-        await this.itemRepository.remove(item);
-
-        return formatted(null, codes.Success);
-    }
-
     async isVariantInPlaylist(variant:string, playlist:string) : Promise<RequestResult<boolean>>{
         const existingItem = await this.itemRepository.findOne({
             where:{
@@ -238,7 +140,7 @@ export class PlaylistService{
        const variants =  await this.songService.search({
             searchKey,
             page,
-            playlist: guid
+            playlist: guid,
        }, user);
 
        const variantGuids = variants.map((v)=>v.variant.guid);
@@ -383,7 +285,7 @@ export class PlaylistService{
         if(!existingItem) return formatted(undefined, codes['Not Found'], "Item not found");
         if(existingItem.playlist.owner.guid!==user.guid) return formatted(null, codes.Unauthorized);
 
-        existingItem.toneKey = chord.data.rootNote;
+        existingItem.toneKey = chord.data.rootNote.toString();
         await this.itemRepository.save(existingItem);
 
         return formatted(undefined, codes.Success);

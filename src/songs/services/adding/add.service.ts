@@ -46,7 +46,6 @@ export class AddSongDataService{
 
     async processNewSongData(data:Partial<NewSongData>, user:User) : Promise<RequestResult<NewSongDataProcessResult>>{
 
-        console.log(data);
 
         let songGuid = data.songGuid;
 
@@ -60,10 +59,10 @@ export class AddSongDataService{
         if(!songGuid){
 
             //try find existing song
-            const s = await this.songService.getParentSongIfExists(data);
+            const s = false;//await this.songService.getParentSongIfExists(data);
             if(s){
-                songGuid = s.guid;
-                createdNew=false;
+                // songGuid = s.guid;
+                // createdNew=false;
             }else{
                 const r = await this.songRepository.insert({});
                 songGuid = r.identifiers[0].guid;
@@ -121,7 +120,7 @@ export class AddSongDataService{
                 let sheetText = "";
                 if(data.sheetData){
                     const sheet = new Sheet(data.sheetData);
-                    const sections = sheet.sections
+                    const sections = sheet.getSections();
                     for(let i=0; i<sections.length; i++){
                         const t=sections[i].text;
                         if( t){
@@ -144,9 +143,9 @@ export class AddSongDataService{
                     sources:sources,
                     toneKey: null,
                     type: null,
-                    playlistItems: []
+                    playlistItems: [],
+                    deleted: false
                 };
-                //console.log(variantData);
                 const variant : any = (await this.variantRepository.insert(variantData)).identifiers[0];
                 variantGuid = variant.guid;
                 title.variant = variant;

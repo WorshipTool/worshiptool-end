@@ -94,13 +94,16 @@ export class SongsController{
 
     @Post("variant/delete/:guid")
     async delete(@Param() {guid}: {guid:string}, @User() user : UserObject){
+        return await this.songsService.deleteVariantByGUID(guid, user);
+    }
+
+    @Post("variant/restore/:guid")
+    async restore(@Param() {guid}: {guid:string}, @User() user : UserObject){
         if((user.role!=ROLES.Admin))
             return formatted(null, codes.Unauthorized);
 
-        const result = await this.songsService.deleteVariantByGUID(guid);
-        if(result)
-            return formatted(null);
-        return formatted(null, codes["Unknown Error"]);
+        const result = await this.songsService.restoreVariantByGuid(guid);
+        return result;
     }
 
     @Get("playlists")
@@ -118,6 +121,7 @@ export class SongsController{
     async deletePlaylist(@Body() body: PostDeletePlaylistBody, @User() user: UserObject){
         return await this.songsService.deletePlaylist(body.guid, user);
     }
+
 
     @Delete("playlist")
     async deletePlaylistByGuid(@Query() params: DeletePlaylistQuery, @User() user: UserObject){

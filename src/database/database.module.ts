@@ -11,6 +11,7 @@ import { AddSongDataService } from "src/songs/services/adding/add.service";
 import { PlaylistService } from '../songs/services/playlists/playlist.service';
 import { GroupService } from "src/group/group.service";
 import { MessengerModule } from "src/messenger/messenger.module";
+import { PlaylistUtilsService } from "src/songs/services/playlists/playlistutils.service";
 
 @Module({
     imports: [DatasourceModule],
@@ -23,6 +24,7 @@ import { MessengerModule } from "src/messenger/messenger.module";
         SourceService,
         AddSongDataService,
         PlaylistService,
+        PlaylistUtilsService
         
     ],
     exports: [
@@ -33,6 +35,7 @@ import { MessengerModule } from "src/messenger/messenger.module";
         SourceService,
         AddSongDataService,
         PlaylistService,
+        PlaylistUtilsService,
         ...EntitiesProvider
     ],
     controllers: []

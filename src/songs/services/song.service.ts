@@ -1,9 +1,9 @@
 import { Get, Inject, Injectable } from "@nestjs/common";
-import { PLAYLIST_ITEMS_REPOSITORY, SONG_NAMES_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY } from "src/database/constants";
+import { PLAYLIST_ITEMS_REPOSITORY, PLAYLIST_REPOSITORY, SONG_NAMES_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY } from "src/database/constants";
 import { Song } from "src/database/entities/song.entity";
 import { SongTitle } from "src/database/entities/songtitle.entity";
 import { SongVariant } from "src/database/entities/songvariant.entity";
-import { In, Like, Not, Repository } from "typeorm";
+import { In, Like, MoreThan, Not, Repository } from "typeorm";
 import { NewSongData, NewSongDataToVariant} from "./adding/dtos";
 import { ROLES, User } from "src/database/entities/user.entity";
 import { skipForPage, takePerPage } from '../contants';
@@ -12,8 +12,11 @@ import { ListSongData, PostEditVariantBody, SearchSongData } from "../dtos";
 import { SongVariantDTO } from "src/dtos/SongVariantDTO";
 import { mapSourceToDTO } from "src/dtos/SourceDTO";
 import { PlaylistItem } from "src/database/entities/playlistitem.entity";
-import { codes, formatted } from "src/utils/formatted";
+import { RequestResult, codes, formatted } from "src/utils/formatted";
 import { Sheet } from "@pepavlin/sheet-api";
+import { PlaylistService } from "./playlists/playlist.service";
+import { Playlist } from "src/database/entities/playlist.entity";
+import { PlaylistUtilsService } from './playlists/playlistutils.service';
 
 @Injectable()
 export class SongService{
@@ -25,7 +28,10 @@ export class SongService{
         @Inject(SONG_VARIANTS_REPOSITORY)
         private variantRepository: Repository<SongVariant>,
         @Inject(PLAYLIST_ITEMS_REPOSITORY)
-        private itemsRepository: Repository<PlaylistItem>
+        private itemsRepository: Repository<PlaylistItem>,
+        @Inject(PLAYLIST_REPOSITORY)
+        private playlistRepository: Repository<Playlist>,
+        private playlistUtilsService: PlaylistUtilsService
     ){}
 
     async search({searchKey, page, playlist}: {searchKey: string, page: number, playlist?: string}, user:User): Promise<SearchSongData[]> {
@@ -47,10 +53,11 @@ export class SongService{
         })
 
         const conditionsSame = {
-          guid: playlist?
-            In(playlistItems.map(i=>i.variant.guid))
-            :
-            undefined
+            guid: playlist?
+                In(playlistItems.map(i=>i.variant.guid))
+                :
+                undefined,
+            deleted: false
         };
 
         const names = await this.nameRepository.find({
@@ -146,7 +153,8 @@ export class SongService{
     async random(page:number) : Promise<SongVariant[]>{
         const variants = await this.variantRepository.find({
           where:{
-            verified: true
+            verified: true,
+            deleted: false,
           },
           relations:{
             song:true,
@@ -162,7 +170,8 @@ export class SongService{
       const songs = await this.songRepository.find({
         where:{
           variants:[{
-            verified:true
+            verified:true,
+            deleted:false
           },{
             createdBy: {
               role: ROLES.Loader
@@ -228,7 +237,7 @@ export class SongService{
     async findVariantsBySong(song: Song){
       return await this.variantRepository.find({
         where:{
-          song
+            song,
         },
         relations:{
           prefferedTitle: true,
@@ -243,6 +252,7 @@ export class SongService{
         .find({
           where: {
             verified: false,
+            deleted: false,
             createdBy:{
               role: Not(ROLES.Loader)
             }
@@ -262,6 +272,7 @@ export class SongService{
         .find({
           where: {
             verified: false,
+            deleted: false,
             createdBy: {
               role: ROLES.Loader
             }
@@ -285,14 +296,55 @@ export class SongService{
       return await this.variantRepository.createQueryBuilder()
         .update({verified: false}).where("guid= :guid", {guid}).execute();
     }
-    async deleteVariantByGUID(guid:string){
-      const variant = (await this.variantRepository.findOneBy({
-        guid
-      }))
+    async deleteVariantByGUID(guid:string, user: User) : Promise<RequestResult<any>>{
+        const variant = (await this.variantRepository.findOne({
+            where:{
+                guid
+            },
+            relations:{
+                createdBy:true,
+                playlistItems:{
+                    playlist:true
+                }
+            }
+        }))
 
 
-      return await this.variantRepository.remove(variant);
+        if(!variant) return formatted(null, codes["Not Found"], "Variant not found");
+
+        if(variant.createdBy.guid!=user.guid && user.role!==ROLES.Admin)
+          return formatted(null, codes.Unauthorized, "User doesn't have permission to delete this variant");
+
+        if(variant.verified)
+          return formatted(null, codes["Bad Request"], "Cannot delete verified variant");
+
+        if(variant.deleted)
+            return formatted(null, codes["Bad Request"], "Variant has been already deleted");
+
+        // remove from playlists
+        await Promise.all(variant.playlistItems.map(async (item)=>{
+            this.playlistUtilsService.removeVariantFromPlaylist(variant.guid, item.playlist.guid, user, true);
+        }))
+
+        variant.deleted=true;
+        await this.variantRepository.save(variant);
+        return formatted(null, codes.Success, "Variant successfully deleted");
     }
+
+    async restoreVariantByGuid(guid:string){
+        const variant = (await this.variantRepository.findOneBy({
+            guid
+        }))
+    
+        if(!variant) return formatted(null, codes["Not Found"], "Variant not found");
+    
+        if(!variant.deleted)
+            return formatted(null, codes["Bad Request"], "Variant is not deleted");
+    
+        variant.deleted=false;
+        await this.variantRepository.save(variant);
+        return formatted(null, codes.Success, "Variant successfully restored");
+        }
 
     async getParentSongIfExists(data:Partial<NewSongData>):Promise<Song | undefined>{
 
@@ -388,7 +440,11 @@ export class SongService{
     }
 
     async getRandomVariant() : Promise<SongVariantDTO>{
-      const variants = await this.variantRepository.find();
+      const variants = await this.variantRepository.find({
+        where:{
+            deleted: false
+        }
+      });
       const index = Math.round(Math.random()*(variants.length-1));
       return this.getVariantByGuid(variants[index].guid);
     }
@@ -423,7 +479,8 @@ export class SongService{
         creators: variant.links?.map((l)=>({
           name: l.creator.name,
           type: l.type
-        }))
+        })),
+        deleted: variant.deleted
 
       };
     }
@@ -431,7 +488,8 @@ export class SongService{
     async getSongListOfUser(user: User) : Promise<SongVariantDTO[]>{
       const variants =  await this.variantRepository.find({
         where:{
-          createdBy: user
+          createdBy: user,
+          deleted: false
         },
         order: {
           verified: "DESC"
@@ -470,7 +528,7 @@ export class SongService{
         return formatted(null, codes["Bad Request"], "Cannot edit verified variant");
 
       variant.sheetData = body.sheetData;
-      const sheetText = (new Sheet(body.sheetData)).sections.map((s)=>s.text).join("");
+      const sheetText = (new Sheet(body.sheetData)).getSections().map((s)=>s.text).join("");
       variant.searchValue = normalizeSearchText(sheetText);
 
       await this.variantRepository.save(variant);

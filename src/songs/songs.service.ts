@@ -11,6 +11,7 @@ import { GetPlaylistsResult, PostCreatePlaylistBody, PostCreatePlaylistResult } 
 import { PlaylistService } from './services/playlists/playlist.service';
 import { SongVariant } from "src/database/entities/songvariant.entity";
 import { SongVariantDTO } from "src/dtos/SongVariantDTO";
+import { PlaylistUtilsService } from "./services/playlists/playlistutils.service";
 
 @Injectable()
 export class SongsService{
@@ -19,7 +20,8 @@ export class SongsService{
         private creatorService: CreatorService,
         private messengerService: MessengerService,
         private mediaService: MediaService,
-        private playlistService: PlaylistService
+        private playlistService: PlaylistService,
+        private playlistUtilsService: PlaylistUtilsService
     ){}
 
 
@@ -78,7 +80,7 @@ export class SongsService{
 
 
         const variantObjects = await this.songService.findVariantsBySong(song);
-        const variants : SongDataVariant[] = await Promise.all(variantObjects.map(async (v)=>{
+        const variants : SongDataVariant[] = await Promise.all(variantObjects.map(async (v) : Promise<SongDataVariant>=>{
             const titles = await this.songService.getTitlesByVariant(v);
             const titleObject = titles.find((t)=>JSON.stringify(t)==JSON.stringify(v.prefferedTitle));
 
@@ -93,7 +95,8 @@ export class SongsService{
                 createdBy: v.createdBy.guid,
                 createdByLoader: v.createdBy.role==ROLES.Loader,
                 sources: v.sources,
-                creators
+                creators,
+                deleted: v.deleted
             }
         }));
 
@@ -123,8 +126,12 @@ export class SongsService{
     async unverifyVariantByGUID(guid:string){
         return await this.songService.unverifyVariantByGUID(guid);
     }
-    async deleteVariantByGUID(guid:string){
-        return await this.songService.deleteVariantByGUID(guid);
+    async deleteVariantByGUID(guid:string, user: User){
+        return await this.songService.deleteVariantByGUID(guid, user);
+    }
+
+    async restoreVariantByGuid(guid:string){
+        return await this.songService.restoreVariantByGuid(guid);
     }
 
     async mergeByGuids(guid1:string, guid2:string) : Promise<RequestResult<PostMergeResult>>{
@@ -157,10 +164,10 @@ export class SongsService{
     }
 
     async addVariantToPlaylist(variantGuid:string, playlistGuid:string, user: User){
-        return await this.playlistService.addVariantToPlaylist(variantGuid, playlistGuid, user);
+        return await this.playlistUtilsService.addVariantToPlaylist(variantGuid, playlistGuid, user);
     }
     async removeVariantFromPlaylist(variantGuid:string, playlistGuid:string, user: User){
-        return await this.playlistService.removeVariantFromPlaylist(variantGuid, playlistGuid, user);
+        return await this.playlistUtilsService.removeVariantFromPlaylist(variantGuid, playlistGuid, user);
     }
 
     async isVariantInPlaylist(variant:string, playlist:string){
