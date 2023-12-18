@@ -27,7 +27,6 @@ export class ParserService{
         const PARSER_SCRIPT_PATH = 'src/pythonscripts/image-parser/main.py'
 
         const TEMP_IMAGES_FOLDER_PATH = 'public/temp'
-        const DETECTION_MODEL_PATH = 'src/pythonscripts/image-parser/240frames.pt'
         const OUTPUT_RESULT_PATH = `public/temp/${v4()}.json`
         
         // Create public folder if it doesn't exist
@@ -43,8 +42,6 @@ export class ParserService{
             PARSER_SCRIPT_PATH,
             "-i", inputImagePath,
             "-o", OUTPUT_RESULT_PATH,
-            "-m", DETECTION_MODEL_PATH,
-            "-t", TEMP_IMAGES_FOLDER_PATH
           ]);
         const result = pythonProcess.stdout?.toString()?.trim();
         const error = pythonProcess.stderr?.toString()?.trim();
