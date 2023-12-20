@@ -49,7 +49,8 @@ COPY --from=development /app/src/pythonscripts/ ./src/pythonscripts/
 # Aktualizace balíčků a instalace potřebných nástrojů
 # Aktualizace balíčků a instalace potřebných nástrojů
 RUN apt-get update && \
-    apt-get install -y python3-pip libopencv-dev python3-opencv tesseract-ocr wget git
+    apt-get install -y python3-pip libopencv-dev python3-opencv tesseract-ocr wget git git-lfs && \
+    git lfs install
 
 
 # Instalace Python knihoven ze souboru requirements.txt
