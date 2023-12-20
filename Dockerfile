@@ -17,7 +17,8 @@ COPY src/ /app/src/
 RUN npm install rimraf -g
 
 # Install git to be able to install dependencies from git repositories
-RUN apt-get update && apt-get install -y git
+RUN apt-get update && apt-get install -y git git-lfs && \
+    git lfs install
 
 # Build application (produces dist/ folder)
 RUN npm run build
@@ -54,8 +55,8 @@ RUN apt-get update && \
 
 
 # Instalace Python knihoven ze souboru requirements.txt
-RUN pip3 install --upgrade setuptools pip
-    # pip3 install -r /src/pythonscripts/requirements.txt
+RUN pip3 install --upgrade setuptools pip && \
+    pip3 install -r /src/pythonscripts/requirements.txt
 
 # Vytvoření adresáře pro tessdata a stažení trénovaných dat pro Tesseract
 ENV TESSDATA_PREFIX /usr/share/tesseract-ocr/4.00/tessdata
