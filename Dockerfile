@@ -57,7 +57,7 @@ RUN apt-get update && \
 # Instalace Python knihoven ze souboru requirements.txt
 RUN pip3 install --upgrade setuptools pip && \
     pip3 install -r src/pythonscripts/image-parser/requirements.txt && \
-    python src/pythonscripts/image-parser/prepare.py
+    python3 src/pythonscripts/image-parser/prepare.py
 
 # Vytvoření adresáře pro tessdata a stažení trénovaných dat pro Tesseract
 ENV TESSDATA_PREFIX /usr/share/tesseract-ocr/4.00/tessdata
