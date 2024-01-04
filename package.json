@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "prebuild": "rimraf dist && npm run update-parser-repository ",
+    "prebuild": "rimraf dist",
     "update-parser-repository": "node src/pythonscripts/updatePythonRepository.js",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
