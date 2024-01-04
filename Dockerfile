@@ -1,5 +1,5 @@
 # Building layer
-FROM node:21-bullseye-slim as development
+FROM node:21-bullseye-slim as production
 
 WORKDIR /app
 
