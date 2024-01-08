@@ -2,7 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { USER_REPOSITORY } from "src/database/constants";
 import { LOGIN_TYPE, ROLES, User } from "src/database/entities/user.entity";
 import { Repository } from "typeorm";
-import { PostGoogleLoginBody, SignUpInputData } from "../dtos";
+import { PostGoogleLoginBody, SignUpInputData } from "../auth.dto";
 import * as bcrypt from "bcrypt"
 import { saltRounds } from "../constants";
 

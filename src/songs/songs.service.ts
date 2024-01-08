@@ -1,17 +1,18 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { SongService } from "./services/song.service";
-import { GetSongQuery, GetSongResult, SearchResult, SongData, SongDataVariant, ListResult, PostMergeResult, PostEditVariantBody } from './dtos';
-import { RequestResult, codes, formatted } from "src/utils/formatted";
+import { GetSongQuery, GetSongResult, SearchResult, SongData, SongDataVariant, ListResult, PostMergeResult, PostEditVariantBody } from './songs.dto';
+import { codes, formatted } from "src/utils/formatted";
 import { CreatorService } from "./services/creator.service";
 import { ROLES, User } from "src/database/entities/user.entity";
 import { MessengerService } from "src/messenger/messenger.service";
 import { MediaService } from "./services/media.service";
 import { Song } from "src/database/entities/song.entity";
-import { GetPlaylistsResult, PostCreatePlaylistBody, PostCreatePlaylistResult } from './services/playlists/dtos';
+import { GetPlaylistsResult, PostCreatePlaylistBody, PostCreatePlaylistResult } from './services/playlists/playlist.dto';
 import { PlaylistService } from './services/playlists/playlist.service';
 import { SongVariant } from "src/database/entities/songvariant.entity";
-import { SongVariantDTO } from "src/dtos/SongVariantDTO";
+import { SongVariantDTO } from "src/dtos/songvariant.dto";
 import { PlaylistUtilsService } from "./services/playlists/playlistutils.service";
+import { RequestResult } from "src/utils/request.dto";
 
 @Injectable()
 export class SongsService{
@@ -25,14 +26,12 @@ export class SongsService{
     ){}
 
 
-    async processGetQuery(query: GetSongQuery, user: User): Promise<SearchResult>{
-        if(query.page===undefined)query.page=0;
-
-
+    async processGetQuery(query: GetSongQuery): Promise<SearchResult>{
+        
         let variants : SongVariant[] = [];
         switch(query.key){
             case "random":
-                variants = await this.songService.random(query.page);
+                variants = await this.songService.random(0);
                 break;
             case "unverified":
                 variants = await this.songService.getUnverified();
@@ -69,10 +68,10 @@ export class SongsService{
         return {songs: await this.songService.list(page)};
     }
 
-    async gatherSongData(guid: string): Promise<RequestResult<SongData>>{
+    async gatherSongData(guid: string): Promise<SongData>{
         const song = await this.songService.findByGUID(guid);
 
-        if(song==null) return formatted(null, codes["Not Found"]);
+        if(song==null) throw new NotFoundException("Song not found");
 
 
 
@@ -103,7 +102,7 @@ export class SongsService{
         const media = await this.mediaService.findAllBySong(song);
 
 
-        return formatted<SongData>({
+        return ({
             guid:song.guid,
             mainTitle: mainTitleObject?mainTitleObject.title:undefined,
             creators:[],
@@ -134,25 +133,21 @@ export class SongsService{
         return await this.songService.restoreVariantByGuid(guid);
     }
 
-    async mergeByGuids(guid1:string, guid2:string) : Promise<RequestResult<PostMergeResult>>{
-        if(guid1===guid2) return formatted(undefined, codes["Unknown Error"], "Guids are the same.");
+    async mergeByGuids(guid1:string, guid2:string) : Promise<PostMergeResult>{
+        if(guid1===guid2) throw new BadRequestException("Cannot merge the same variant");
 
         const result = await this.songService.mergeByGuids(guid1, guid2);
-        if(!result){
-            return formatted(undefined, codes["Unknown Error"], "Cant merge this two songs");
-        }
-
-        return formatted({guid: result}, codes["Success"]);
+        return {guid: result}
     }
 
-    async getPlaylistsByUser(user: User) : Promise<RequestResult<GetPlaylistsResult>>{
+    async getPlaylistsByUser(user: User) : Promise<GetPlaylistsResult>{
         const pls = await this.playlistService.getPlaylistByUser(user);
-        return formatted(pls, codes["Success"])
+        return pls
     }
 
-    async createPlaylist(body: PostCreatePlaylistBody,user: User) : Promise<RequestResult<PostCreatePlaylistResult>>{
+    async createPlaylist(body: PostCreatePlaylistBody,user: User) : Promise<PostCreatePlaylistResult>{
         const result = await this.playlistService.createPlaylist(body, user);
-        return formatted(result, codes.Success);
+        return result;
     }
 
     async deletePlaylist(guid:string, user:User){

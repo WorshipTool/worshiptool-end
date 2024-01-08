@@ -1,13 +1,13 @@
-import { SongVariantDTO } from "./SongVariantDTO";
+import { SongVariantDTO } from "./songvariant.dto";
 
-export interface PlaylistItemDTO {
+export class PlaylistItemDTO {
     guid: string;
     toneKey: string;
     order: number;
     variant: SongVariantDTO;
 }
 
-export interface ReorderPlaylistItemDTO{
+export class ReorderPlaylistItemDTO{
     guid: string;
     order: number;
 }

@@ -2,18 +2,19 @@
 import { Playlist } from 'src/database/entities/playlist.entity';
 import { PLAYLIST_ITEMS_REPOSITORY, PLAYLIST_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY } from '../../../database/constants';
 import { In, MoreThan, Repository } from 'typeorm';
-import { Inject, Injectable } from '@nestjs/common';
-import { GetPlaylistsResult, GetSearchInPlaylistResult, GetVariantsInPlaylistResult, PostCreatePlaylistBody, PostCreatePlaylistResult, PostDeletePlaylistResult } from './dtos';
+import { BadRequestException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { GetPlaylistsResult, GetSearchInPlaylistResult, GetVariantsInPlaylistResult, PostCreatePlaylistBody, PostCreatePlaylistResult, PostDeletePlaylistResult } from './playlist.dto';
 import { User } from 'src/database/entities/user.entity';
-import { formatted, codes, RequestResult } from '../../../utils/formatted';
+import { formatted, codes } from '../../../utils/formatted';
 import { Song } from 'src/database/entities/song.entity';
 import { SongVariant } from '../../../database/entities/songvariant.entity';
 import normalizeSearchText from 'src/utils/normalizeSearchText';
-import { SearchSongData } from 'src/songs/dtos';
+import { SearchSongData } from 'src/songs/songs.dto';
 import { SongService } from '../song.service';
 import { PlaylistItem } from 'src/database/entities/playlistitem.entity';
-import { PlaylistItemDTO, ReorderPlaylistItemDTO } from 'src/dtos/PlaylistItemDTO';
+import { PlaylistItemDTO, ReorderPlaylistItemDTO } from 'src/dtos/playlistitem.dto';
 import { Chord, note } from '@pepavlin/sheet-api';
+import { RequestResult } from 'src/utils/request.dto';
 
 @Injectable()
 export class PlaylistService{
@@ -62,7 +63,7 @@ export class PlaylistService{
         }
     }
 
-    async deletePlaylist(guid:string, user:User) : Promise<RequestResult<PostDeletePlaylistResult>>{
+    async deletePlaylist(guid:string, user:User) : Promise<PostDeletePlaylistResult>{
         const playlist = await this.playlistRepository.findOne({where:{
                 guid
             },
@@ -70,24 +71,22 @@ export class PlaylistService{
                 owner:true
             }
         });
-        if(!playlist) return formatted(undefined, codes['Not Found']);
-        if(playlist.owner.guid != user.guid) return formatted(undefined, codes.Unauthorized);
+        if(!playlist) throw new NotFoundException("Playlist not found");
+        if(playlist.owner.guid != user.guid) 
+            throw new UnauthorizedException("You are not the owner of this playlist");
 
         await this.playlistRepository.remove(playlist);
-        return formatted(undefined)
+        return true
     }
 
-    async getVariantsInPlaylist(guid : string) : Promise<RequestResult<GetVariantsInPlaylistResult>>{
-        if(guid===undefined) 
-            return formatted(undefined, codes['Bad Request'], "Playlist's guid is undefined");
-
+    async getVariantsInPlaylist(guid : string) : Promise<GetVariantsInPlaylistResult>{
         const playlist = await this.playlistRepository.findOne({
             where:{
                 guid
             }
         })
 
-        if(!playlist) return formatted(undefined, codes['Not Found'], "Playlist not found");
+        if(!playlist) throw new NotFoundException("Playlist not found");
 
         const results = await this.itemRepository.find({
             where:{
@@ -110,13 +109,14 @@ export class PlaylistService{
             }
         }));
 
-        return formatted({
-            items,
-            title: playlist.title
-        }, codes.Success)
+        const result : GetVariantsInPlaylistResult = {
+            title: playlist.title,
+            items
+        }
+        return result;
     }
 
-    async isVariantInPlaylist(variant:string, playlist:string) : Promise<RequestResult<boolean>>{
+    async isVariantInPlaylist(variant:string, playlist:string) : Promise<boolean>{
         const existingItem = await this.itemRepository.findOne({
             where:{
                 variant: {
@@ -128,11 +128,11 @@ export class PlaylistService{
             }
         });
        
-        return formatted(existingItem !== null,);
+        return existingItem !== null;
     }
 
-    async searchInPlaylist(guid: string, searchKey: string, page: number, user: User) : Promise<RequestResult<GetSearchInPlaylistResult>>{
-        if(!guid) return formatted(undefined, codes['Bad Request'], "Guid is undefined");
+    async searchInPlaylist(guid: string, searchKey: string, page: number, user: User) : Promise<GetSearchInPlaylistResult>{
+        if(!guid) throw new BadRequestException("Guid is undefined");
 
         if(searchKey===undefined)searchKey="";
         if(page===undefined)page=0;
@@ -169,15 +169,17 @@ export class PlaylistService{
             }
         }));
 
-
-       return formatted({
+        const result : GetSearchInPlaylistResult = {
             guid,
             items
-        });
+        }
+
+        return result
     }
 
-    async renamePlaylist(guid: string, title: string, user: User) : Promise<RequestResult<any>>{
-        if(!guid) return formatted(undefined, codes['Bad Request'], "Guid is undefined");
+    async renamePlaylist(guid: string, title: string, user: User) : Promise<boolean>{
+        if(!guid) throw new BadRequestException("Guid is undefined");
+        if(!title) throw new BadRequestException("Title is undefined");
 
         const playlist = await this.playlistRepository.findOne({
             where:{
@@ -187,21 +189,24 @@ export class PlaylistService{
                 owner:true
             }
         });
-        if(!playlist) return formatted(undefined, codes['Not Found'], "Playlist not found");
-        if(playlist.owner.guid!==user.guid) return formatted(null, codes.Unauthorized);
+        if(!playlist) throw new NotFoundException("Playlist not found");
+        if(playlist.owner.guid!==user.guid)
+            throw new UnauthorizedException("You are not the owner of this playlist");
 
         playlist.title = title;
         await this.playlistRepository.save(playlist);
-        return formatted(undefined, codes.Success);
+        return true
     }
 
-    async reorderPlaylist(guid: string, items: ReorderPlaylistItemDTO[], user: User) : Promise<RequestResult<any>>{
-        if(!guid) return formatted(undefined, codes['Bad Request'], "Guid is undefined");
-        if(items.length==0) return formatted(undefined, codes['Bad Request'], "No items to reorder");
+    async reorderPlaylist(guid: string, items: ReorderPlaylistItemDTO[], user: User) : Promise<boolean>{
+        if(!guid) throw new BadRequestException("Guid is undefined");
+        if(items.length==0) 
+            throw new BadRequestException("No items to reorder");
 
         // check if all items order number is unique
         const orderNumbers = items.map((i)=>i.order);
-        if(orderNumbers.length !== new Set(orderNumbers).size) return formatted(undefined, codes['Bad Request'], "Item's order are not unique");
+        if(orderNumbers.length !== new Set(orderNumbers).size) 
+            throw new BadRequestException("Item's order are not unique");
 
         const playlist = await this.playlistRepository.findOne({
             where:{
@@ -212,8 +217,9 @@ export class PlaylistService{
             }
         });
 
-        if(!playlist) return formatted(undefined, codes['Not Found'], "Playlist not found");
-        if(playlist.owner.guid!==user.guid) return formatted(null, codes.Unauthorized);
+        if(!playlist) throw new NotFoundException("Playlist not found");
+        if(playlist.owner.guid!==user.guid)
+            throw new UnauthorizedException("You are not the owner of this playlist");
 
         
         const existingItems = await this.itemRepository.find({
@@ -256,18 +262,20 @@ export class PlaylistService{
 
 
         if(savedCount==0){
-            if(outCount>0) return formatted(undefined, codes['Bad Request'], "No items changed, because all items were out of bounds");
-            return formatted(undefined, codes['Bad Request'], "No items changed")
+            if(outCount>0)
+                throw new BadRequestException("No items changed, because all items were out of bounds");
+            throw new BadRequestException("No items changed");     
         };
 
-        if(outCount>0) return formatted(undefined, codes['Success'], "Reordered, but some items ignored as out of bounds");
+        // if(outCount>0) 
+        //     return formatted(undefined, codes['Success'], "Reordered, but some items ignored as out of bounds");
 
-        return formatted(undefined);
+        return true
     }
 
-    async transposePlaylistItem(guid: string, keyChord: string, user: User) : Promise<RequestResult<any>>{
-        if(!guid) return formatted(undefined, codes['Bad Request'], "Guid is undefined");
-        if(!keyChord) return formatted(undefined, codes['Bad Request'], "Key chord is undefined");
+    async transposePlaylistItem(guid: string, keyChord: string, user: User) : Promise<boolean>{
+        if(!guid) throw new BadRequestException("Guid is undefined");
+        if(!keyChord) throw new BadRequestException("Key chord is undefined");
         
         const chord = new Chord(keyChord);
 
@@ -282,12 +290,13 @@ export class PlaylistService{
             }
         });
 
-        if(!existingItem) return formatted(undefined, codes['Not Found'], "Item not found");
-        if(existingItem.playlist.owner.guid!==user.guid) return formatted(null, codes.Unauthorized);
+        if(!existingItem) throw new NotFoundException("Item not found");
+        if(existingItem.playlist.owner.guid!==user.guid) 
+            throw new UnauthorizedException("You are not the owner of this playlist");
 
         existingItem.toneKey = chord.data.rootNote.toString();
         await this.itemRepository.save(existingItem);
 
-        return formatted(undefined, codes.Success);
+        return true
     }
 }

@@ -3,33 +3,33 @@ import { MediaTypes } from "src/database/entities/media.entity"
 import { SongVariant } from "src/database/entities/songvariant.entity"
 import { SourceTypes } from "src/database/entities/source.entity"
 
-export interface SongDataMedia{
-    type: MediaTypes,
+export class SongDataMedia{
+    type: MediaTypes
     url: string
 }
 
-export interface SongDataSource{
-    type: SourceTypes,
+export class SongDataSource{
+    type: SourceTypes
     value: string
 }
 
-export interface NewSongDataCreator{
-    type: CreatorType,
+export class NewSongDataCreator{
+    type: CreatorType
     name: string
 }
 
-export interface NewSongData{
-    songGuid: string,
-    title: string,
-    sheetData: string,
-    source: SongDataSource,
-    media: SongDataMedia[],
-    tags: string[],
+export class NewSongData{
+    songGuid: string
+    title: string
+    sheetData: string
+    source: SongDataSource
+    media: SongDataMedia[]
+    tags: string[]
     creators: NewSongDataCreator[]
 }
 
-export interface NewSongDataProcessResult{
-    message: string,
+export class NewSongDataProcessResult{
+    message: string
     guid: string
 }
 

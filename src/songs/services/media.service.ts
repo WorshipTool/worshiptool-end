@@ -2,7 +2,7 @@ import { Inject, Injectable } from "@nestjs/common"
 import { CREATOR_REPOSITORY, MEDIA_REPOSITORY, SONG_REPOSITORY } from "src/database/constants"
 import { Media } from "src/database/entities/media.entity"
 import { InsertResult, Repository } from "typeorm"
-import { SongDataMedia } from "./adding/dtos"
+import { SongDataMedia } from "./adding/add.dto"
 import { Song } from "src/database/entities/song.entity"
 
 @Injectable()
