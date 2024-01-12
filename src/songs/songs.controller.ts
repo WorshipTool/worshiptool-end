@@ -15,7 +15,7 @@ import { diskStorage } from "multer";
 import {v4} from "uuid"; 
 import * as fs from 'fs'
 import { ParserService } from "./services/parser.service";
-import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiConflictResponse, ApiConsumes, ApiForbiddenResponse, ApiGoneResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
+import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiConflictResponse, ApiConsumes, ApiExtraModels, ApiForbiddenResponse, ApiGoneResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import { NewSongDataProcessResult } from "./services/adding/add.dto";
 import { SongVariantDTO } from "src/dtos/songvariant.dto";
 import { ParserSongDataResult } from "./services/parser.dto";
@@ -79,7 +79,7 @@ export class SongsController{
     @Get("count")
     async getSongsCount(){
         const r : GetCountResult = {count: await this.songsService.getCount()};
-        return formatted(r);
+        return r;
     }
 
 
