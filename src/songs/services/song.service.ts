@@ -105,25 +105,36 @@ export class SongService{
 
         }));
 
+        // Search by sheet data
         const variants = await this.variantRepository
         .find({                  
-          where:[{
-            searchValue: Like(`%${key}%`),
-            verified: In([true,user?user.role!=ROLES.Admin:true]),
-            ...conditionsSame
-          },
-          {
-            searchValue: Like(`%${key}%`),
-            createdBy:{
-              role: ROLES.Loader
+            where:[{
+                searchValue: Like(`%${key}%`),
+                verified: In([true,user?user.role!=ROLES.Admin:true]),
+                ...conditionsSame
             },
-            ...conditionsSame
-          }],
+            {
+                searchValue: Like(`%${key}%`),
+                createdBy:{
+                role: ROLES.Loader
+                },
+                ...conditionsSame
+            }, 
+            {
+                searchValue: Like(`%${key}%`),
+                createdBy: user,
+                ...conditionsSame
+            }],
           relations:{
             song:true,
             prefferedTitle:true,
             createdBy:true
           },
+            order:{
+                createdBy: {
+                    role: "DESC"
+                }
+            },
           skip: skipForPage(page),
           take: takePerPage
         })
