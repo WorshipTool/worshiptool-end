@@ -1,12 +1,5 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { CREATOR_REPOSITORY, CSVLINK_REPOSITORY } from "src/database/constants";
-import { Creator } from "src/database/entities/creator.entity";
-import { CSVLink } from "src/database/entities/csvlink.entity";
-import { In, Repository } from "typeorm";
-import { SongDataCreator } from "../dtos";
-import { Song } from "src/database/entities/song.entity";
-import { SongVariant } from "src/database/entities/songvariant.entity";
-import { codes, formatted } from "src/utils/formatted";
+import { Injectable, ServiceUnavailableException } from "@nestjs/common";
+import { formatted } from "src/utils/formatted";
 import { spawnSync } from "child_process";
 import {v4} from "uuid";
 import * as fs from 'fs'
@@ -25,6 +18,10 @@ export class ParserService{
 
     async parse(inputImagePath: string){
         const PARSER_SCRIPT_PATH = 'src/pythonscripts/image-parser/main.py'
+
+        if(!fs.existsSync(PARSER_SCRIPT_PATH)){
+            throw new ServiceUnavailableException("Parser is not available");
+        }
 
         const TEMP_IMAGES_FOLDER_PATH = 'public/temp'
         const OUTPUT_RESULT_PATH = `public/temp/${v4()}.json`
@@ -68,10 +65,8 @@ export class ParserService{
 
 
 
-        return formatted(
-            {
-                sheets: formattedSheets
-            }
-        );
+        return {
+            sheets: formattedSheets
+        };
     }
 }

@@ -1,7 +1,7 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { ROLES, User } from "src/database/entities/user.entity";
-import { NewSongData, NewSongDataProcessResult } from "./dtos";
-import { RequestResult, codes, formatted } from "src/utils/formatted";
+import { NewSongData, NewSongDataProcessResult } from "./add.dto";
+import { codes, formatted } from "src/utils/formatted";
 import { SongService } from "../song.service";
 import { MediaService } from "../media.service";
 import { MessengerService } from "src/messenger/messenger.service";
@@ -20,6 +20,7 @@ import checkMediaFormat from "src/utils/checkMediaFormat";
 import { SongsService } from "src/songs/songs.service";
 import normalizeSearchText from "src/utils/normalizeSearchText";
 import { Sheet } from "@pepavlin/sheet-api";
+import { RequestResult } from "src/utils/request.dto";
 
 @Injectable()
 export class AddSongDataService{
@@ -44,7 +45,7 @@ export class AddSongDataService{
         private songService: SongService
     ){}
 
-    async processNewSongData(data:Partial<NewSongData>, user:User) : Promise<RequestResult<NewSongDataProcessResult>>{
+    async processNewSongData(data:Partial<NewSongData>, user:User) : Promise<NewSongDataProcessResult>{
 
 
         let songGuid = data.songGuid;
@@ -72,7 +73,7 @@ export class AddSongDataService{
         //check if song exists
         let song : Song = await this.songRepository.findOne({where:{guid:songGuid}});
         if(song===null){
-            return formatted(undefined, codes["Not Found"], "Song wasn't found.");
+            throw new NotFoundException("Song not found.");
         }
 
         let variant = undefined;
@@ -248,16 +249,15 @@ export class AddSongDataService{
             }
         }
 
-
         if(!createdNew){
-            return formatted({
-                songGuid,
+            return ({
+                guid: songGuid,
                 message: "Data add to existing song."
             })
         }
 
-        return formatted({            
-            songGuid,
+        return ({            
+            guid: songGuid,
             message: "New song created and filled with incoming data."
         });
 

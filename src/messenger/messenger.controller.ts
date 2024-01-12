@@ -1,9 +1,11 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Post } from "@nestjs/common";
 import { MessengerService } from "./messenger.service";
-import { PostSendFeedbackBody } from "./dtos";
 import { AllowNonUser } from "src/auth/decorators/allownonuser.decorator";
-import { codes, formatted } from "src/utils/formatted";
+import {codes, formatted } from "src/utils/formatted";
+import { PostSendFeedbackBody, PostSendMessageBody } from "./messenger.dto";
+import { ApiBadRequestResponse, ApiDefaultResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
+@ApiTags("Messenger")
 @Controller()
 export class MessengerController{
 
@@ -11,9 +13,20 @@ export class MessengerController{
         private messengerService: MessengerService
     ){}
 
+    /**
+     * Handles the HTTP POST request for sending feedback.
+     * 
+     * @param body - The request body containing the feedback details.
+     * @returns A formatted response indicating the success of the message sending.
+     */
+    @ApiOperation({summary: "Sends a feedback to the messenger."})
+    @ApiBadRequestResponse({description: "The message is empty."})
     @AllowNonUser()
     @Post("sendfeedback")
     postFeedback(@Body() body: PostSendFeedbackBody){
+        if(!body.message){
+            throw new BadRequestException("Message is empty")
+        }
         let message = "Ahoj, ";
         if(body.userName)
             message += "uživatel " + body.userName + " ";
@@ -27,17 +40,30 @@ export class MessengerController{
         })
         this.messengerService.sendMessage(message);
 
-        return formatted(undefined, codes.Success, "Message sent")
+        return true
     }
-
+    
+    /**
+     * The function sends a message using the messenger service and returns a success message if the
+     * message is not empty. 
+     * @param {PostSendMessageBody} body - The parameter `body` is of type `PostSendMessageBody`.
+     * @returns a formatted response with a success status code and a message indicating that the
+     * message has been sent.
+     */
+    @ApiOperation({summary: "Sends a message to the messenger."
+    })
+    @ApiBadRequestResponse({
+        description: "The message is empty."
+    })
     @AllowNonUser()
     @Post("sendmessage")
-    postMessage(@Body() body: {message: string}){
+    postMessage(@Body() body: PostSendMessageBody){
         if(!body.message){
-            return formatted(undefined, codes["Bad Request"], "Message is empty")
+            throw new BadRequestException("Message is empty")
         }
         this.messengerService.sendMessage(body.message);
-        return formatted(undefined, codes.Success, "Message sent")
+        return true;
     }
+
 
 }

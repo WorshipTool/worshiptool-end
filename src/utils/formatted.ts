@@ -1,8 +1,4 @@
-export interface RequestResult<T>{
-    statusCode: number,
-    message: string,
-    data: T
-}
+import { RequestResult } from "./request.dto";
 
 export const codes = {
     "Success": 0,
@@ -28,7 +24,7 @@ export const messages = {
     [501] : "Not Implemented"
 }
 
-export function formatted<T>(data:T, statusCode?:number, message?:string) : RequestResult<any>{
+export function formatted<T>(data:T, statusCode?:number, message?:string) : RequestResult<T>{
     
     return {
         statusCode: (statusCode===undefined?0:statusCode),

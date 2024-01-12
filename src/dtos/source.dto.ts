@@ -1,7 +1,7 @@
 import { Source, SourceTypes } from "src/database/entities/source.entity";
 
-export interface SourceDTO{
-    type: SourceTypes,
+export class SourceDTO{
+    type: SourceTypes
     value: string
 }
 

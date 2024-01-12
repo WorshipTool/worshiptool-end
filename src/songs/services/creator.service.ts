@@ -3,7 +3,7 @@ import { CREATOR_REPOSITORY, CSVLINK_REPOSITORY } from "src/database/constants";
 import { Creator } from "src/database/entities/creator.entity";
 import { CSVLink } from "src/database/entities/csvlink.entity";
 import { In, Repository } from "typeorm";
-import { SongDataCreator } from "../dtos";
+import { SongDataCreator } from "../songs.dto";
 import { Song } from "src/database/entities/song.entity";
 import { SongVariant } from "src/database/entities/songvariant.entity";
 
