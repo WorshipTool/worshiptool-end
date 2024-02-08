@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 import { SongVariant } from '../database/entities/songvariant.entity';
-import normalizeSearchText from "src/utils/normalizeSearchText";
+import normalizeSearchText from "src/tech/normalizeSearchText";
 
 export class sheetTextChangeName1680277935101 implements MigrationInterface {
     name = 'sheetTextChangeName1680277935101'

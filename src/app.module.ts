@@ -6,6 +6,8 @@ import { APP_GUARD, Reflector } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt/jwt-auth.guard';
 import { MessengerModule } from './messenger/messenger.module';
 import { GroupModule } from './group/group.module';
+import { GetterModule } from './getter/getter.module';
+import { WebhookModule } from './webhook/webhook.module';
 
 @Module({
   imports: [
@@ -13,7 +15,10 @@ import { GroupModule } from './group/group.module';
     SongsModule, 
     GroupModule,
     AuthModule,
-    MessengerModule],
+    MessengerModule,
+    GetterModule,
+    WebhookModule
+  ],
   controllers: [],
   providers: [
     {

@@ -11,6 +11,10 @@ import { Tag } from "../entities/tag.entity";
 import { Playlist } from '../entities/playlist.entity';
 import { Group } from '../entities/group.entity';
 import { PlaylistItem } from "../entities/playlistitem.entity";
+import { GetterSource } from "../entities/getter/getter-source.entity";
+import { GetterDomain } from "../entities/getter/getter-domain.entity";
+import { GetterSearch } from "../entities/getter/getter-search.entity";
+import { GetterSubUrl } from "../entities/getter/getter-suburl.entity";
 
 export const dataSource = new DataSource({
     type: 'mysql',
@@ -33,7 +37,11 @@ export const dataSource = new DataSource({
         Tag,
         Playlist,
         Group,
-        PlaylistItem
+        PlaylistItem,
+        GetterSource,
+        GetterDomain,
+        GetterSearch,
+        GetterSubUrl
     ],
     migrations: ["dist/migrations/**/*{.js,.ts}"],
     migrationsRun: true

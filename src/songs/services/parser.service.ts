@@ -1,5 +1,4 @@
 import { Injectable, ServiceUnavailableException } from "@nestjs/common";
-import { formatted } from "src/utils/formatted";
 import { spawnSync } from "child_process";
 import {v4} from "uuid";
 import * as fs from 'fs'

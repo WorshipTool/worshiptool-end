@@ -5,16 +5,11 @@ import { In, MoreThan, Repository } from 'typeorm';
 import { BadRequestException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { GetPlaylistsResult, GetSearchInPlaylistResult, GetVariantsInPlaylistResult, PostCreatePlaylistBody, PostCreatePlaylistResult, PostDeletePlaylistResult } from './playlist.dto';
 import { User } from 'src/database/entities/user.entity';
-import { formatted, codes } from '../../../utils/formatted';
-import { Song } from 'src/database/entities/song.entity';
 import { SongVariant } from '../../../database/entities/songvariant.entity';
-import normalizeSearchText from 'src/utils/normalizeSearchText';
-import { SearchSongData } from 'src/songs/songs.dto';
 import { SongService } from '../song.service';
 import { PlaylistItem } from 'src/database/entities/playlistitem.entity';
 import { PlaylistItemDTO, ReorderPlaylistItemDTO } from 'src/dtos/playlistitem.dto';
 import { Chord, note } from '@pepavlin/sheet-api';
-import { RequestResult } from 'src/utils/request.dto';
 
 @Injectable()
 export class PlaylistService{

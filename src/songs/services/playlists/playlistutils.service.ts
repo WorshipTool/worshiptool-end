@@ -3,10 +3,8 @@ import { PLAYLIST_ITEMS_REPOSITORY, PLAYLIST_REPOSITORY, SONG_REPOSITORY, SONG_V
 import { In, MoreThan, Repository } from 'typeorm';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from 'src/database/entities/user.entity';
-import { formatted, codes } from '../../../utils/formatted';
 import { SongVariant } from '../../../database/entities/songvariant.entity';
 import { PlaylistItem } from 'src/database/entities/playlistitem.entity';
-import { RequestResult } from 'src/utils/request.dto';
 
 @Injectable()
 export class PlaylistUtilsService{

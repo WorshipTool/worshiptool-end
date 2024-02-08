@@ -12,9 +12,13 @@ import { PlaylistService } from '../songs/services/playlists/playlist.service';
 import { GroupService } from "src/group/group.service";
 import { MessengerModule } from "src/messenger/messenger.module";
 import { PlaylistUtilsService } from "src/songs/services/playlists/playlistutils.service";
+import { GetterService } from "src/getter/getter.service";
+import { ParserService } from "src/songs/services/parser.service";
+import { MessengerService } from "src/messenger/messenger.service";
+import { GetterDomainService } from "src/getter/services/getter-domain.service";
 
 @Module({
-    imports: [DatasourceModule],
+    imports: [DatasourceModule, MessengerModule],
     providers: [
         ...EntitiesProvider,
         SongService,
@@ -24,7 +28,10 @@ import { PlaylistUtilsService } from "src/songs/services/playlists/playlistutils
         SourceService,
         AddSongDataService,
         PlaylistService,
-        PlaylistUtilsService
+        PlaylistUtilsService,
+        GetterService,
+        ParserService,
+        GetterDomainService
         
     ],
     exports: [
@@ -36,6 +43,8 @@ import { PlaylistUtilsService } from "src/songs/services/playlists/playlistutils
         AddSongDataService,
         PlaylistService,
         PlaylistUtilsService,
+        GetterService,
+        GetterDomainService,
         ...EntitiesProvider
     ],
     controllers: []

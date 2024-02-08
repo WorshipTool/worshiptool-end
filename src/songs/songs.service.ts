@@ -1,7 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { SongService } from "./services/song.service";
 import { GetSongQuery, GetSongResult, SearchResult, SongData, SongDataVariant, ListResult, PostMergeResult, PostEditVariantBody } from './songs.dto';
-import { codes, formatted } from "src/utils/formatted";
 import { CreatorService } from "./services/creator.service";
 import { ROLES, User } from "src/database/entities/user.entity";
 import { MessengerService } from "src/messenger/messenger.service";
@@ -12,7 +11,6 @@ import { PlaylistService } from './services/playlists/playlist.service';
 import { SongVariant } from "src/database/entities/songvariant.entity";
 import { SongVariantDTO } from "src/dtos/songvariant.dto";
 import { PlaylistUtilsService } from "./services/playlists/playlistutils.service";
-import { RequestResult } from "src/utils/request.dto";
 
 @Injectable()
 export class SongsService{

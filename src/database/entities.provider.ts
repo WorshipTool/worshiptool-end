@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { CREATOR_REPOSITORY, CSVLINK_REPOSITORY, MEDIA_REPOSITORY, PLAYLIST_REPOSITORY, SONG_NAMES_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, SOURCE_REPOSITORY, TAG_REPOSITORY, USER_REPOSITORY, GROUP_REPOSITORY, PLAYLIST_ITEMS_REPOSITORY } from './constants';
+import { CREATOR_REPOSITORY, CSVLINK_REPOSITORY, MEDIA_REPOSITORY, PLAYLIST_REPOSITORY, SONG_NAMES_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, SOURCE_REPOSITORY, TAG_REPOSITORY, USER_REPOSITORY, GROUP_REPOSITORY, PLAYLIST_ITEMS_REPOSITORY, GETTER_SOURCES_REPOSITORY, GETTER_DOMAIN_REPOSITORY, GETTER_SEARCH_REPOSITORY, GETTER_SUBURL_REPOSITORY } from './constants';
 import { SongVariant } from "./entities/songvariant.entity";
 import { Song } from "./entities/song.entity";
 import { Creator } from "./entities/creator.entity";
@@ -12,6 +12,10 @@ import { Tag } from "./entities/tag.entity";
 import { Playlist } from './entities/playlist.entity';
 import { Group } from './entities/group.entity';
 import { PlaylistItem } from "./entities/playlistitem.entity";
+import { GetterSource } from "./entities/getter/getter-source.entity";
+import { GetterDomain } from "./entities/getter/getter-domain.entity";
+import { GetterSearch } from "./entities/getter/getter-search.entity";
+import { GetterSubUrl } from "./entities/getter/getter-suburl.entity";
 
 export const EntitiesProvider = [
     {
@@ -73,6 +77,26 @@ export const EntitiesProvider = [
     {
         provide: PLAYLIST_ITEMS_REPOSITORY,
         useFactory: (dataSource: DataSource) => dataSource.getRepository(PlaylistItem),
+        inject: ['DATA_SOURCE'],
+    },
+    {
+        provide: GETTER_SOURCES_REPOSITORY,
+        useFactory: (dataSource: DataSource) => dataSource.getRepository(GetterSource),
+        inject: ['DATA_SOURCE'],
+    },
+    {
+        provide: GETTER_DOMAIN_REPOSITORY,
+        useFactory: (dataSource: DataSource) => dataSource.getRepository(GetterDomain),
+        inject: ['DATA_SOURCE'],
+    },
+    {
+        provide: GETTER_SEARCH_REPOSITORY,
+        useFactory: (dataSource: DataSource) => dataSource.getRepository(GetterSearch),
+        inject: ['DATA_SOURCE'],
+    },
+    {
+        provide: GETTER_SUBURL_REPOSITORY,
+        useFactory: (dataSource: DataSource) => dataSource.getRepository(GetterSubUrl),
         inject: ['DATA_SOURCE'],
     }
 ];

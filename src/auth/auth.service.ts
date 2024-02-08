@@ -4,9 +4,7 @@ import { JwtResult, LoginInputData, LoginResult, PostGoogleLoginBody, SignUpInpu
 import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import { User } from "src/database/entities/user.entity";
-import { codes, formatted, messages } from "src/utils/formatted";
 import { MessengerService } from "src/messenger/messenger.service";
-import { RequestResult } from "src/utils/request.dto";
 
 @Injectable()
 export class AuthService{

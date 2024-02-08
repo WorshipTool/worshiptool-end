@@ -1,6 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Query, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { SongsService } from "./songs.service";
-import { codes, formatted } from "src/utils/formatted";
 import { GetSongQuery, SearchQuery, ListQuery, PostMergeBody, PostRenamePlaylistBody, PostEditVariantBody, SearchResult, ListResult, SongData, PostAddSongDataBody, PostVerifyVariantParams, PostDeleteVariantParams, GetCountResult, GetSongDataParam, GetSongListOfUserResult } from './songs.dto';
 import { User } from "src/auth/decorators/user.decorator";
 import { ROLES, User as UserObject } from "src/database/entities/user.entity";
@@ -339,7 +338,7 @@ export class SongsController{
         description: "Playlist has no owner."
     })
     @ApiResponse({
-        status: codes["Already Added"],
+        status: 409,
         description: "Variant already exists in playlist."
     })
     @ApiBearerAuth()
