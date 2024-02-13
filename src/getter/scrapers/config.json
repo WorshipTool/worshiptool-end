@@ -1,8 +1,0 @@
-{
-    "pages": [
-        {
-            "domain": "zpevnik.proscholy.cz",
-            "extracter": "/Users/pepavlin/Workspace/Programming/WorshipTool/worshiptool-end/src/getter/scrapers/proscholy/proscholy.scraper.ts"
-        }
-    ]
-}

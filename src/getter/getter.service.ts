@@ -1,22 +1,21 @@
-import { BadRequestException, Inject, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
-import { GETTER_DOMAIN_REPOSITORY, GETTER_SEARCH_REPOSITORY, GETTER_SOURCES_REPOSITORY } from "src/database/constants";
-import { GetterSource } from "src/database/entities/getter/getter-source.entity";
-import { Repository, In } from 'typeorm';
+import { Injectable, Inject, BadRequestException, InternalServerErrorException } from "@nestjs/common";
+import { Repository } from "typeorm";
+import { GETTER_SOURCES_REPOSITORY, GETTER_DOMAIN_REPOSITORY, GETTER_SEARCH_REPOSITORY } from "../database/constants";
+import { GetterDomain } from "../database/entities/getter/getter-domain.entity";
+import { GetterSearch } from "../database/entities/getter/getter-search.entity";
+import { GetterSource } from "../database/entities/getter/getter-source.entity";
+import { MessengerService } from "../messenger/messenger.service";
+import { ParserService } from "../songs/services/parser.service";
+import { isUrlValid } from "../tech/urls.tech";
 import { PostAddGetterSourceDto, PostProcessNextResult } from "./getter.dto";
-import { v4 } from 'uuid';
-import * as config from "./scrapers/config.json"
-import * as puppeteer from 'puppeteer';
-import { ScraperTemplate } from "./scrapers/ScraperTemplate";
-import { ParserService } from "src/songs/services/parser.service";
-import * as fs from 'fs';
-import { ScrapeResult } from "./scrapers/ScrapeResult";
-import { GetterDomain, GetterDomainStatus } from "src/database/entities/getter/getter-domain.entity";
-import { customsearch } from '@googleapis/customsearch';
-import { MessengerService } from "src/messenger/messenger.service";
-import { GetterSearch } from "src/database/entities/getter/getter-search.entity";
-import { GetterDomainService } from "./services/getter-domain.service";
-import { isUrlValid } from "src/tech/urls.tech";
+import { GetterDomainService } from "./modules/getter-domain/getter-domain.service";
+import { ScrapeResult } from "./scripts/scrapers/template/ScrapeResult";
+import { ScraperTemplate } from "./scripts/scrapers/template/ScraperTemplate";
 
+import * as fs from 'fs';
+import { v4 } from 'uuid';
+import * as config from './scripts/config.json';
+import * as puppeteer from "../../node_modules/puppeteer";
 
 @Injectable()
 export class GetterService{
@@ -103,10 +102,12 @@ export class GetterService{
 
     browser: puppeteer.Browser = null;
     async prepareBrowser(){
+        console.log("Preparing browser")
+
         if(!this.browser){
             //Use puppeteer to get the html
             this.browser = await puppeteer.launch({
-                headless: 'new'
+                headless: true
             });
         }
     }
@@ -209,181 +210,6 @@ export class GetterService{
 
 
         return data;
-    }
-
-    generujNahodneKlicovaSlova(maxDelkaSlova: number) {
-        const slovnik = [
-            "Křesťanské písně s textem a akordy",
-            "Boží láska chválové písně",
-            "Vykoupení a odpuštění akordy",
-            "Boží věrnost worship songs",
-            "Svoboda křesťanské texty",
-            "Modlitba a oddanost akordy",
-            "Díkůvzdání křesťanské písně",
-            "Víra a naděje worship chords",
-            "Sláva Boží chvály s textem",
-            "Odevzdání se Boží vůli písně",
-            "Posvěcení a růst křesťanské akordy",
-            "Boží milosrdenství worship songs",
-            "Kristův vzkříšení písně s akordy",
-            "Boží vedení chvály s textem",
-            "Svědectví o věrnosti akordy",
-            "Světlo v temnotě křesťanské texty",
-            "Boží moudrost worship chords",
-            "Naděje ve víře písně s textem",
-            "Svátost ve společenství chvály s akordy",
-            "Boží pokoj křesťanské texty",
-            "Svoboda v Kristu worship songs",
-            "Boží milost chvály s textem",
-            "Víra jako opora křesťanské akordy",
-            "Radost ve službě písně s akordy",
-            "Svědectví Boží lásky worship chords",
-            "Boží nekonečná trpělivost křesťanské texty"
-        ];
-      
-        const nahodnaKlicovaSlova : string[] = [];
-      
-        for (let i = 0; i < 1; i++) {
-          let slovo = '';
-          const delkaSlova = Math.floor(Math.random() * maxDelkaSlova) + 1;
-      
-          for (let j = 0; j < delkaSlova; j++) {
-            const nahodneIndex = Math.floor(Math.random() * slovnik.length);
-            slovo += slovnik[nahodneIndex];
-      
-            // Přidat mezery mezi slovy (kromě posledního)
-            if (j < delkaSlova - 1) {
-              slovo += ' ';
-            }
-          }
-      
-          nahodnaKlicovaSlova.push(slovo);
-        }
-        
-        return nahodnaKlicovaSlova[0] +" křesťanské písně s akordy -bakalářskápráce -dimpomovaprace";
-    }
-
-    async getSearchQuery(){
-        const existing = await this.searchRepository.findOne({
-            where:{
-                processedAll: false
-            },
-            order:{
-                lastSearch: "DESC"
-            }
-        });
-        
-        if(!existing) return {
-            query: this.generujNahodneKlicovaSlova(3),
-            page: 0
-        };
-
-
-        return {
-            query: existing.query,
-            page: existing.lastPage+1
-        };
-    }
-
-    async search(){
-
-        const useMockData = false;
-
-        const key = "AIzaSyA4OWcFUwakif-pdoQWaW_Fy6Q8DVbxnGE";
-        const cx = "675c65a6e9ad74cb5"
-
-        
-        const query = await this.getSearchQuery();
-        console.log(query);
-
-        
-        let resultItems = [];
-        if(useMockData){
-            resultItems = [
-                {
-                    title: "Píseň 1",
-                    link: "https://www.pisen1.cz"
-                },
-                {
-                    title: "Píseň 2",
-                    link: "https://www.pisen2.cz"
-                },
-                {
-                    title: "Píseň 3",
-                    link: "https://www.pisen3.cz"
-                }
-            ]
-        }else{
-            const result = await customsearch("v1").cse.list({
-                cx, key,
-                q: query.query,
-                start: query.page*10 + 1
-            })
-
-            const existing = await this.searchRepository.findOne({
-                where:{
-                    query: query.query
-                }
-            });
-
-            const hasNext = Boolean(result.data.queries.nextPage);
-
-            if(!existing){
-                await this.searchRepository.createQueryBuilder().insert().values({
-                    query: query.query,
-                    lastSearch: new Date(),
-                    lastPage: query.page,
-                    processedAll: !hasNext
-                }).execute();
-            }else{
-                this.searchRepository.createQueryBuilder().update().set({
-                    lastPage: query.page,
-                    processedAll: !hasNext
-                }).where({
-                    guid: existing.guid
-                }).execute();
-            }
-            resultItems = result.data.items;
-        }
-
-        const items = resultItems.map((item)=>{
-            // Extract domain
-            const url = new URL(item.link);
-            const domain = url.hostname;
-
-
-            return {
-                title: item.title,
-                url: item.link,
-                domain: this.domainService.getDomain(item.link)
-            }
-        })
-
-        let newCount = 0;
-        // Every new domain should be added to the database
-        const domains = items.map((item)=>item.domain);
-        for(const d of domains){
-            const existing = await this.domainRepository.findOne({
-                where:{
-                    domain: d
-                }
-            });
-            if(!existing){
-                await this.domainRepository.createQueryBuilder().insert().values({
-                    domain: d
-                }).execute();
-                newCount++;
-            }
-        }
-
-
-        return {
-            query,
-            count: items.length,
-            newCount: newCount,
-            items
-        }
-
     }
 
 

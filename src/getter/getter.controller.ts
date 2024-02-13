@@ -2,11 +2,10 @@ import { BadRequestException, Body, Controller, ForbiddenException, Get, Inject,
 import { AllowNonUser } from 'src/auth/decorators/allownonuser.decorator';
 import { GetterService } from './getter.service';
 import { GetParseUrlQuery, PostAddGetterSourceDto, PostAddSubUrlDomainDto, PostProcessNextResult, PostScreenshotDto, PostSubUrlLoopDto } from './getter.dto';
-import { ScrapeResult } from './scrapers/ScrapeResult';
+import { ScrapeResult } from './scripts/scrapers/template/ScrapeResult';
 import { ApiTags } from '@nestjs/swagger';
 import { MessengerService } from 'src/messenger/messenger.service';
-import { GetterSubUrlService } from './services/getter-suburl.service';
-import { GetterDomainService } from './services/getter-domain.service';
+import { GetterDomainService } from './modules/getter-domain/getter-domain.service';
 import { GETTER_SUBURL_REPOSITORY } from 'src/database/constants';
 import { GetterSubUrl } from 'src/database/entities/getter/getter-suburl.entity';
 import { Repository } from 'typeorm';
@@ -17,9 +16,6 @@ export class GetterController{
 
     constructor(
         private readonly getterService: GetterService,
-        private readonly messagerService: MessengerService,
-        private readonly suburlService: GetterSubUrlService,
-        private readonly domainService: GetterDomainService,
 
         @Inject(GETTER_SUBURL_REPOSITORY)
         private suburlRepository: Repository<GetterSubUrl>,
@@ -45,51 +41,9 @@ export class GetterController{
         
     }
 
-    @AllowNonUser()
-    @Get("getter/search")
-    async search(){
-        return this.getterService.search();
-
-    }
 
 
 
-    @AllowNonUser()
-    @Get("getter/getsuburls")
-    async getSubUrls(@Query("url") url: string){
-        return this.suburlService.getAllSubUrls(url);
-    }
 
-    @AllowNonUser()
-    @Get("getter/processnextsuburl")
-    async processNextSubUrl(){
-        return this.suburlService.processNext();
-    }
-
-    @AllowNonUser()
-    @Post("getter/addsuburldomain")
-    async addSubUrlDomain(@Body() {domain}: PostAddSubUrlDomainDto){
-        if(!domain) throw new BadRequestException("No domain");
-        return this.suburlService.addDomain(domain);
-    }
-
-    @AllowNonUser()
-    @Post("getter/suburlloop")
-    async subUrlLoop(@Body() {count}: PostSubUrlLoopDto){
-        if(!count) throw new BadRequestException("No count");
-
-        const MAX_PER_LOOP = 1000;
-        const loops = Math.ceil(count / MAX_PER_LOOP);
-
-        console.log("Request split into " + loops + " parts:");
-
-        for(let i = 0; i < loops; i++){
-            console.log("--- STARTING PART", i+1, "of", loops, "---");
-            const result = await this.suburlService.processLoop(MAX_PER_LOOP, false);
-        }
-
-        return "Done"
-        
-    }
 
 }

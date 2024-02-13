@@ -1,16 +1,15 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { SongService } from "./services/song.service";
-import { GetSongQuery, GetSongResult, SearchResult, SongData, SongDataVariant, ListResult, PostMergeResult, PostEditVariantBody } from './songs.dto';
+import { SongVariant } from "../database/entities/songvariant.entity";
+import { User, ROLES } from "../database/entities/user.entity";
+import { SongVariantDTO } from "../dtos/songvariant.dto";
+import { MessengerService } from "../messenger/messenger.service";
 import { CreatorService } from "./services/creator.service";
-import { ROLES, User } from "src/database/entities/user.entity";
-import { MessengerService } from "src/messenger/messenger.service";
 import { MediaService } from "./services/media.service";
-import { Song } from "src/database/entities/song.entity";
-import { GetPlaylistsResult, PostCreatePlaylistBody, PostCreatePlaylistResult } from './services/playlists/playlist.dto';
-import { PlaylistService } from './services/playlists/playlist.service';
-import { SongVariant } from "src/database/entities/songvariant.entity";
-import { SongVariantDTO } from "src/dtos/songvariant.dto";
+import { GetPlaylistsResult, PostCreatePlaylistBody, PostCreatePlaylistResult } from "./services/playlists/playlist.dto";
+import { PlaylistService } from "./services/playlists/playlist.service";
 import { PlaylistUtilsService } from "./services/playlists/playlistutils.service";
+import { SongService } from "./services/song.service";
+import { GetSongQuery, SearchResult, ListResult, SongData, SongDataVariant, PostMergeResult, PostEditVariantBody } from "./songs.dto";
 
 @Injectable()
 export class SongsService{

@@ -1,5 +1,5 @@
-import { ScrapeResult } from "../ScrapeResult";
-import { ScraperTemplate } from "../ScraperTemplate";
+import { ScrapeResult } from "./template/ScrapeResult";
+import { ScraperTemplate } from "./template/ScraperTemplate";
 import * as cheerio from "cheerio";
 
 export default class test implements ScraperTemplate{

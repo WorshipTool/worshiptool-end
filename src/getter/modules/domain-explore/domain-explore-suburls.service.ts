@@ -1,35 +1,55 @@
-import { BadRequestException, Inject, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
-import { GETTER_DOMAIN_REPOSITORY, GETTER_SEARCH_REPOSITORY, GETTER_SOURCES_REPOSITORY, GETTER_SUBURL_REPOSITORY } from "src/database/constants";
-import { GetterSource } from "src/database/entities/getter/getter-source.entity";
-import { Repository, In } from 'typeorm';
-import { ParserService } from "src/songs/services/parser.service";
-import { GetterDomain, GetterDomainStatus } from "src/database/entities/getter/getter-domain.entity";
-import { customsearch } from '@googleapis/customsearch';
-import { MessengerService } from "src/messenger/messenger.service";
-import { GetterSearch } from "src/database/entities/getter/getter-search.entity";
-import { GetterService } from "../getter.service";
-
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
+import { Repository, In, LessThan, Not } from "typeorm";
+import { GETTER_SUBURL_REPOSITORY } from "../../../database/constants";
+import { GetterDomainStatus } from "../../../database/entities/getter/getter-domain.entity";
+import { GetterSubUrl, GetterSuburlType, GetterSubUrlExploreStatus } from "../../../database/entities/getter/getter-suburl.entity";
+import { isUrlValid } from "../../../tech/urls.tech";
+import { GetterDomainService } from "../getter-domain/getter-domain.service";
+import { DomainExploreUtilsService } from "./domain-explore-utils.service";
 import * as cheerio from "cheerio";
-import { GETTER_URL_MAX_LENGTH, GetterSubUrl, GetterSubUrlExploreStatus, GetterSuburlType } from "src/database/entities/getter/getter-suburl.entity";
-import { GetterDomainService } from "./getter-domain.service";
-import { isUrlValid } from "src/tech/urls.tech";
+import { GetterSubUrlService } from "../getter-suburl/getter-suburl.service";
+import { GetterSource } from "../../../database/entities/getter/getter-source.entity";
+import { GetterSourceService } from "../getter-source/getter-source.service";
+import { isUrlInLengthLimit } from "../../utils";
+
+
+const includies = [
+    "akord",
+    "chord",
+    "noty",
+    "lyrics",
+    "song",
+    "píseň"
+    // "zpevnik",
+    // "transpo",
+]
+
+const MIN_SYNC_COUNT = 1;
+const MAX_SYNC_COUNT = 12;
+
+const MAX_COUNT_PER_LOOP = 500;
+
 
 @Injectable()
-export class GetterSubUrlService{
+export class DomainExploreSuburlsService {
     constructor(
+        private readonly exploreUtils: DomainExploreUtilsService,
         @Inject(GETTER_SUBURL_REPOSITORY)
         private suburlRepository: Repository<GetterSubUrl>,
-        private getterService: GetterService,
-        private domainService: GetterDomainService
+        private getterSuburlService: GetterSubUrlService,
+        private sourceService: GetterSourceService
+    ) {}
 
-    ){}
+
+
+
 
     async getAllSubUrls(url : string, useTimeout?: boolean, print: boolean = true) : Promise<{
         urls: string[],
         html: string
     } | null>{
         try{
-            const html = await this.getterService.getHtml(url,useTimeout);
+            const html = await this.exploreUtils.getHtml(url,useTimeout);
 
             const basePath = url.split("/").slice(0,3).join("/");
     
@@ -45,7 +65,7 @@ export class GetterSubUrlService{
     
                 return url;
             })
-            .filter((url)=>this.getterService.isUrlValid(url))
+            .filter((url)=>isUrlValid(url))
             .filter((value, index, self) => self.indexOf(value) === index)
     
     
@@ -73,14 +93,21 @@ export class GetterSubUrlService{
                         GetterSubUrlExploreStatus.Unexplored,
                     ]
                 ),
+                exploredWithErrorCount: LessThan(2),
                 domain:{
-                    status: GetterDomainStatus.Approved
+                    status: Not(GetterDomainStatus.Rejected),
+                    hasExplorer: false
                 },
                 type: GetterSuburlType.Page
             },
             order: {
+                domain: {
+                    status: "ASC"
+                },
                 explored: "ASC",
-                probability: "DESC"
+            },
+            relations: {
+                domain: true
             }
         })
 
@@ -94,153 +121,52 @@ export class GetterSubUrlService{
         return site;
     }
 
-    async processNext(site? : GetterSubUrl, print: boolean = true) : Promise<string[] | null>{
-
-        if(!site){
-            site = await this.chooseNext();
-        }
-
-        if(!site){
-            if(print) console.log("No site");
-            return null
-        }
-
-
-
+    async processPage(site : GetterSubUrl, print: boolean = true) : Promise<string[] | null>{
         if(print) console.log("Exploring", site.url)
 
         const data = await this.getAllSubUrls(site.url, 
             site.explored !== GetterSubUrlExploreStatus.ExploredWithError,
             print);
 
-
+        site.lastExplored = new Date();
 
         if(!data){
             if(print) console.log("\tError during exploration:", site.url)
             site.explored = GetterSubUrlExploreStatus.ExploredWithError;
+            site.exploredWithErrorCount++;
             await this.suburlRepository.save(site);
             return null
         }
 
         site.explored = GetterSubUrlExploreStatus.Explored;
+        site.exploredWithErrorCount = 0;
 
         const {
             urls,
             html
         } = data;
 
-        // console.log(urls)
 
-        site.probability = this.calculateProbability(html);
+        site.probability = await this.calculateProbability(html);
+        
+        if(site.probability >= 50)
+            await this.sourceService.addSource(site.url);
+
         await this.suburlRepository.save(site);
         
         return urls.filter((url)=>{
-            return url && url.length <= GETTER_URL_MAX_LENGTH
+            return url && isUrlInLengthLimit(url);
         })
     }
 
-    async addDomain(url: string){
-        const domain = await this.domainService.getDomainObject(url);
-
-        await this.suburlRepository.save({url, domain})
-        return "Done"
-    }
-
-    calculateProbability(html: string){
-        const includies = [
-            "akord",
-            "chord",
-            "noty",
-            "lyrics",
-            "zpevnik",
-            "song",
-        ]
-
-        let score = 0;
-
-        for(const include of includies){
-            if(html.includes(include)){
-                score += 1;
-            }
-        }
-
-        score = (score / includies.length)*100;
-        return score;
-
-    }
-
-    getUrlType(url: string) : GetterSuburlType{
-        if(!isUrlValid(url)){
-            return null;
-        }
-
-        const u = new URL(url);
-        const path = u.pathname;
-
-        const audioEndings = [
-            ".mp3",
-            ".wav",
-            ".flac",
-            ".ogg",
-        ]
-
-        const imageEndings = [
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".gif",
-            ".webp",
-        ]
-
-        const videoEndings = [
-            ".mp4",
-            ".avi",
-            ".mkv",
-            ".webm",
-        ]
-
-        const otherEndings = [
-            ".pdf",
-            ".doc",
-            ".docx",
-            ".txt",
-            ".zip",
-            ".rar",
-            ".7z",
-            ".tar",
-            ".gz",
-            ".bz2",
-            ".xz"
-        ]
-
-        if(audioEndings.some((ending)=>path.endsWith(ending))){
-            return GetterSuburlType.Audio;
-        }
-
-        if(imageEndings.some((ending)=>path.endsWith(ending))){
-            return GetterSuburlType.Image;
-        }
-
-        if(videoEndings.some((ending)=>path.endsWith(ending))){
-            return GetterSuburlType.Video;
-        }
-
-        if(otherEndings.some((ending)=>path.endsWith(ending))){
-            return GetterSuburlType.Other;
-        }
-
-    }
-
-    
-    async processLoop(count: number, print: boolean = true){
+    async processLoop(count: number, print: boolean = false){
         
-        if(count > 1000) throw new BadRequestException("Count too high. Max 1000.");
+        if(count > MAX_COUNT_PER_LOOP) 
+            throw new BadRequestException(`Count cannot be higher than ${MAX_COUNT_PER_LOOP}`);
 
-        await this.getterService.prepareBrowser();
+        await this.exploreUtils.prepareBrowser();
 
-        const MIN_SYNC_COUNT = 1;
-        const MAX_SYNC_COUNT = 20;
-        let syncCount = 10;
+        let syncCount = Math.ceil((MIN_SYNC_COUNT + MAX_SYNC_COUNT) / 2);
         let lastIncrease = true;
         let lastPer = Infinity;
         const threshold = 100;
@@ -258,10 +184,10 @@ export class GetterSubUrlService{
             const currentStart = new Date().getTime();
 
             // First, choose the sites to explore
-            const sites = []
+            const sites : GetterSubUrl[] = []
             for(let j = 0; j < targetCount; j++){
                 const s = (await this.chooseNext(exploreWithErrors));
-                
+                if(!s) break;
                 if(s) sites.push(s);
             }
             if(sites.length === 0 && exploreWithErrors){
@@ -276,9 +202,9 @@ export class GetterSubUrlService{
 
 
             // For each site, create processNext promise
-            const promises = sites.map((site, index)=>{
+            const promises : Promise<string[]>[] = sites.map((site, index)=>{
                 if(site){
-                    return this.processNext(site, print).then((result)=>{
+                    return this.processPage(site, print).then((result)=>{
                         i++;
                         if(print) console.log(i+".", "Processed:", site.url)
                         return result
@@ -298,35 +224,8 @@ export class GetterSubUrlService{
                 return self.indexOf(url) === index;
             })
 
-            // Prepare the new sites, push them to newSites array
-            // Check if the site is already in the database
-            const newSites = [];
-            for(const url of urls){
-                if(!url) continue;
-                if(await this.suburlRepository.findOne({
-                    where:{
-                        url
-                    }
-                })){
-                    continue;
-                }
-                
-                const domain = await this.domainService.getDomainObject(url);
-                const type = this.getUrlType(url);
-                newSites.push({
-                    url,
-                    domain: domain,
-                    type,
-                })
-            }
 
-            // Insert the new sites to the database
-            try{
-                await this.suburlRepository.save(newSites);
-            }catch(e){
-                if(print) console.log("Error during saving new sites:", e.message)
-            }
-
+            await this.getterSuburlService.addPages(urls);
 
             // Print the progress
             const now = new Date().getTime();
@@ -378,8 +277,107 @@ export class GetterSubUrlService{
 
         }
 
-        await this.getterService.closeBrowser();
+        await this.exploreUtils.closeBrowser();
     }
 
+    async processSmartLoop(count: number, print: boolean = false){
+        
+        const MAX_PER_LOOP = MAX_COUNT_PER_LOOP;
+        const loops = Math.ceil(count / MAX_PER_LOOP);
 
+        console.log("Request split into " + loops + " parts:");
+
+        let countLeft = count;
+
+        for(let i = 0; i < loops; i++){
+            console.log("--- STARTING PART", i+1, "of", loops, "---");
+            const result = await this.processLoop(MAX_PER_LOOP > countLeft ? countLeft : MAX_PER_LOOP, print);
+            countLeft -= MAX_PER_LOOP;
+        }
+
+    }
+
+    async containsSong(html: string){
+        const keyClassWord = [
+            "song",
+            "piesen",
+            "pisen",
+            "chord",
+            "akord"
+        ]
+
+        const forbiddenClassWord = [
+            "songs",
+            "piesne",
+            "tag",
+            "chords",
+            "akordy",
+        ]
+
+        // check if exists element with class including substring from keyClassWord
+        // but not including substring from forbiddenClassWord
+        const $ = cheerio.load(html);
+    
+        const q = keyClassWord.map((word)=>`[class*="${word}"]`).join(", ");
+        let elements = $(q);
+        // filter out elements with class including substring from forbiddenClassWord
+        elements = elements.filter((index, element)=>{
+            for(const word of forbiddenClassWord){
+                if($(element).attr("class").includes(word)){
+                    return false;
+                }
+            }
+            return true;
+        })
+        
+        // console.log(elements.length)
+        const existSongClass = elements.length > 0;
+        if(!existSongClass) return false;
+
+        let maxLength = 0;
+        let maxNewLineCount = 0;
+        elements.each((index, element)=>{
+            const text = $(element).text();
+            const length = text.length;
+            const newLineCount = (text.match(/\n/g) || []).length;
+
+            if(length > maxLength){
+                maxLength = length;
+                maxNewLineCount = newLineCount;
+            }
+        })
+
+
+        // console.log("Max length", maxLength, "Max new lines", maxNewLineCount)
+
+        if(maxLength < 100) return false
+        if(maxNewLineCount > 1000) return false
+  
+        return true;
+    }
+
+    async calculateProbability(html: string){
+        
+        let score = 0;
+        
+        
+        const regexes = includies.map(include => new RegExp(include, 'g'));
+        
+        for (const regex of regexes) {
+            const matches = html.match(regex);
+            if (matches) {
+                score += 1;
+            }
+        }
+        
+        
+        score = (score / includies.length)*50;
+        // if(score < 1) return score;
+
+        const containsSong = await this.containsSong(html);
+        score += containsSong ? 50 : 0;
+
+        return score;
+
+    }
 }

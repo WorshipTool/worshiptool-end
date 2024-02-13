@@ -1,12 +1,9 @@
 import { Module } from "@nestjs/common";
+import { DatabaseModule } from "../database/database.module";
+import { MessengerModule } from "../messenger/messenger.module";
+import { ParserService } from "./services/parser.service";
 import { SongsController } from "./songs.controller";
 import { SongsService } from "./songs.service";
-import { DatabaseModule } from "src/database/database.module";
-import { SongService } from "./services/song.service";
-import { MessengerModule } from "src/messenger/messenger.module";
-import { AddSongDataService } from "./services/adding/add.service";
-import { ParserService } from "./services/parser.service";
-import { PlaylistService } from "./services/playlists/playlist.service";
 
 @Module({
     imports: [

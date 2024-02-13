@@ -1,0 +1,14 @@
+{
+    "pages": [
+        {
+            "domain": "zpevnik.proscholy.cz",
+            "extracter": "/Users/pepavlin/Workspace/Programming/WorshipTool/worshiptool-end/src/getter/scripts/scrapers/proscholy.scraper.ts" ,
+            "explorer" : "/Users/pepavlin/Workspace/Programming/WorshipTool/worshiptool-end/src/getter/scripts/explorers/proscholy.explorer.ts"
+        },
+        {
+            "domain": "www.krestanskespolecenstvi.cz",
+            "extracter": "/Users/pepavlin/Workspace/Programming/WorshipTool/worshiptool-end/src/getter/scripts/scrapers/krestanskespolecenstvi.scraper.ts" ,
+            "explorer" : ""
+        }
+    ]
+}

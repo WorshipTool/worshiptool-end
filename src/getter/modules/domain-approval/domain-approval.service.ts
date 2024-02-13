@@ -1,8 +1,9 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { GETTER_DOMAIN_REPOSITORY } from 'src/database/constants';
-import { GetterDomain, GetterDomainStatus } from 'src/database/entities/getter/getter-domain.entity';
-import { MessengerService } from 'src/messenger/messenger.service';
 import { Repository } from 'typeorm';
+import { GETTER_DOMAIN_REPOSITORY, GETTER_SOURCES_REPOSITORY } from '../../../database/constants';
+import { GetterDomain, GetterDomainStatus } from '../../../database/entities/getter/getter-domain.entity';
+import { MessengerService } from '../../../messenger/messenger.service';
+import { GetterSource } from '../../../database/entities/getter/getter-source.entity';
 
 
 const autoTitles = [
@@ -23,6 +24,9 @@ export class DomainApprovalService{
         private messengerService: MessengerService,
         @Inject(GETTER_DOMAIN_REPOSITORY)
         private domainRepository: Repository<GetterDomain>,
+
+        @Inject(GETTER_SOURCES_REPOSITORY)
+        private sourcesRepository: Repository<GetterSource>,
     ){}
 
     async checkTimeToSend(){
@@ -31,11 +35,16 @@ export class DomainApprovalService{
 
     
     async chooseDomainToApprove() : Promise<GetterDomain|null>{
-        const domain = await this.domainRepository.findOne({
-            where:{
-                status: GetterDomainStatus.Pending
-            }
-        });
+        // Choose domain to approve
+        // Choose domain with status pending
+        // join with sources
+        // Order by count of sources
+
+        const domain = await this.domainRepository.createQueryBuilder("getter_domain")
+            .leftJoinAndSelect("getter_domain.sources","source")
+            .where("getter_domain.status = :status",{status: GetterDomainStatus.Pending})
+            .orderBy("source.guid","DESC")
+            .getOne();
 
         return domain as GetterDomain | null;
     }
@@ -90,7 +99,6 @@ export class DomainApprovalService{
         }
     })
     }
-
     
     async sendNextApproval(autoCall : boolean = true){
         const domain = await this.chooseDomainToApprove();
@@ -120,7 +128,6 @@ export class DomainApprovalService{
               ]
         })
     }
-
     
     async approveDomain(domain: string){
         const existing = await this.domainRepository.findOne({

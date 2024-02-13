@@ -1,4 +1,4 @@
-import { ScrapeResult } from "./scrapers/ScrapeResult";
+import { ScrapeResult } from "./scripts/scrapers/template/ScrapeResult";
 
 export class PostAddGetterSourceDto {
     url: string;

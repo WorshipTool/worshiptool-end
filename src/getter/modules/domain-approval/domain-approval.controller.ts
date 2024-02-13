@@ -1,7 +1,8 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import * as cron from 'node-cron';
 import { DomainApprovalService } from './domain-approval.service';
-import { WebhookService } from 'src/webhook/webhook.service';
+import { WebhookService } from '../../../webhook/webhook.service';
+import { AllowNonUser } from '../../../auth/decorators/allownonuser.decorator';
 
 @Controller('domain-approval')
 export class DomainApprovalController{
@@ -9,7 +10,7 @@ export class DomainApprovalController{
         private readonly domainApprovalService: DomainApprovalService,
         private readonly webhookService: WebhookService,
     ){
-        cron.schedule('11 * * * *', () => {
+        cron.schedule('39 7 * * *', () => {
             this.domainApprovalService.checkTimeToSend();
         });
 
@@ -22,6 +23,11 @@ export class DomainApprovalController{
         });
     }
 
-    
+    @AllowNonUser()
+    @Get("sendApproval")
+    async sendNextApproval(){
+        const domain = await this.domainApprovalService.chooseDomainToApprove();
+        return this.domainApprovalService.sendApprovalMessage(domain)
+    }
 
 }

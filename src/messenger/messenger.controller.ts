@@ -1,8 +1,8 @@
 import { BadRequestException, Body, Controller, Get, Post } from "@nestjs/common";
 import { MessengerService } from "./messenger.service";
-import { AllowNonUser } from "src/auth/decorators/allownonuser.decorator";
 import { PostSendFeedbackBody, PostSendMessageBody } from "./messenger.dto";
 import { ApiBadRequestResponse, ApiDefaultResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { AllowNonUser } from "../auth/decorators/allownonuser.decorator";
 
 @ApiTags("Messenger")
 @Controller()

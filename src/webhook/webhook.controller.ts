@@ -1,7 +1,9 @@
 import { BadRequestException, Body, Controller, Get, Post, Query } from "@nestjs/common";
-import { AllowNonUser } from "src/auth/decorators/allownonuser.decorator";
 import { WebhookService } from "./webhook.service";
+import { ApiTags } from "@nestjs/swagger";
+import { AllowNonUser } from "../auth/decorators/allownonuser.decorator";
 
+@ApiTags("Webhook")
 @Controller('webhook')
 export class WebhookController{
     constructor(

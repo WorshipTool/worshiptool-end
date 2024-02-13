@@ -1,21 +1,20 @@
 import { BadRequestException, ConflictException, Get, Inject, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
-import { PLAYLIST_ITEMS_REPOSITORY, PLAYLIST_REPOSITORY, SONG_NAMES_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY } from "src/database/constants";
-import { Song } from "src/database/entities/song.entity";
-import { SongTitle } from "src/database/entities/songtitle.entity";
-import { SongVariant } from "src/database/entities/songvariant.entity";
-import { In, Like, MoreThan, Not, Repository } from "typeorm";
-import { NewSongData, NewSongDataToVariant} from "./adding/add.dto";
-import { ROLES, User } from "src/database/entities/user.entity";
-import { skipForPage, takePerPage } from '../contants';
-import normalizeSearchText from "src/tech/normalizeSearchText";
-import { ListSongData, PostEditVariantBody, SearchSongData } from "../songs.dto";
-import { SongVariantDTO } from "src/dtos/songvariant.dto";
-import { mapSourceToDTO } from "src/dtos/source.dto";
-import { PlaylistItem } from "src/database/entities/playlistitem.entity";
 import { Sheet } from "@pepavlin/sheet-api";
-import { PlaylistService } from "./playlists/playlist.service";
-import { Playlist } from "src/database/entities/playlist.entity";
-import { PlaylistUtilsService } from './playlists/playlistutils.service';
+import { Repository, In, Like, Not } from "typeorm";
+import { SONG_REPOSITORY, SONG_NAMES_REPOSITORY, SONG_VARIANTS_REPOSITORY, PLAYLIST_ITEMS_REPOSITORY, PLAYLIST_REPOSITORY } from "../../database/constants";
+import { Playlist } from "../../database/entities/playlist.entity";
+import { PlaylistItem } from "../../database/entities/playlistitem.entity";
+import { Song } from "../../database/entities/song.entity";
+import { SongTitle } from "../../database/entities/songtitle.entity";
+import { SongVariant } from "../../database/entities/songvariant.entity";
+import { User, ROLES } from "../../database/entities/user.entity";
+import { SongVariantDTO } from "../../dtos/songvariant.dto";
+import { mapSourceToDTO } from "../../dtos/source.dto";
+import normalizeSearchText from "../../tech/normalizeSearchText";
+import { skipForPage, takePerPage } from "../contants";
+import { SearchSongData, ListSongData, PostEditVariantBody } from "../songs.dto";
+import { NewSongData } from "./adding/add.dto";
+import { PlaylistUtilsService } from "./playlists/playlistutils.service";
 
 @Injectable()
 export class SongService{

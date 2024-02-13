@@ -1,8 +1,9 @@
 import { BadRequestException, Inject, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
-import { GETTER_DOMAIN_REPOSITORY, GETTER_SEARCH_REPOSITORY, GETTER_SOURCES_REPOSITORY, GETTER_SUBURL_REPOSITORY } from "src/database/constants";
-import { Repository, In } from 'typeorm';
-import { GetterDomain, GetterDomainStatus } from "src/database/entities/getter/getter-domain.entity";
-import { isUrlValid } from "src/tech/urls.tech";
+import { Repository } from "typeorm";
+import { GETTER_DOMAIN_REPOSITORY } from "../../../database/constants";
+import { GetterDomain, GetterDomainStatus } from "../../../database/entities/getter/getter-domain.entity";
+import { isUrlValid } from "../../../tech/urls.tech";
+
 const rejecties = [
     "facebook",
     "instagram",
@@ -34,6 +35,8 @@ const rejecties = [
     "youtu.be"
 ]
 
+type GetterDomainObject = GetterDomain & {justCreated?: boolean};
+
 @Injectable()
 export class GetterDomainService{
     constructor(
@@ -42,7 +45,7 @@ export class GetterDomainService{
 
     ){}
 
-    getDomain(url: string) : string | null{
+    getDomainString(url: string) : string | null{
         if(!isUrlValid(url)){
             return null;
         }
@@ -58,9 +61,16 @@ export class GetterDomainService{
         return domain;
     }
 
-    async getDomainObject(url:string) {
-        const domain = this.getDomain(url);
-        if(!domain) return null;
+    /***
+     * Get domain object from database
+     * If not exists, create it
+     */
+    async getDomainObject(url:string, createIfNotExist: boolean = true) : Promise<GetterDomainObject> {
+        let domain = this.getDomainString(url);
+        if(!domain){
+            domain = url;
+            createIfNotExist = false;
+        }
 
         const result = await this.domainRepository.findOne({
             where: {
@@ -68,24 +78,35 @@ export class GetterDomainService{
             }
         })
 
-        if(!result){
+        if(result) return {
+            ...result,
+            justCreated: false
+        }
+
+        if(createIfNotExist){
             const autoReject = this.isAutomaticallyRejected(url);
             await this.domainRepository.save({
                 domain,
                 status: autoReject ? GetterDomainStatus.Rejected : GetterDomainStatus.Pending
             });
-            return await this.domainRepository.findOne({
+            const result =  await this.domainRepository.findOne({
                 where: {
                     domain
                 }
             });
+
+            return {
+                ...result,
+                justCreated: true
+            }
         }
 
-        return result;
+        return null
     }
 
+
     isAutomaticallyRejected(url: string) : boolean{
-        const domain = this.getDomain(url);
+        const domain = this.getDomainString(url);
         if(!domain) return true;
 
         for(const reject of rejecties){

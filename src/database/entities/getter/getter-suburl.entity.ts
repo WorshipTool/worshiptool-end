@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToMany, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { GetterDomain } from "./getter-domain.entity";
+import { GETTER_URL_MAX_LENGTH } from "../../../getter/utils";
 
-export const GETTER_URL_MAX_LENGTH = 255;
 
 export enum GetterSubUrlExploreStatus {
     Unexplored = 0,
@@ -28,12 +28,18 @@ export class GetterSubUrl{
 
     @Column({default: GetterSubUrlExploreStatus.Unexplored})
     explored: GetterSubUrlExploreStatus;
+    
+    @Column({default: 0})
+    exploredWithErrorCount: number;
 
     @Column({default: 0})
     probability: number;
 
     @Column({default: GetterSuburlType.Page})
     type: GetterSuburlType;
+
+    @Column()
+    lastExplored: Date;
 
 
 

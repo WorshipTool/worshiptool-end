@@ -1,10 +1,9 @@
 import { Module } from "@nestjs/common";
 import { DomainApprovalService } from "./domain-approval.service";
-import { MessengerService } from "src/messenger/messenger.service";
-import { MessengerModule } from "src/messenger/messenger.module";
+import { DatabaseModule } from "../../../database/database.module";
+import { MessengerModule } from "../../../messenger/messenger.module";
+import { WebhookModule } from "../../../webhook/webhook.module";
 import { DomainApprovalController } from "./domain-approval.controller";
-import { DatabaseModule } from "src/database/database.module";
-import { WebhookModule } from "src/webhook/webhook.module";
 
 @Module({
     imports: [
