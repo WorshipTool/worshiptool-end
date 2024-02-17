@@ -37,20 +37,27 @@ export class DomainApprovalService{
     async chooseDomainToApprove() : Promise<GetterDomain|null>{
         // Choose domain to approve
         // Choose domain with status pending
+        // level bigger than 0
         // join with sources
         // Order by count of sources
+        // Secondary order by level of domain, so we can approve lower level domains first
+        // Thirdly order by status of parent domain, so we can approve domains with approved parent first
 
-        const domain = await this.domainRepository.createQueryBuilder("getter_domain")
-            .leftJoinAndSelect("getter_domain.sources","source")
-            .where("getter_domain.status = :status",{status: GetterDomainStatus.Pending})
-            .orderBy("source.guid","DESC")
+        const domain = await this.domainRepository.createQueryBuilder("domain")
+            .leftJoinAndSelect("domain.sources", "source")
+            .leftJoin("domain.parent", "parent")
+            .where("domain.status = :status", {status: GetterDomainStatus.Pending})
+            .andWhere("domain.level > 0")
+            .orderBy("source.guid", "DESC")
+            .addOrderBy("domain.level", "ASC")
+            .addOrderBy("parent.status", "ASC")
             .getOne();
 
         return domain as GetterDomain | null;
     }
 
     async sendApprovalMessage(domain: GetterDomain, autoCall : boolean = true){
-
+        if(!domain) return null;
 
         const url = domain.domain;
         const title = autoCall ? 

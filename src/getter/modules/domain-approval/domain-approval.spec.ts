@@ -12,7 +12,6 @@ describe("GetterSource", () => {
           }).compile();
 
           approvalService = await module.get(DomainApprovalService);
-
         
         return;
     });

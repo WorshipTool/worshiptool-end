@@ -14,8 +14,12 @@
         },
         {
             "label": "npm: test",
-            "type": "npm",
-            "script": "test",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "test",
+                "${file}"
+            ],
             "problemMatcher": [],
             "detail": "npm run test",
             "group": {

@@ -16,7 +16,7 @@ export class PostProcessNextResult{
 }
 
 export class PostAddSubUrlDomainDto{
-    domain: string;
+    page: string;
 }
 
 export class PostSubUrlLoopDto{

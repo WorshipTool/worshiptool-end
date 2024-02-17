@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
-import { Repository, In, LessThan, Not } from "typeorm";
+import { Repository, In, LessThan, Not, MoreThan } from "typeorm";
 import { GETTER_SUBURL_REPOSITORY } from "../../../database/constants";
 import { GetterDomainStatus } from "../../../database/entities/getter/getter-domain.entity";
 import { GetterSubUrl, GetterSuburlType, GetterSubUrlExploreStatus } from "../../../database/entities/getter/getter-suburl.entity";
@@ -96,18 +96,25 @@ export class DomainExploreSuburlsService {
                 exploredWithErrorCount: LessThan(2),
                 domain:{
                     status: Not(GetterDomainStatus.Rejected),
-                    hasExplorer: false
+                    hasExplorer: false,
+                    level: MoreThan(0)
                 },
                 type: GetterSuburlType.Page
             },
             order: {
                 domain: {
-                    status: "ASC"
+                    status: "ASC",
+                    level: "ASC",
+                    parent: {
+                        status: "ASC",
+                    }
                 },
                 explored: "ASC",
             },
             relations: {
-                domain: true
+                domain: {
+                    parent: true
+                }
             }
         })
 
