@@ -4,6 +4,7 @@ import { isUrlValid } from "../../../tech/urls.tech";
 import { GetterDomainService } from "../getter-domain/getter-domain.service";
 import { Repository } from "typeorm";
 import { GETTER_SUBURL_REPOSITORY } from "../../../database/constants";
+import { isUrlInLengthLimit } from "../../utils";
 
 
 const audioEndings = [
@@ -56,6 +57,10 @@ export class GetterSubUrlService{
     async addPage(url: string){
         if(!isUrlValid(url)){
             return "Invalid url";
+        }
+
+        if(!isUrlInLengthLimit(url)){
+            return "Url too long";
         }
 
         if(await this.suburlRepository.findOne({

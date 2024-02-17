@@ -22,8 +22,8 @@ export class DomainExploreController{
             this.domainExploreService.checkUpdates();
         });
 
-        cron.schedule('30 2 * * *', () => {
-            this.suburlService.processSmartLoop(1000);
+        cron.schedule('0 2 * * *', () => {
+            this.suburlService.processSmartLoop(5000);
         });
 
     }
@@ -57,9 +57,9 @@ export class DomainExploreController{
 
     
     @AllowNonUser()
-    @Post("getter/addsuburldomain")
-    async addSubUrlDomain(@Body() {domain}: PostAddSubUrlDomainDto){
-        if(!domain) throw new BadRequestException("No domain");
-        return this.getterSuburlService.addPage(domain);
+    @Post("getter/addsuburlpage")
+    async addSubUrlPage(@Body() {page}: PostAddSubUrlDomainDto){
+        if(!page) throw new BadRequestException("No domain");
+        return this.getterSuburlService.addPage(page);
     }
 }

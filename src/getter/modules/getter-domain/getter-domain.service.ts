@@ -47,6 +47,9 @@ export class GetterDomainService{
 
     getDomainString(url: string) : string | null{
         if(!isUrlValid(url)){
+            url = "https://" + url;
+        }
+        if(!isUrlValid(url)){
             return null;
         }
         const u = new URL(url);
@@ -66,7 +69,7 @@ export class GetterDomainService{
      * If not exists, create it
      */
     async getDomainObject(url:string, createIfNotExist: boolean = true) : Promise<GetterDomainObject> {
-        let domain = this.getDomainString(url);
+        let domain = this.getDomainString(url)
         if(!domain){
             domain = url;
             createIfNotExist = false;
@@ -84,10 +87,18 @@ export class GetterDomainService{
         }
 
         if(createIfNotExist){
+            const parentDomainString = this.getParentDomainString(domain);
+            const parentDomain = parentDomainString 
+                ? await this.getDomainObject(parentDomainString) 
+                : null
+
+            const level = this.getDomainLevel(domain);
             const autoReject = this.isAutomaticallyRejected(url);
             await this.domainRepository.save({
                 domain,
-                status: autoReject ? GetterDomainStatus.Rejected : GetterDomainStatus.Pending
+                status: autoReject ? GetterDomainStatus.Rejected : GetterDomainStatus.Pending,
+                parent: parentDomain,
+                level
             });
             const result =  await this.domainRepository.findOne({
                 where: {
@@ -118,6 +129,24 @@ export class GetterDomainService{
         return false;
     }
 
+    getParentDomainString(domain: string){
+        const parts = domain.split(".");
+
+        if(parts.length === 1){
+            return null;
+        }
+        const onlyParts = parts.slice(1);
+
+        const str = onlyParts.join(".");
+        return str;
+    }
+
+    getDomainLevel(url: string){
+        url = this.getDomainString(url);
+        const parts = url.split(".");
+
+        return parts.length - 1;
+    }
 
 
 

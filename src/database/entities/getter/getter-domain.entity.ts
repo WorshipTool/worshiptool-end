@@ -35,5 +35,14 @@ export class GetterDomain{
     @OneToMany(type => GetterSource, site => site.domain)
     sources: GetterSource[]
 
+    @OneToMany(type => GetterDomain, domain => domain.parent)
+    children: GetterDomain[]
+    
+    @ManyToOne(type => GetterDomain, domain => domain.children, 
+        {nullable: true})
+    parent: GetterDomain
+
+    @Column({default: 0})
+    level: number
 
 }
