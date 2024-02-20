@@ -4,6 +4,7 @@ import { GETTER_DOMAIN_REPOSITORY, GETTER_SOURCES_REPOSITORY } from '../../../da
 import { GetterDomain, GetterDomainStatus } from '../../../database/entities/getter/getter-domain.entity';
 import { MessengerService } from '../../../messenger/messenger.service';
 import { GetterSource } from '../../../database/entities/getter/getter-source.entity';
+import { isUrlValid } from '../../../tech/urls.tech';
 
 
 const autoTitles = [
@@ -109,9 +110,13 @@ export class DomainApprovalService{
     
     async sendNextApproval(autoCall : boolean = true){
         const domain = await this.chooseDomainToApprove();
+        
+        console.log("Sending approval message for domain", domain);
+
         if(!domain){
             return null;
         }
+
 
         await this.sendApprovalMessage(domain,autoCall)
         return true ;

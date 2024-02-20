@@ -120,6 +120,9 @@ export class GetterDomainService{
         const domain = this.getDomainString(url);
         if(!domain) return true;
 
+        if(domain.endsWith("."))
+            return true;
+
         for(const reject of rejecties){
             if(domain.includes(reject)){
                 return true;

@@ -3,7 +3,7 @@ import { In, Repository } from "typeorm";
 import { GETTER_SOURCES_REPOSITORY } from "../../../database/constants";
 import { GetterSource } from "../../../database/entities/getter/getter-source.entity";
 import { isUrlValid } from "../../../tech/urls.tech";
-import { isUrlInLengthLimit } from "../../utils";
+import { isUrlInLengthLimit } from "../../tech/utils";
 import { GetterDomainService } from "../getter-domain/getter-domain.service";
 
 @Injectable()

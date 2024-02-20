@@ -23,7 +23,8 @@ export class DomainExploreController{
         });
 
         cron.schedule('0 2 * * *', () => {
-            this.suburlService.processSmartLoop(5000);
+            const time = 60 * 60 * 1000; // 1 hour
+            this.suburlService.processSmartLoop(time);
         });
 
     }
@@ -46,10 +47,10 @@ export class DomainExploreController{
     
     @AllowNonUser()
     @Post("getter/suburlloop")
-    async subUrlLoop(@Body() {count}: PostSubUrlLoopDto){
-        if(!count) throw new BadRequestException("No count");
+    async subUrlLoop(@Body() {time}: PostSubUrlLoopDto){
+        if(!time) throw new BadRequestException("No count");
 
-        await this.suburlService.processSmartLoop(count, false);
+        await this.suburlService.processSmartLoop(time, false);
 
         return "Done"
         

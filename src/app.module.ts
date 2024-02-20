@@ -8,6 +8,7 @@ import { MessengerModule } from './messenger/messenger.module';
 import { GroupModule } from './group/group.module';
 import { GetterModule } from './getter/getter.module';
 import { WebhookModule } from './webhook/webhook.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { WebhookModule } from './webhook/webhook.module';
     AuthModule,
     MessengerModule,
     GetterModule,
-    WebhookModule
+    WebhookModule,
+    ConfigModule.forRoot(), // Loads .env file
   ],
   controllers: [],
   providers: [

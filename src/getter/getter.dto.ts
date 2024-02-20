@@ -20,5 +20,5 @@ export class PostAddSubUrlDomainDto{
 }
 
 export class PostSubUrlLoopDto{
-    count: number;
+    time: number;
 }

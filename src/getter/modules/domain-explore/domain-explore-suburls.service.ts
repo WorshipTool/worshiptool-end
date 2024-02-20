@@ -10,7 +10,7 @@ import * as cheerio from "cheerio";
 import { GetterSubUrlService } from "../getter-suburl/getter-suburl.service";
 import { GetterSource } from "../../../database/entities/getter/getter-source.entity";
 import { GetterSourceService } from "../getter-source/getter-source.service";
-import { isUrlInLengthLimit } from "../../utils";
+import { isUrlInLengthLimit } from "../../tech/utils";
 
 
 const includies = [
@@ -166,10 +166,15 @@ export class DomainExploreSuburlsService {
         })
     }
 
-    async processLoop(count: number, print: boolean = false){
+    /**
+     * 
+     * @returns True if there are still sites to explore, false if there are no more sites to explore
+     */
+    async processLoop(count: number, print: boolean = false, maxTime: number = -1){
         
         if(count > MAX_COUNT_PER_LOOP) 
             throw new BadRequestException(`Count cannot be higher than ${MAX_COUNT_PER_LOOP}`);
+
 
         await this.exploreUtils.prepareBrowser();
 
@@ -181,7 +186,7 @@ export class DomainExploreSuburlsService {
         
         const start = new Date().getTime();
 
-
+        let noSites = false;
 
         let exploreWithErrors = false;
         for(let i = 0; i < count;){
@@ -199,6 +204,7 @@ export class DomainExploreSuburlsService {
             }
             if(sites.length === 0 && exploreWithErrors){
                 if(print) console.log("No sites")
+                noSites = true;
                 break;
             }else if(sites.length === 0 && !exploreWithErrors){
                 exploreWithErrors = true;
@@ -236,7 +242,8 @@ export class DomainExploreSuburlsService {
 
             // Print the progress
             const now = new Date().getTime();
-            const elapsed = (now - start)/1000;
+            const e = (now - start);
+            const elapsed = e/1000;
             const per = elapsed / i;
 
 
@@ -246,6 +253,11 @@ export class DomainExploreSuburlsService {
                 Math.round(elapsed), "sec", "at", Math.round(per*10)/10, "s per site")
             console.log("Estimated time left", Math.round((count-i)*per/60), "min")
             console.log();
+
+            if(e > maxTime && maxTime > 0){
+                console.log("Max time reached")
+                break;
+            }
 
             
 
@@ -285,21 +297,36 @@ export class DomainExploreSuburlsService {
         }
 
         await this.exploreUtils.closeBrowser();
+
+        return !noSites;
     }
 
-    async processSmartLoop(count: number, print: boolean = false){
+    async processSmartLoop(time: number, print: boolean = false){
+
+        const minutes = Math.round(((time / 1000) / 60) * 100) / 100;
+        console.log("The process will take approximately", minutes, "minutes")
         
-        const MAX_PER_LOOP = MAX_COUNT_PER_LOOP;
-        const loops = Math.ceil(count / MAX_PER_LOOP);
+        const start = new Date().getTime();
+        
 
-        console.log("Request split into " + loops + " parts:");
+        let timeLeft = time;
 
-        let countLeft = count;
+        let loop = 0;
+        let count = MAX_COUNT_PER_LOOP;
 
-        for(let i = 0; i < loops; i++){
-            console.log("--- STARTING PART", i+1, "of", loops, "---");
-            const result = await this.processLoop(MAX_PER_LOOP > countLeft ? countLeft : MAX_PER_LOOP, print);
-            countLeft -= MAX_PER_LOOP;
+        while(timeLeft > 0){
+            console.log("--- STARTING PART", loop+1, "---");
+            if( !await this.processLoop(count, print, timeLeft)){
+                console.log("No more suburls to explore")
+                break;
+            }
+            loop++;
+
+            // Do I have time for another loop?
+            const now = new Date().getTime();
+            const elapsed = now - start;
+            timeLeft = time - elapsed;
+
         }
 
     }

@@ -26,8 +26,7 @@ export class DomainApprovalController{
     @AllowNonUser()
     @Get("sendApproval")
     async sendNextApproval(){
-        const domain = await this.domainApprovalService.chooseDomainToApprove();
-        return this.domainApprovalService.sendApprovalMessage(domain)
+        return this.domainApprovalService.sendNextApproval()
     }
 
 }

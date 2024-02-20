@@ -4,7 +4,7 @@ import { isUrlValid } from "../../../tech/urls.tech";
 import { GetterDomainService } from "../getter-domain/getter-domain.service";
 import { Repository } from "typeorm";
 import { GETTER_SUBURL_REPOSITORY } from "../../../database/constants";
-import { isUrlInLengthLimit } from "../../utils";
+import { isUrlInLengthLimit } from "../../tech/utils";
 
 
 const audioEndings = [

@@ -1,41 +1,11 @@
 import { customsearch } from "@googleapis/customsearch";
 import { Injectable, Inject } from "@nestjs/common";
 import { Repository } from "typeorm";
-import { GETTER_SEARCH_REPOSITORY, GETTER_SUBURL_REPOSITORY } from "../../../database/constants";
+import { GETTER_SEARCH_REPOSITORY } from "../../../database/constants";
 import { GetterSearch } from "../../../database/entities/getter/getter-search.entity";
 import { GetterDomainService } from "../getter-domain/getter-domain.service";
-import { GetterSubUrl } from "../../../database/entities/getter/getter-suburl.entity";
-import { DomainExploreSuburlsService } from "../domain-explore/domain-explore-suburls.service";
 import { GetterSubUrlService } from "../getter-suburl/getter-suburl.service";
-
-const slovnik = [
-    "Křesťanské písně s textem a akordy",
-    "Boží láska chválové písně",
-    "Vykoupení a odpuštění akordy",
-    "Boží věrnost worship songs",
-    "Svoboda křesťanské texty",
-    "Modlitba a oddanost akordy",
-    "Díkůvzdání křesťanské písně",
-    "Víra a naděje worship chords",
-    "Sláva Boží chvály s textem",
-    "Odevzdání se Boží vůli písně",
-    "Posvěcení a růst křesťanské akordy",
-    "Boží milosrdenství worship songs",
-    "Kristův vzkříšení písně s akordy",
-    "Boží vedení chvály s textem",
-    "Svědectví o věrnosti akordy",
-    "Světlo v temnotě křesťanské texty",
-    "Boží moudrost worship chords",
-    "Naděje ve víře písně s textem",
-    "Svátost ve společenství chvály s akordy",
-    "Boží pokoj křesťanské texty",
-    "Svoboda v Kristu worship songs",
-    "Boží milost chvály s textem",
-    "Víra jako opora křesťanské akordy",
-    "Radost ve službě písně s akordy",
-    "Svědectví Boží lásky worship chords",
-    "Boží nekonečná trpělivost křesťanské texty"
-];
+import { DomainSearchQueryService } from "./domain-search-query.service";
 
 const searchMockData = [
     {
@@ -63,7 +33,8 @@ export class DomainSearchService{
         @Inject(GETTER_SEARCH_REPOSITORY)
         private searchRepository: Repository<GetterSearch>,
         private suburlService: GetterSubUrlService,
-        private domainService: GetterDomainService
+        private domainService: GetterDomainService,
+        private queryService: DomainSearchQueryService
     ){}
 
     requestsCountThisDay = 0;
@@ -75,56 +46,6 @@ export class DomainSearchService{
         this.requestsCountThisDay++;
     }
 
-    
-    generujNahodneKlicovaSlova(maxDelkaSlova: number) {
-        
-        const nahodnaKlicovaSlova : string[] = [];
-      
-        for (let i = 0; i < 1; i++) {
-          let slovo = '';
-          const delkaSlova = Math.floor(Math.random() * maxDelkaSlova) + 1;
-      
-          for (let j = 0; j < delkaSlova; j++) {
-            const nahodneIndex = Math.floor(Math.random() * slovnik.length);
-            slovo += slovnik[nahodneIndex];
-      
-            // Přidat mezery mezi slovy (kromě posledního)
-            if (j < delkaSlova - 1) {
-              slovo += ' ';
-            }
-          }
-      
-          nahodnaKlicovaSlova.push(slovo);
-        }
-        
-        return nahodnaKlicovaSlova[0] +" křesťanské písně s akordy -bakalářskápráce -dimpomovaprace";
-    }
-
-    async getSearchQuery(returnRandom: boolean = false){    
-
-        const random = {
-            query: this.generujNahodneKlicovaSlova(3),
-            page: 0
-        }
-        if(returnRandom) return random;
-
-        const existing = await this.searchRepository.findOne({
-            where:{
-                processedAll: false
-            },
-            order:{
-                lastSearch: "DESC"
-            }
-        });
-        
-        if(!existing) return random;
-
-
-        return {
-            query: existing.query,
-            page: existing.lastPage+1
-        };
-    }
 
     async search(allowReturnMockData: boolean = false){
 
@@ -136,7 +57,7 @@ export class DomainSearchService{
 
 
         
-        const query = await this.getSearchQuery(useMockData);
+        const query = await this.queryService.getSearchQuery(useMockData);
 
         
         let resultItems = [];

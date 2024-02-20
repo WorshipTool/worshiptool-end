@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToMany, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { GetterDomain } from "./getter-domain.entity";
-import { GETTER_URL_MAX_LENGTH } from "../../../getter/utils";
+import { GETTER_URL_MAX_LENGTH } from "../../../getter/tech/utils";
 
 
 export enum GetterSubUrlExploreStatus {
