@@ -22,3 +22,7 @@ export class PostAddSubUrlDomainDto{
 export class PostSubUrlLoopDto{
     time: number;
 }
+
+export class PostProcessSubUrlDto{
+    url: string;
+}

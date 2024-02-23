@@ -1,9 +1,9 @@
-import { BadRequestException, Body, Controller, Get, Post, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, NotFoundException, Post, Query } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { AllowNonUser } from "../../../auth/decorators/allownonuser.decorator";
-import { PostSubUrlLoopDto, PostAddSubUrlDomainDto } from "../../getter.dto";
+import { PostSubUrlLoopDto, PostAddSubUrlDomainDto, PostProcessSubUrlDto } from "../../getter.dto";
 import { GetterDomainService } from "../getter-domain/getter-domain.service";
-import { DomainExploreSuburlsService } from "./domain-explore-suburls.service";
+import { DomainExploreSuburlsService } from './domain-explore-suburls.service';
 import { DomainExploreService } from "./domain-explore.service";
 import * as cron from "node-cron";
 import { GetterSubUrlService } from "../getter-suburl/getter-suburl.service";
@@ -15,7 +15,8 @@ export class DomainExploreController{
         private readonly domainExploreService: DomainExploreService,
         private readonly domainService: GetterDomainService,
         private readonly suburlService: DomainExploreSuburlsService,
-        private readonly getterSuburlService: GetterSubUrlService
+        private readonly getterSuburlService: GetterSubUrlService,
+        private readonly domainExploreSuburlsService: DomainExploreSuburlsService
     ){
 
         cron.schedule('30 1 * * *', () => {
@@ -54,6 +55,14 @@ export class DomainExploreController{
 
         return "Done"
         
+    }
+
+    @AllowNonUser()
+    @Post("processSubUrl")
+    async process(@Body() {url}:PostProcessSubUrlDto){
+        const subUrl = await this.domainExploreSuburlsService.getEntityByUrl(url);
+        if(!subUrl) throw new NotFoundException("Suburl not found");
+        return this.domainExploreSuburlsService.processPage(subUrl);
     }
 
     

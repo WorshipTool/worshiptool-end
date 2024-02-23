@@ -137,6 +137,7 @@ export class DomainExploreSuburlsService {
 
         site.lastExplored = new Date();
 
+
         if(!data){
             if(print) console.log("\tError during exploration:", site.url)
             site.explored = GetterSubUrlExploreStatus.ExploredWithError;
@@ -163,6 +164,19 @@ export class DomainExploreSuburlsService {
         
         return urls.filter((url)=>{
             return url && isUrlInLengthLimit(url);
+        })
+    }
+
+    async getEntityByUrl(url: string){
+        if(!url) return null;
+        if(!isUrlValid(url)){
+            throw new BadRequestException("Invalid url")
+        }
+
+        return await this.suburlRepository.findOne({
+            where: {
+                url
+            }
         })
     }
 

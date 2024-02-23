@@ -22,16 +22,19 @@ export class GetterSourceService{
             return null;
         }
 
+
         const source = await this.sourcesRepository.findOne({
             where: {
                 url
             }
         });
+
         if(source){
             return source;
         }
         const domain = await this.domainService.getDomainObject(url);
-        return await this.sourcesRepository.create({url, domain});
+
+        return await this.sourcesRepository.save({url, domain});
 
     }
 
