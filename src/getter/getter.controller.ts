@@ -16,9 +16,6 @@ export class GetterController{
 
     constructor(
         private readonly getterService: GetterService,
-
-        @Inject(GETTER_SUBURL_REPOSITORY)
-        private suburlRepository: Repository<GetterSubUrl>,
     ){}
 
     @AllowNonUser()
@@ -40,6 +37,7 @@ export class GetterController{
         return result;
         
     }
+
 
 
 

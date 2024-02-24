@@ -1,4 +1,4 @@
-import { calculateSimilarity } from "./string.tech";
+import { calculateSimilarity, normalizeCzechString } from "./string.tech";
 
 describe("StringTech", () => {
     it("Should be same", () => {
@@ -13,3 +13,15 @@ describe("StringTech", () => {
         expect(coef).toBeGreaterThan(0.5);
     });
 });
+
+describe('Normalize czech string', () => {
+    it('Should be same', () => {
+        const result = normalizeCzechString("Ahoj");
+        expect(result).toBe("Ahoj");
+    });
+
+    it('Should be same - special chars', () => {
+        const result = normalizeCzechString("Čučurietka");
+        expect(result).toBe("Cucurietka");
+    })
+})

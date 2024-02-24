@@ -9,6 +9,8 @@ export enum GetterDomainStatus {
     Rejected = 2
 }
 
+export const MAX_GETTER_DOMAIN_DESCRIPTION_LENGTH = 255;
+
 @Entity()
 export class GetterDomain{
     @PrimaryGeneratedColumn()
@@ -16,6 +18,16 @@ export class GetterDomain{
 
     @Column()   
     domain: string;
+
+
+    @Column({nullable: true, default: null})
+    title: string;
+
+    @Column({nullable: true, default: null, length: MAX_GETTER_DOMAIN_DESCRIPTION_LENGTH})
+    description: string;
+
+    @Column({nullable: true, default: null})
+    probality: number;
 
     @Column({default: GetterDomainStatus.Pending})
     status: GetterDomainStatus
@@ -44,5 +56,7 @@ export class GetterDomain{
 
     @Column({default: 0})
     level: number
+
+
 
 }

@@ -3,7 +3,7 @@
 	"tasks": [
         {
             "type": "npm",
-            "script": "start:dev",
+            "script": "start:dev-with-webhook",
             "problemMatcher": [],
             "label": "npm: start",
             "detail": "nest start",

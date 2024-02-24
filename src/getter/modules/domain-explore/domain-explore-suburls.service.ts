@@ -104,10 +104,11 @@ export class DomainExploreSuburlsService {
             order: {
                 domain: {
                     status: "ASC",
-                    level: "ASC",
+                    probality: "DESC",
                     parent: {
                         status: "ASC",
-                    }
+                    },
+                    level: "ASC",
                 },
                 explored: "ASC",
             },

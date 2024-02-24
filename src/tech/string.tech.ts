@@ -46,4 +46,46 @@ const editDistance = (s1, s2) => {
         costs[s2.length] = lastValue;
     }
     return costs[s2.length];
-  }
+}
+
+export const normalizeCzechString = (text: string) => {
+    const mapovani = {
+        'á': 'a',
+        'č': 'c',
+        'ď': 'd',
+        'é': 'e',
+        'ě': 'e',
+        'í': 'i',
+        'ň': 'n',
+        'ó': 'o',
+        'ř': 'r',
+        'š': 's',
+        'ť': 't',
+        'ú': 'u',
+        'ů': 'u',
+        'ý': 'y',
+        'ž': 'z',
+        'Á': 'A',
+        'Č': 'C',
+        'Ď': 'D',
+        'É': 'E',
+        'Ě': 'E',
+        'Í': 'I',
+        'Ň': 'N',
+        'Ó': 'O',
+        'Ř': 'R',
+        'Š': 'S',
+        'Ť': 'T',
+        'Ú': 'U',
+        'Ů': 'U',
+        'Ý': 'Y',
+        'Ž': 'Z'
+    };
+
+    for (var znak in mapovani) {
+        var regex = new RegExp(znak, "g");
+        text = text.replace(regex, mapovani[znak]);
+    }
+
+    return text;
+}

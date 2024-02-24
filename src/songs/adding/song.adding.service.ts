@@ -2,12 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { Sheet } from "@pepavlin/sheet-api";
 import { calculateSimilarity } from "../../tech/string.tech";
 import { Section } from "@pepavlin/sheet-api/lib/models/song/section";
+import { VariantRelationInDto } from "./song.adding.dto";
 
-type VariantRelationInDto = {
-    title: string,
-    sheetData: string,
-
-}
 
 type VariantRelationOutDto = {
     isSameSong: boolean,
@@ -34,8 +30,6 @@ type VariantRelationOutDto = {
     chordsAreSame: boolean,
     inSameKey: boolean,
 }
-
-const VARIANTS_SIMILARITY_THRESHOLD = 0.9;
 
 @Injectable()
 export class SongAddingService{
@@ -150,6 +144,8 @@ export class SongAddingService{
             };
         }
 
+        // console.log(sectionPair1, sectionPair2)
+
 
 
         // Calculate sections1 with similarity less than 0.9
@@ -174,19 +170,20 @@ export class SongAddingService{
         const getChords = (s: Section) => {
             return s?.lines?.map(l=>l.segments.map(s=>s.chord?.toString())).flat().filter(s=>s)||[];
         }
-        const chordTest = (p: SecData) => {
-            const sec1 = getChords(sections1[p.index]).join("");
-            const sec2 = getChords(sections2[p.pairIndex]).join("");
-            console.log(sec1, sec2)
+        const chordTest = (p: SecData, s1: Section[], s2: Section[]) => {
+            const sec1 = getChords(s1[p.index]).join("");
+            const sec2 = getChords(s2[p.pairIndex]).join("");
+            // console.log(sec1, sec2)
             return sec1 === sec2;
         }
-        const chordsAreSame = similarSections1.every((p)=>chordTest(p)) && similarSections2.every((p)=>chordTest(p));
+        const chordsAreSame = similarSections1.every((p)=>chordTest(p,sections1,sections2)) && similarSections2.every((p)=>chordTest(p,sections2,sections1));
         const chordsHasDifferentPlacing = !textIsSame 
             || !chordsAreSame 
             || similarSections1.some(p=>{
-                const sec1 = sections1[p.index].toString().toLocaleLowerCase();
-                const sec2 = sections2[p.pairIndex].toString().toLocaleLowerCase();
-                return sec1 !== sec2;
+                const sec1 = sections1[p.index].toString().toLocaleLowerCase().trim();
+                const sec2 = sections2[p.pairIndex].toString().toLocaleLowerCase().trim();
+                const r = sec1 !== sec2;
+                return r;
             })
 
         const spaceTest = (p: SecData) => {
@@ -223,7 +220,7 @@ export class SongAddingService{
             sectionsHasDifferentNames,
             sectionsInDifferentOrder,
 
-            chordsAreSame: chordsAreSame,
+            chordsAreSame,
             chordsHasDifferentPlacing,
 
             inSameKey

@@ -52,6 +52,7 @@ export class DomainApprovalService{
             .orderBy("source.guid", "DESC")
             .addOrderBy("domain.level", "ASC")
             .addOrderBy("parent.status", "ASC")
+            .addOrderBy("domain.probality", "DESC")
             .getOne();
 
         return domain as GetterDomain | null;
@@ -64,8 +65,9 @@ export class DomainApprovalService{
         const title = autoCall ? 
             autoTitles[Math.floor(Math.random() * autoTitles.length)] : 
             notAutoTitles[Math.floor(Math.random() * notAutoTitles.length)];
-
+            
         const subtitle = `Ověř zda ${domain.domain} obsahuje pouze křesťanské písničky.`;
+            
 
         this.messengerService.sendCustomMessage({
             "attachment":{
@@ -73,7 +75,7 @@ export class DomainApprovalService{
               "payload":{
                 "template_type":"generic",
                 "elements":[
-                   {
+                    {
                     "title":title,
                     "subtitle":subtitle,
                     "default_action": {

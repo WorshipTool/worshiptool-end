@@ -56,7 +56,7 @@ export class DomainExploreUtilsService {
                 
             });
         }catch(e){
-            console.log("Waiting for network idle took too long. Continuing anyway.");
+            console.log("Waiting for network idle took too long. Continuing anyway:",url);
         }
     
         

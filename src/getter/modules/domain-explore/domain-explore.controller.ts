@@ -72,4 +72,12 @@ export class DomainExploreController{
         if(!page) throw new BadRequestException("No domain");
         return this.getterSuburlService.addPage(page);
     }
+
+    
+    @AllowNonUser()
+    @Get("getter/getMetaData")
+    async getMetaData(@Query() {page} : PostAddSubUrlDomainDto){
+        const result = await this.domainService.getMetaData(page);
+        return result;
+    }
 }
