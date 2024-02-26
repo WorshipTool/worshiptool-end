@@ -10,6 +10,7 @@ export enum GetterDomainStatus {
 }
 
 export const MAX_GETTER_DOMAIN_DESCRIPTION_LENGTH = 255;
+export const MAX_GETTER_DOMAIN_TITLE_LENGTH = 255;
 
 @Entity()
 export class GetterDomain{
@@ -20,7 +21,7 @@ export class GetterDomain{
     domain: string;
 
 
-    @Column({nullable: true, default: null})
+    @Column({nullable: true, default: null, length: MAX_GETTER_DOMAIN_TITLE_LENGTH})
     title: string;
 
     @Column({nullable: true, default: null, length: MAX_GETTER_DOMAIN_DESCRIPTION_LENGTH})

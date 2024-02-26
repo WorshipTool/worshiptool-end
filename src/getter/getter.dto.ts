@@ -26,3 +26,7 @@ export class PostSubUrlLoopDto{
 export class PostProcessSubUrlDto{
     url: string;
 }
+
+export class PostProcessSourceLoopDto{
+    time: number;
+}

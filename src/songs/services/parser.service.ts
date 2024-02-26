@@ -15,7 +15,7 @@ export class ParserService{
     constructor(
     ){}  
 
-    async parse(inputImagePath: string){
+    async parse(inputImagePath: string, print: boolean = false){
         const PARSER_SCRIPT_PATH = 'src/pythonscripts/image-parser/main.py'
 
         if(!fs.existsSync(PARSER_SCRIPT_PATH)){
@@ -42,9 +42,11 @@ export class ParserService{
         const result = pythonProcess.stdout?.toString()?.trim();
         const error = pythonProcess.stderr?.toString()?.trim();
 
-        console.log(pythonProcess)
-        console.log(result);
-        console.log(error);
+        if(print){
+            console.log(pythonProcess)
+            console.log(result);
+            console.log(error);
+        }
 
         // Read output json file and delete it
         const outputData = fs.readFileSync(OUTPUT_RESULT_PATH, 'utf8');

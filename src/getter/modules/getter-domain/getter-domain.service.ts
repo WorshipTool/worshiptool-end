@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { Repository } from "typeorm";
 import { GETTER_DOMAIN_REPOSITORY } from "../../../database/constants";
-import { GetterDomain, GetterDomainStatus, MAX_GETTER_DOMAIN_DESCRIPTION_LENGTH } from "../../../database/entities/getter/getter-domain.entity";
+import { GetterDomain, GetterDomainStatus, MAX_GETTER_DOMAIN_DESCRIPTION_LENGTH, MAX_GETTER_DOMAIN_TITLE_LENGTH } from "../../../database/entities/getter/getter-domain.entity";
 import { isUrlValid } from "../../../tech/urls.tech";
 import * as cheerio from "cheerio";
 import { normalizeCzechString } from '../../../tech/string.tech';
@@ -136,7 +136,7 @@ export class GetterDomainService{
             const autoReject = this.isAutomaticallyRejected(url);
 
             const metaData = level > 0 ? await this.getMetaData(url) : null;
-            const title = metaData?.title || null;
+            const title = metaData?.title?.slice(0, MAX_GETTER_DOMAIN_TITLE_LENGTH) || null;
             const description = metaData?.description?.slice(0, MAX_GETTER_DOMAIN_DESCRIPTION_LENGTH) || null;
 
             const probality = level > 0 ? (await this.calculateProbality(url, metaData)) * 100 : null;

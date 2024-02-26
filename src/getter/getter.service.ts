@@ -205,96 +205,9 @@ export class GetterService{
         const scraper : ScraperTemplate = new scraperClass.default();
         const data = scraper.scrape(html)
 
-
-
-
-
         return data;
     }
 
-
-    async sendApprovalMessage(domain: GetterDomain, autoCall : boolean = true){
-
-        const autoTitles = [
-            "Nalezli jsme novou doménu!",
-            "Našli jsme novou stránku!",
-            "Nová doména ke schválení!"
-        ]
-
-        const notAutoTitles = [
-            "Zde je další doména",
-            "Tady máte další!",
-            "Další doména ke schválení"
-        ]
-
-        const url = domain.domain;
-        const title = autoCall ? 
-            autoTitles[Math.floor(Math.random() * autoTitles.length)] : 
-            notAutoTitles[Math.floor(Math.random() * notAutoTitles.length)];
-        const subtitle = `Ověř zda ${domain.domain} obsahuje pouze křesťanské písničky.`;
-
-        this.messengerService.sendCustomMessage({
-            "attachment":{
-              "type":"template",
-              "payload":{
-                "template_type":"generic",
-                "elements":[
-                   {
-                    "title":title,
-                    // "image_url":url,
-                    "subtitle":subtitle,
-                    "default_action": {
-                      "type": "web_url",
-                      "url": url,
-                      "webview_height_ratio": "full"
-                    },
-                    "buttons":[
-                        {
-                            "type":"postback",
-                            "title":"Schválit",
-                            "payload":JSON.stringify({
-                                method: "APPROVE_DOMAIN",
-                                domain: domain.domain,
-                                autoCall: autoCall
-                            }),
-                            // "payload":"ahoj"
-                        },
-                        {
-                        "type":"postback",
-                        "title":"Zamítnout",
-                        "payload":JSON.stringify({
-                            method: "REJECT_DOMAIN",
-                            domain: domain.domain,
-                            autoCall: autoCall
-                        })
-                      }              
-                    ]      
-                  }
-                ]
-              }
-        }
-    })
-    }
-
-
-    askToMore(){
-        this.messengerService.sendCustomMessage({
-            "text":"Chcete schválovat dál?",
-            "quick_replies":[
-                {
-                  "content_type":"text",
-                  "title":"Pokračovat",
-                  "payload":"",
-                  "image_url":"https://cdn-icons-png.flaticon.com/128/8832/8832138.png"
-                },{
-                  "content_type":"text",
-                  "title":"Už ne",
-                  "payload":"",
-                  "image_url":"https://cdn-icons-png.flaticon.com/512/6276/6276642.png"
-                }
-              ]
-        })
-    }
 
 
 }

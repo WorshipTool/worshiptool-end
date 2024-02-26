@@ -1,17 +1,17 @@
 import { Test } from "@nestjs/testing";
-import { SongAddingService } from "./song.adding.service";
 import { SongAddingModule } from "./song.adding.module";
 import { randomString } from "../../tech/string.tech";
+import { SongAddingTechService } from "./song.adding.tech.service";
 
 describe('Are the variants same?', () => {
-    let service: SongAddingService;
+    let service: SongAddingTechService;
 
     beforeAll(async () => {
         const module = await Test.createTestingModule({
             imports: [SongAddingModule],
           }).compile();
 
-          service = await module.get(SongAddingService);
+          service = await module.get(SongAddingTechService);
         
         return;
     });
@@ -108,14 +108,14 @@ describe('Are the variants same?', () => {
 });
 
 describe("GetVariantRelation - sameSong and sameVariant", () => {
-    let service: SongAddingService;
+    let service: SongAddingTechService;
 
     beforeAll(async () => {
         const module = await Test.createTestingModule({
             imports: [SongAddingModule],
           }).compile();
 
-          service = await module.get(SongAddingService);
+          service = await module.get(SongAddingTechService);
         
         return;
     });
@@ -236,14 +236,14 @@ describe("GetVariantRelation - sameSong and sameVariant", () => {
 });
 
 describe("GetVariantRelation - key and title", () => {
-    let service: SongAddingService;
+    let service: SongAddingTechService;
 
     beforeAll(async () => {
         const module = await Test.createTestingModule({
             imports: [SongAddingModule],
           }).compile();
 
-          service = await module.get(SongAddingService);
+          service = await module.get(SongAddingTechService);
         
         return;
     });
@@ -300,14 +300,14 @@ describe("GetVariantRelation - key and title", () => {
 });
 
 describe("GetVariantRelation - text spacing", () => {
-    let service: SongAddingService;
+    let service: SongAddingTechService;
 
     beforeAll(async () => {
         const module = await Test.createTestingModule({
             imports: [SongAddingModule],
           }).compile();
 
-          service = await module.get(SongAddingService);
+          service = await module.get(SongAddingTechService);
         
         return;
     });
@@ -426,14 +426,14 @@ describe("GetVariantRelation - text spacing", () => {
 });
 
 describe("GetVariantRelation - sections", () => {
-    let service: SongAddingService;
+    let service: SongAddingTechService;
 
     beforeAll(async () => {
         const module = await Test.createTestingModule({
             imports: [SongAddingModule],
           }).compile();
 
-          service = await module.get(SongAddingService);
+          service = await module.get(SongAddingTechService);
         
         return;
     });
@@ -555,14 +555,14 @@ describe("GetVariantRelation - sections", () => {
 });
 
 describe("GetVariantRelation - chords", () => {
-    let service: SongAddingService;
+    let service: SongAddingTechService;
 
     beforeAll(async () => {
         const module = await Test.createTestingModule({
             imports: [SongAddingModule],
           }).compile();
 
-          service = await module.get(SongAddingService);
+          service = await module.get(SongAddingTechService);
         
         return;
     });

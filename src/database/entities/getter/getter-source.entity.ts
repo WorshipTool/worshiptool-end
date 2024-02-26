@@ -14,5 +14,8 @@ export class GetterSource{
     @ManyToOne(type => GetterDomain, domain => domain.sources)
     domain: GetterDomain;
 
+    @Column({nullable: true, default: null})
+    processed: Date
+
     
 }

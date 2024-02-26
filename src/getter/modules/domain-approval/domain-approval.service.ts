@@ -1,10 +1,11 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { GETTER_DOMAIN_REPOSITORY, GETTER_SOURCES_REPOSITORY } from '../../../database/constants';
+import { MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
+import { GETTER_DOMAIN_REPOSITORY, GETTER_SOURCES_REPOSITORY, GETTER_SUBURL_REPOSITORY } from '../../../database/constants';
 import { GetterDomain, GetterDomainStatus } from '../../../database/entities/getter/getter-domain.entity';
 import { MessengerService } from '../../../messenger/messenger.service';
 import { GetterSource } from '../../../database/entities/getter/getter-source.entity';
 import { isUrlValid } from '../../../tech/urls.tech';
+import { GetterSubUrl, GetterSubUrlExploreStatus } from '../../../database/entities/getter/getter-suburl.entity';
 
 
 const autoTitles = [
@@ -27,7 +28,7 @@ export class DomainApprovalService{
         private domainRepository: Repository<GetterDomain>,
 
         @Inject(GETTER_SOURCES_REPOSITORY)
-        private sourcesRepository: Repository<GetterSource>,
+        private sourcesRepository: Repository<GetterSource>
     ){}
 
     async checkTimeToSend(){
@@ -168,6 +169,11 @@ export class DomainApprovalService{
 
         existing.status = GetterDomainStatus.Rejected;
         await this.domainRepository.save(existing);
+
+        // Remove all sources from this domain
+        await this.sourcesRepository.delete({
+            domain: existing
+        })
 
         await this.messengerService.sendMessage(`Doména ${domain} byla zamítnuta.`)
     }
