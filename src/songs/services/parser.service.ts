@@ -28,7 +28,7 @@ export class ParserService{
         // Create public folder if it doesn't exist
         if (!fs.existsSync('public')){
             fs.mkdirSync('public');
-        }2
+        }
 
         if (!fs.existsSync(TEMP_IMAGES_FOLDER_PATH)){
             fs.mkdirSync(TEMP_IMAGES_FOLDER_PATH);
