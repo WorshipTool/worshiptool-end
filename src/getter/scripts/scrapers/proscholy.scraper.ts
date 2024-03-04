@@ -35,7 +35,7 @@ export default class test implements ScraperTemplate{
 
         const $ = cheerio.load(html);
 
-        const title = $(".song-name").text();
+        const title = $(".song-name").first().text();
 
         const author = $("p.song-author").text();
 

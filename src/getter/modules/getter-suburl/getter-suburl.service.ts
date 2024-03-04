@@ -2,7 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { GetterSubUrl, GetterSuburlType } from "../../../database/entities/getter/getter-suburl.entity";
 import { isUrlValid } from "../../../tech/urls.tech";
 import { GetterDomainService } from "../getter-domain/getter-domain.service";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { GETTER_SUBURL_REPOSITORY } from "../../../database/constants";
 import { isUrlInLengthLimit } from "../../tech/utils";
 
@@ -63,9 +63,11 @@ export class GetterSubUrlService{
             return "Url too long";
         }
 
+        const otherUrl = url.includes("https://") ? url.replace("https://","http://") : url.replace("http://","https://");
+
         if(await this.suburlRepository.findOne({
             where:{
-                url
+                url: In([url,otherUrl])
             }
         })){
             return "Already exists";

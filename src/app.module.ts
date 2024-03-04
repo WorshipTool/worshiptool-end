@@ -9,9 +9,11 @@ import { GroupModule } from './group/group.module';
 import { GetterModule } from './getter/getter.module';
 import { WebhookModule } from './webhook/webhook.module';
 import { ConfigModule } from '@nestjs/config';
+import { MonitorModule } from './monitor/monitor.module';
 
 @Module({
   imports: [
+    MonitorModule,
     DatabaseModule, 
     SongsModule, 
     GroupModule,

@@ -1,20 +1,28 @@
-import { Test } from "@nestjs/testing";
+import { Test, TestingModule } from "@nestjs/testing";
 import { SongAddingModule } from "./song.adding.module";
 import { randomString } from "../../tech/string.tech";
 import { SongAddingTechService } from "./song.adding.tech.service";
 
+
+
 describe('Are the variants same?', () => {
     let service: SongAddingTechService;
+    let module : TestingModule;
 
     beforeAll(async () => {
-        const module = await Test.createTestingModule({
+        module = await Test.createTestingModule({
             imports: [SongAddingModule],
           }).compile();
 
-          service = await module.get(SongAddingTechService);
-        
+        service = await module.get(SongAddingTechService);
+          
         return;
     });
+
+    afterAll(async () => {
+        await module.close();
+    });
+
 
     it('empty variants should be equal', () => {
         const areSame = service.areSheetDataTheSame("","")
@@ -103,22 +111,6 @@ describe('Are the variants same?', () => {
         expect(areSame).toBe(true)
     });
 
-
-
-});
-
-describe("GetVariantRelation - sameSong and sameVariant", () => {
-    let service: SongAddingTechService;
-
-    beforeAll(async () => {
-        const module = await Test.createTestingModule({
-            imports: [SongAddingModule],
-          }).compile();
-
-          service = await module.get(SongAddingTechService);
-        
-        return;
-    });
 
     it("Empty variants", () => {
         const v1 = {
@@ -233,455 +225,500 @@ describe("GetVariantRelation - sameSong and sameVariant", () => {
         expect(relation.isSameVariant).toBe(isSame);
     });
 
-});
 
-describe("GetVariantRelation - key and title", () => {
-    let service: SongAddingTechService;
+    
+        it("Same titles", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "blablabla\njupiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "nene\njupiiiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.hasSameTitle).toBe(true);
+            expect(relation.inSameKey).toBe(true);
+            expect(relation.textIsSame).toBe(false);
+            expect(relation.isSameSong).toBe(false);
+        });
+    
+        it("Different titles", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "blablabla\njupiiiiii"
+            }
+            const v2 = {
+                title: "Ahojda",
+                sheetData: "nene\njupiiiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.hasSameTitle).toBe(false);
+            expect(relation.inSameKey).toBe(true);
+            expect(relation.textIsSame).toBe(false);
+            expect(relation.isSameSong).toBe(false);
+        });
+    
+        it("Different titles", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "blablablabla\njupiiiiii"
+            }
+            const v2 = {
+                title: "Ahojda",
+                sheetData: "blablablab\njupiiiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.hasSameTitle).toBe(false);
+            expect(relation.inSameKey).toBe(true);
+            expect(relation.textIsSame).toBe(false);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.isSameVariant).toBe(false);
+        });
+    
+        it("Same lines", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "blablabla\njupiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "blablabla\njupiiiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.textIsSame).toBe(true);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.textHasDifferentSpacing).toBe(false);
+        });
+    
+    
+        it("Different lines", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "blablabla\njupiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "bla\nblablajupiiiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.textIsSame).toBe(true);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.textHasDifferentSpacing).toBe(true);
+        });
+    
+    
+        it("Different lines", () => {
+            const v1 = {
+                title: "Ahojda",
+                sheetData: "blablabla\njupiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "bla\nblablajupi\niiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.textIsSame).toBe(true);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.textHasDifferentSpacing).toBe(true);
+        });
+    
+    
+        it("Different lines", () => {
+            const v1 = {
+                title: "Ahojda",
+                sheetData: "blablabla\njupiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "bla\nblabablajupi\niiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.textIsSame).toBe(false);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.textHasDifferentSpacing).toBe(true);
+        });
+    
+    
+        it("Different lines", () => {
+            const v1 = {
+                title: "Ahojda",
+                sheetData: "blablabla\njupii\niiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "bla\nblablajupi\niiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.textIsSame).toBe(true);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.textHasDifferentSpacing).toBe(true);
+        });
+    
+    
+        it("Different spaces", () => {
+            const v1 = {
+                title: "Ahojda",
+                sheetData: "bla\nbla  blajupi\niiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "bla\nblablajupi\nii ii i"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.textIsSame).toBe(true);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.textHasDifferentSpacing).toBe(true);
+        });
+    
+    
+        it("Same spaces", () => {
+            const v1 = {
+                title: "Ahojda",
+                sheetData: "bla\nbla  blajupi\niiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "bla\nbla  blajupi\niiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.textIsSame).toBe(true);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.textHasDifferentSpacing).toBe(false);
+        });
+    
+        it("One verse more", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "{V1}blablabla\njupiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}blablabla\njupiiiiii{V2}jupiijejej\nnevimm"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.textIsSame).toBe(true);
+            expect(relation.textHasDifferentSpacing).toBe(false);
+            expect(relation.hasDifferentSection).toBe(true);
+            expect(relation.differentCountOfSection).toBe(true);
+        });
+    
+    
+        it("Sections has different names", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "{V1}blablabla\njupiiiiii{R1}jupiijejej\nnevimm"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}blablabla\njupiiiiii{V2}jupiijejej\nnevimm"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.textIsSame).toBe(true);
+            expect(relation.textHasDifferentSpacing).toBe(false);
+            expect(relation.hasDifferentSection).toBe(false);
+            expect(relation.differentCountOfSection).toBe(false);
+        });
+    
+    
+        it("Sections without first named", () => {
+            console.log("Sections without first named")
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "blablabla\njupiiiiii{R1}jupiijejej\nnevimm"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}blablabla\njupiiiiii{V2}jupiijejej\nnevimm"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.textIsSame).toBe(true);
+            expect(relation.textHasDifferentSpacing).toBe(false);
+            expect(relation.hasDifferentSection).toBe(false);
+            expect(relation.differentCountOfSection).toBe(false);
+            expect(relation.sectionsHasDifferentNames).toBe(true);
+        });
+    
+    
+        it("Sections in different order", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "{V2}jupiijejej\nnevimm{V1}blablabla\njupiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}blablabla\njupiiiiii{V2}jupiijejej\nnevimm"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.textIsSame).toBe(true);
+            expect(relation.textHasDifferentSpacing).toBe(false);
+            expect(relation.hasDifferentSection).toBe(false);
+            expect(relation.differentCountOfSection).toBe(false);
+            expect(relation.sectionsHasDifferentNames).toBe(false);
+            expect(relation.sectionsInDifferentOrder).toBe(true);
+        });
+    
+    
+        it("Sections in different order and names", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "{V1}jupiijejej\nnevimm{R1}blablabla\njupiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}blablabla\njupiiiiii{V2}jupiijejej\nnevimm"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.textIsSame).toBe(true);
+            expect(relation.textHasDifferentSpacing).toBe(false);
+            expect(relation.hasDifferentSection).toBe(false);
+            expect(relation.differentCountOfSection).toBe(false);
+            expect(relation.sectionsHasDifferentNames).toBe(true);
+            expect(relation.sectionsInDifferentOrder).toBe(true);
+        });
+    
+        it("One more section in middle", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "{V1}jupiijejej\nnevimm{V2}A tohle je druha sloka{R1}blablabla\njupiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}jupiijejej\nnevimm{R1}blablabla\njupiiiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.textIsSame).toBe(true);
+            expect(relation.textHasDifferentSpacing).toBe(false);
+            expect(relation.hasDifferentSection).toBe(true);
+            expect(relation.differentCountOfSection).toBe(true);
+            expect(relation.sectionsHasDifferentNames).toBe(false);
+            expect(relation.sectionsInDifferentOrder).toBe(true);
+        });
+    
+        it("Chords are same", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "{V1}[C]blablabla\nj[C]upiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}[D]blablabla\nj[D]upiiiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.textIsSame).toBe(true);
+            expect(relation.textHasDifferentSpacing).toBe(false);
+            expect(relation.hasDifferentSection).toBe(false);
+            expect(relation.differentCountOfSection).toBe(false);
+            expect(relation.sectionsHasDifferentNames).toBe(false);
+            expect(relation.sectionsInDifferentOrder).toBe(false);
+            expect(relation.chordsAreSame).toBe(true);
+            expect(relation.chordsHasDifferentPlacing).toBe(false);
+        });
+    
+        it("Chords are not same", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "{V1}[C]blablabla\nj[C]upiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}[D]blablabla\nj[C]upiiiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.chordsAreSame).toBe(false);
+            expect(relation.chordsHasDifferentPlacing).toBe(true);
+        });
+    
+        it("Chords are the same, but one verse more", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "{V1}[C]blablabla\nj[C]upiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}[D]blablabla\nj[D]upiiiiii{V2}jupii[G]jejej\nnevimm"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.chordsAreSame).toBe(true);
+            expect(relation.chordsHasDifferentPlacing).toBe(false);
+            expect(relation.hasDifferentSection).toBe(true);
+            expect(relation.differentCountOfSection).toBe(true);
+        });
+    
+        it("Chords are not the same, but one verse more", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "{V1}[C]blablabla\nj[C]upiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}[E]blablabla\nj[D]upiiiiii{V2}jupii[G]jejej\nnevimm"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.chordsAreSame).toBe(false);
+            expect(relation.chordsHasDifferentPlacing).toBe(true);
+            expect(relation.hasDifferentSection).toBe(true);
+            expect(relation.differentCountOfSection).toBe(true);
+        });
+    
+        it("Chords are the same, but different placing", ()=>{
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "{V1}[C]blablabla\nj[C]upiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}[C]blablabla\njupiiiiii[C]"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.isSameVariant).toBe(true);
+            expect(relation.chordsAreSame).toBe(true);
+            expect(relation.chordsHasDifferentPlacing).toBe(true);
+        })
+    
+        it("Chords are the same, but different placing", ()=>{
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "{V1}[C]blablabla\nj[C]upiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}[D]blabla[D]bla\njupiiiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.isSameVariant).toBe(true);
+            expect(relation.chordsAreSame).toBe(true);
+            expect(relation.chordsHasDifferentPlacing).toBe(true);
+        })
+    
+        it("Chords are not the same, but different placing", ()=>{
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "{V1}[C]blablabla\nj[C]upiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}[D]blabla[F]bla\njupiiiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.isSameSong).toBe(true);
+            expect(relation.isSameVariant).toBe(false);
+            expect(relation.chordsAreSame).toBe(false);
+            expect(relation.chordsHasDifferentPlacing).toBe(true);
+        })
+    
+    
+        it("Same text", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "blablabla\njupiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "blablabla\njupiiiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.textSimilarity).toBe(1);
+        });
+    
+    
+        it("Same text, but one more verse", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "blablabla\njupiiiiii"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}blablabla\njupiiiiii{V2}bb"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.textSimilarity).toBe(1);
+        });
+    
+    
+    
+        it("Same text, but one more verse 2", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "blablabla\njupiiiiii{V2}jupii jejj"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}blablabla\njupiiiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            expect(relation.textSimilarity).toBe(1);
+        });
+    
+        it("Not same text", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "blablabla\njup"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}blablabla\njupiiiiii"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            // console.log(relation.textSimilarity)
+            expect(relation.textSimilarity).toBeGreaterThan(0.5);
+        });
+    
+        it("Same text", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "blablabla\njup"
+            }
+            const v2 = {
+                title: "Ahoj",
+                sheetData: "{V1}blablabla\njup"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            console.log(relation)
+            expect(relation.textSimilarity).toBe(1);
+        });
+    
+    
+        it("Not same text", () => {
+            const v1 = {
+                title: "Ahoj",
+                sheetData: "blablablabla\nblablablablablablablabla\nblablablabla"
+            }
+            const v2 = {
+                title: "Ahojd",
+                sheetData: "blablablabla\nblablablabla"
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            console.log(relation)
+            expect(relation.textSimilarity).toBe(0.5);
+        });
+    
+    
+        it("Similar text", () => {
+            const v1 = {
+                title: "Oceány",
+                sheetData: "{V1}[Hm]Voláš nás do [A]mořských [D]hlubin,\ntěch nezná[A]mých, dale[G]kých.\n[Hm]Tam tě najdu, [A]tam jsi [D]skrytý,\nv hlubi[A]nách budu s vírou [G]stát.{R1}[G]Jménem [D]tvým tě zavo[A]lám,\n[G]nech oči [D]mé uniknout [A]vlnám,\nkdyž voda stou[G]pá.\nDuše [D]má v Tobě spočí[A]vá.\nJá jsem [G]tvůj a [A]ty můj [Hm]Král."
+            }
+            const v2 = {
+                title: "Oceany",
+                sheetData: "Voláš nás do mořských hlubin,\ntěch neznámých, dalekých."
+            }
+            const relation = service.getVariantRelation(v1, v2);
+            console.log(relation)
+            // expect(relation.isSameSong).toBe(true);
+        });
 
-    beforeAll(async () => {
-        const module = await Test.createTestingModule({
-            imports: [SongAddingModule],
-          }).compile();
 
-          service = await module.get(SongAddingTechService);
-        
-        return;
-    });
-
-    it("Same titles", () => {
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "blablabla\njupiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "nene\njupiiiiii"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.hasSameTitle).toBe(true);
-        expect(relation.inSameKey).toBe(true);
-        expect(relation.textIsSame).toBe(false);
-        expect(relation.isSameSong).toBe(false);
-    });
-
-    it("Different titles", () => {
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "blablabla\njupiiiiii"
-        }
-        const v2 = {
-            title: "Ahojda",
-            sheetData: "nene\njupiiiiii"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.hasSameTitle).toBe(false);
-        expect(relation.inSameKey).toBe(true);
-        expect(relation.textIsSame).toBe(false);
-        expect(relation.isSameSong).toBe(false);
-    });
-
-    it("Different titles", () => {
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "blablablabla\njupiiiiii"
-        }
-        const v2 = {
-            title: "Ahojda",
-            sheetData: "blablablab\njupiiiiii"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.hasSameTitle).toBe(false);
-        expect(relation.inSameKey).toBe(true);
-        expect(relation.textIsSame).toBe(false);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.isSameVariant).toBe(false);
-    });
-
-});
-
-describe("GetVariantRelation - text spacing", () => {
-    let service: SongAddingTechService;
-
-    beforeAll(async () => {
-        const module = await Test.createTestingModule({
-            imports: [SongAddingModule],
-          }).compile();
-
-          service = await module.get(SongAddingTechService);
-        
-        return;
-    });
-
-    it("Same lines", () => {
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "blablabla\njupiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "blablabla\njupiiiiii"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.textIsSame).toBe(true);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.textHasDifferentSpacing).toBe(false);
-    });
-
-
-    it("Different lines", () => {
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "blablabla\njupiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "bla\nblablajupiiiiii"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.textIsSame).toBe(true);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.textHasDifferentSpacing).toBe(true);
-    });
-
-
-    it("Different lines", () => {
-        const v1 = {
-            title: "Ahojda",
-            sheetData: "blablabla\njupiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "bla\nblablajupi\niiiii"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.textIsSame).toBe(true);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.textHasDifferentSpacing).toBe(true);
-    });
-
-
-    it("Different lines", () => {
-        const v1 = {
-            title: "Ahojda",
-            sheetData: "blablabla\njupiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "bla\nblabablajupi\niiiii"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.textIsSame).toBe(false);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.textHasDifferentSpacing).toBe(true);
-    });
-
-
-    it("Different lines", () => {
-        const v1 = {
-            title: "Ahojda",
-            sheetData: "blablabla\njupii\niiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "bla\nblablajupi\niiiii"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.textIsSame).toBe(true);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.textHasDifferentSpacing).toBe(true);
-    });
-
-
-    it("Different spaces", () => {
-        const v1 = {
-            title: "Ahojda",
-            sheetData: "bla\nbla  blajupi\niiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "bla\nblablajupi\nii ii i"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.textIsSame).toBe(true);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.textHasDifferentSpacing).toBe(true);
-    });
-
-
-    it("Same spaces", () => {
-        const v1 = {
-            title: "Ahojda",
-            sheetData: "bla\nbla  blajupi\niiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "bla\nbla  blajupi\niiiii"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.textIsSame).toBe(true);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.textHasDifferentSpacing).toBe(false);
-    });
-
-});
-
-describe("GetVariantRelation - sections", () => {
-    let service: SongAddingTechService;
-
-    beforeAll(async () => {
-        const module = await Test.createTestingModule({
-            imports: [SongAddingModule],
-          }).compile();
-
-          service = await module.get(SongAddingTechService);
-        
-        return;
-    });
-
-    it("One verse more", () => {
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "{V1}blablabla\njupiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "{V1}blablabla\njupiiiiii{V2}jupiijejej\nnevimm"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.textIsSame).toBe(true);
-        expect(relation.textHasDifferentSpacing).toBe(false);
-        expect(relation.hasDifferentSection).toBe(true);
-        expect(relation.differentCountOfSection).toBe(true);
-    });
-
-
-    it("Sections has different names", () => {
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "{V1}blablabla\njupiiiiii{R1}jupiijejej\nnevimm"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "{V1}blablabla\njupiiiiii{V2}jupiijejej\nnevimm"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.textIsSame).toBe(true);
-        expect(relation.textHasDifferentSpacing).toBe(false);
-        expect(relation.hasDifferentSection).toBe(false);
-        expect(relation.differentCountOfSection).toBe(false);
-    });
-
-
-    it("Sections without first named", () => {
-        console.log("Sections without first named")
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "blablabla\njupiiiiii{R1}jupiijejej\nnevimm"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "{V1}blablabla\njupiiiiii{V2}jupiijejej\nnevimm"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.textIsSame).toBe(true);
-        expect(relation.textHasDifferentSpacing).toBe(false);
-        expect(relation.hasDifferentSection).toBe(false);
-        expect(relation.differentCountOfSection).toBe(false);
-        expect(relation.sectionsHasDifferentNames).toBe(true);
-    });
-
-
-    it("Sections in different order", () => {
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "{V2}jupiijejej\nnevimm{V1}blablabla\njupiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "{V1}blablabla\njupiiiiii{V2}jupiijejej\nnevimm"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.textIsSame).toBe(true);
-        expect(relation.textHasDifferentSpacing).toBe(false);
-        expect(relation.hasDifferentSection).toBe(false);
-        expect(relation.differentCountOfSection).toBe(false);
-        expect(relation.sectionsHasDifferentNames).toBe(false);
-        expect(relation.sectionsInDifferentOrder).toBe(true);
-    });
-
-
-    it("Sections in different order and names", () => {
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "{V1}jupiijejej\nnevimm{R1}blablabla\njupiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "{V1}blablabla\njupiiiiii{V2}jupiijejej\nnevimm"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.textIsSame).toBe(true);
-        expect(relation.textHasDifferentSpacing).toBe(false);
-        expect(relation.hasDifferentSection).toBe(false);
-        expect(relation.differentCountOfSection).toBe(false);
-        expect(relation.sectionsHasDifferentNames).toBe(true);
-        expect(relation.sectionsInDifferentOrder).toBe(true);
-    });
-
-    it("One more section in middle", () => {
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "{V1}jupiijejej\nnevimm{V2}A tohle je druha sloka{R1}blablabla\njupiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "{V1}jupiijejej\nnevimm{R1}blablabla\njupiiiiii"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.textIsSame).toBe(true);
-        expect(relation.textHasDifferentSpacing).toBe(false);
-        expect(relation.hasDifferentSection).toBe(true);
-        expect(relation.differentCountOfSection).toBe(true);
-        expect(relation.sectionsHasDifferentNames).toBe(false);
-        expect(relation.sectionsInDifferentOrder).toBe(true);
-    });
-
-});
-
-describe("GetVariantRelation - chords", () => {
-    let service: SongAddingTechService;
-
-    beforeAll(async () => {
-        const module = await Test.createTestingModule({
-            imports: [SongAddingModule],
-          }).compile();
-
-          service = await module.get(SongAddingTechService);
-        
-        return;
-    });
-
-    it("Chords are same", () => {
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "{V1}[C]blablabla\nj[C]upiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "{V1}[D]blablabla\nj[D]upiiiiii"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.textIsSame).toBe(true);
-        expect(relation.textHasDifferentSpacing).toBe(false);
-        expect(relation.hasDifferentSection).toBe(false);
-        expect(relation.differentCountOfSection).toBe(false);
-        expect(relation.sectionsHasDifferentNames).toBe(false);
-        expect(relation.sectionsInDifferentOrder).toBe(false);
-        expect(relation.chordsAreSame).toBe(true);
-        expect(relation.chordsHasDifferentPlacing).toBe(false);
-    });
-
-    it("Chords are not same", () => {
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "{V1}[C]blablabla\nj[C]upiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "{V1}[D]blablabla\nj[C]upiiiiii"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.chordsAreSame).toBe(false);
-        expect(relation.chordsHasDifferentPlacing).toBe(true);
-    });
-
-    it("Chords are the same, but one verse more", () => {
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "{V1}[C]blablabla\nj[C]upiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "{V1}[D]blablabla\nj[D]upiiiiii{V2}jupii[G]jejej\nnevimm"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.chordsAreSame).toBe(true);
-        expect(relation.chordsHasDifferentPlacing).toBe(false);
-        expect(relation.hasDifferentSection).toBe(true);
-        expect(relation.differentCountOfSection).toBe(true);
-    });
-
-    it("Chords are not the same, but one verse more", () => {
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "{V1}[C]blablabla\nj[C]upiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "{V1}[E]blablabla\nj[D]upiiiiii{V2}jupii[G]jejej\nnevimm"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.chordsAreSame).toBe(false);
-        expect(relation.chordsHasDifferentPlacing).toBe(true);
-        expect(relation.hasDifferentSection).toBe(true);
-        expect(relation.differentCountOfSection).toBe(true);
-    });
-
-    it("Chords are the same, but different placing", ()=>{
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "{V1}[C]blablabla\nj[C]upiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "{V1}[C]blablabla\njupiiiiii[C]"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.isSameVariant).toBe(true);
-        expect(relation.chordsAreSame).toBe(true);
-        expect(relation.chordsHasDifferentPlacing).toBe(true);
-    })
-
-    it("Chords are the same, but different placing", ()=>{
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "{V1}[C]blablabla\nj[C]upiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "{V1}[D]blabla[D]bla\njupiiiiii"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.isSameVariant).toBe(true);
-        expect(relation.chordsAreSame).toBe(true);
-        expect(relation.chordsHasDifferentPlacing).toBe(true);
-    })
-
-    it("Chords are not the same, but different placing", ()=>{
-        const v1 = {
-            title: "Ahoj",
-            sheetData: "{V1}[C]blablabla\nj[C]upiiiiii"
-        }
-        const v2 = {
-            title: "Ahoj",
-            sheetData: "{V1}[D]blabla[F]bla\njupiiiiii"
-        }
-        const relation = service.getVariantRelation(v1, v2);
-        expect(relation.isSameSong).toBe(true);
-        expect(relation.isSameVariant).toBe(false);
-        expect(relation.chordsAreSame).toBe(false);
-        expect(relation.chordsHasDifferentPlacing).toBe(true);
-    })
 });

@@ -1,17 +1,22 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { Sheet } from "@pepavlin/sheet-api";
 import { Section } from "@pepavlin/sheet-api/lib/models/song/section";
-import { calculateSimilarity } from "../../tech/string.tech";
+import { calculateSimilarity, normalizeCzechString } from "../../tech/string.tech";
 import { VariantRelationInDto } from "./song.adding.dto";
+import normalizeSearchText from '../../../dist/utils/normalizeSearchText';
+import { Repository } from "typeorm";
+import { SONG_VARIANTS_REPOSITORY } from "../../database/constants";
+import { SongVariant } from "../../database/entities/songvariant.entity";
 
 
 
-type VariantRelationOutDto = {
+export type VariantRelationOutDto = {
     isSameSong: boolean,
     isSameVariant: boolean,
 
     // Title
     hasSameTitle: boolean,
+    titleSimilarity: number,
 
     // Text
     // is text the same, without case, new lines and new verses
@@ -19,6 +24,11 @@ type VariantRelationOutDto = {
     // If there is one more verse, but rest is the same, it is the same text
     textIsSame: boolean, 
     textHasDifferentSpacing: boolean,
+    // Text coeficient
+    textSimilarity: number,
+
+    // Total similarity
+    similarity: number,
 
     // Sections
     differentCountOfSection: boolean,
@@ -35,7 +45,13 @@ type VariantRelationOutDto = {
 @Injectable()
 export class SongAddingTechService{
 
+    constructor(
+        @Inject(SONG_VARIANTS_REPOSITORY)
+        private variantRepository: Repository<SongVariant>,
+    ){}
+
     isSheetDataValid(sheetData: string){
+        if(!sheetData) return false;
         return sheetData.length > 10 && sheetData.split("\n").length > 1;
     }
 
@@ -52,12 +68,8 @@ export class SongAddingTechService{
         return text1.toLocaleLowerCase() === text2.toLocaleLowerCase();
     }
 
-    normalizeVariantTitle(title: string){
-        return title.toLocaleLowerCase().replace(/\s/g, "");
-    }
-
-    normalizeVariantText(text: string){
-        return text.toLocaleLowerCase().replace(/\s/g, "");
+    private normalizeVariantText(text: string){
+        return normalizeCzechString(text.toLocaleLowerCase().replace(/\s/g, ""));
     }
 
     getVariantRelation(v1:VariantRelationInDto, v2:VariantRelationInDto) : VariantRelationOutDto{
@@ -69,8 +81,6 @@ export class SongAddingTechService{
         if(!vl2) throw new Error("Sheet data 2 is not valid");
 
 
-        // Compare titles
-        const hasSameTitle =  this.normalizeVariantTitle(v1.title) === this.normalizeVariantTitle(v2.title)
 
         const sheet1 = new Sheet(v1.sheetData);
         const sheet2 = new Sheet(v2.sheetData);
@@ -158,12 +168,32 @@ export class SongAddingTechService{
         // Check if similar sections is completely the same
         const similarSections1 = sectionPair1.filter(p => p.similarity >= THRESHOLD);
         const similarSections2 = sectionPair2.filter(p => p.similarity >= THRESHOLD);
+
+        const t1 = normalizeSearchText(this.normalizeVariantText(sheet1.getText()));
+        const t2 = normalizeSearchText(this.normalizeVariantText(sheet2.getText()));
+        const containsInEachOther = t1.includes(t2) || t2.includes(t1);
         
-        const isSameSong = similarSections1.length>0 && similarSections2.length>0;
+        const isSameSong = (similarSections1.length>0 && similarSections2.length>0) || containsInEachOther;
 
         const textIsSame = isSameSong 
             && similarSections1.every((p)=>p.similarity === 1) 
             && similarSections2.every((p)=>p.similarity === 1);
+
+        const smallerSections = similarSections1.length < similarSections2.length 
+                ? similarSections1 : similarSections2;
+
+        const textSimilarity = smallerSections.length > 0 
+                ? smallerSections.reduce((a, p)=>a+p.similarity, 0) / smallerSections.length
+                : calculateSimilarity(sheet1.getText(), sheet2.getText());
+
+        // Compare titles
+        const titleSimilarity = calculateSimilarity(v1.title, v2.title);
+        const hasSameTitle =  titleSimilarity === 1;
+
+        const weights = [0.95, 0.05]
+        const totalSimilarity = (textSimilarity * weights[0] + titleSimilarity * weights[1]) 
+                    / (weights[0] + weights[1]);
+
 
         const getChords = (s: Section) => {
             return s?.lines?.map(l=>l.segments.map(s=>s.chord?.toString())).flat().filter(s=>s)||[];
@@ -210,8 +240,12 @@ export class SongAddingTechService{
             isSameSong,
             isSameVariant: isSameSong && !hasDifferentSection && textIsSame && chordsAreSame,
             hasSameTitle,
+            titleSimilarity,
             textIsSame,
             textHasDifferentSpacing,
+            textSimilarity,
+
+            similarity: totalSimilarity,
 
             differentCountOfSection,
             hasDifferentSection,

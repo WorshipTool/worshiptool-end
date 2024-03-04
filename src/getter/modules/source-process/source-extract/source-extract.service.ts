@@ -15,13 +15,13 @@ import { GetterSource } from "../../../../database/entities/getter/getter-source
 import { GetterDomain } from "../../../../database/entities/getter/getter-domain.entity";
 
 
-type ParsePageGenericResult = {
+export type ParsePageGenericResult = {
     success: boolean;
     data?: ProgramSongData[],
     url: string
 }
 
-const PAGE_DEFAULT_TIMEOUT = 10 * 1000;
+const PAGE_DEFAULT_TIMEOUT = 5 * 1000;
 
 @Injectable()
 export class SourceExtractService{
@@ -32,9 +32,34 @@ export class SourceExtractService{
         private domainRepository: Repository<GetterDomain>,
     ){}
 
-    async parseSourceGeneric(source: GetterSource, domain: GetterDomain) : Promise<ParsePageGenericResult>{
+    browser: puppeteer.Browser = null;
+    async prepareBrowser(){
+        if(!this.browser){
+            //Use puppeteer to get the html
+            this.browser = await puppeteer.launch({
+                headless: true,
+                defaultViewport: {
+                    width: 1280,
+                    height: 1000,
+                }
+            });
+        }
 
+        return this.browser;
+    }
+
+    async closeBrowser(){
+        if(this.browser){
+            await this.browser.close();
+            this.browser = null;
+        }
+    }
+
+
+    async parseSourceGeneric(source: GetterSource, domain: GetterDomain, print:boolean=false) : Promise<ParsePageGenericResult>{
         const url = source.url;
+
+        if(print) console.log("Parsing url: ", url)
 
         if(!isUrlValid(url))
             throw new BadRequestException("Url is not valid: " + url);
@@ -105,11 +130,9 @@ export class SourceExtractService{
             ] : null
         };
     }
-    async getHtml(url:string) : Promise<string>{
+    async getHtml(url:string, print: boolean = false) : Promise<string>{
         
-        const browser = await puppeteer.launch({
-            headless: true
-        });
+        const browser = this.browser || await this.prepareBrowser();
 
         const page = await browser.newPage();
         
@@ -122,13 +145,12 @@ export class SourceExtractService{
                 
             });
         }catch(e){
-            console.log("Waiting for network idle took too long. Continuing anyway.");
+            if(print) console.log("Waiting for network idle took too long. Continuing anyway.");
         }
     
         
         const html = await page.content();
         await page.close();
-        await browser.close();
         return html;
     }
     
@@ -137,12 +159,20 @@ export class SourceExtractService{
         const path = await this.makeScreenshot(url);
 
         // Parse the screenshot
-        const result = await this.parserService.parse(path);
+        let result = null;
+        try{
+            result = await this.parserService.parse(path);
+        }
+        catch(e){
+            console.error("Failed to parse screenshot: ", e.message);
+        }
+        finally{
+            // Delete the file
+            fs.unlinkSync(path);
+        }
 
-        // Delete the file
-        fs.unlinkSync(path);
 
-        if(result.sheets.length==0) return null;
+        if(!result || result.sheets.length==0) return null;
 
         return {
             title: result.sheets[0].title.trim(),
@@ -153,19 +183,15 @@ export class SourceExtractService{
     async makeScreenshot(url: string){
         const path = `public/temp/${v4()}.png`;
 
-        const browser = await puppeteer.launch({
-            defaultViewport: {
-                width: 1280,
-                height: 1000,
-            }
-        });
+        const browser = this.browser || await this.prepareBrowser();
+
         const page = await browser.newPage();
         await page.goto(url);
         await page.waitForNetworkIdle({
             timeout: PAGE_DEFAULT_TIMEOUT
         });
         await page.screenshot({ path, fullPage: true});
-        await browser.close();
+        await page.close();
         return path;
 
     }

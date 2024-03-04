@@ -7,7 +7,12 @@ export const randomString = (length: number) => {
     return result;
 }
 
-export const calculateSimilarity = (s1 : string, s2 : string) => {
+export const calculateSimilarity = (s1 : string, s2 : string, normalizeCzech : boolean = true) => {
+    if(normalizeCzech){
+        s1 = normalizeCzechString(s1);
+        s2 = normalizeCzechString(s2);
+    }
+
     var longer = s1;
     var shorter = s2;
     if (s1.length < s2.length) {

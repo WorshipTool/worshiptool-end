@@ -28,7 +28,7 @@ export class ParserService{
         // Create public folder if it doesn't exist
         if (!fs.existsSync('public')){
             fs.mkdirSync('public');
-        }
+        }2
 
         if (!fs.existsSync(TEMP_IMAGES_FOLDER_PATH)){
             fs.mkdirSync(TEMP_IMAGES_FOLDER_PATH);
@@ -48,10 +48,18 @@ export class ParserService{
             console.log(error);
         }
 
-        // Read output json file and delete it
-        const outputData = fs.readFileSync(OUTPUT_RESULT_PATH, 'utf8');
-        fs.unlinkSync(OUTPUT_RESULT_PATH);
-        const sheets : ParsedSheet[] = JSON.parse(outputData);
+        let sheets : ParsedSheet[] = [];
+
+        try{
+            // Read output json file and delete it
+            const outputData = fs.readFileSync(OUTPUT_RESULT_PATH, 'utf8');
+            fs.unlinkSync(OUTPUT_RESULT_PATH);
+            sheets = JSON.parse(outputData);
+        }catch(e){
+            console.error("Python error: ", error);
+            throw new Error(e);
+        }
+
         
         const formattedSheets = sheets.map(sheet => {
             const title = sheet.title
@@ -64,10 +72,8 @@ export class ParserService{
 
         });
 
-
-
         return {
-            sheets: formattedSheets
+            sheets: formattedSheets,
         };
     }
 }
