@@ -13,6 +13,7 @@ import { MonitorModule } from './monitor/monitor.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(), // Loads .env file
     MonitorModule,
     DatabaseModule, 
     SongsModule, 
@@ -20,8 +21,7 @@ import { MonitorModule } from './monitor/monitor.module';
     AuthModule,
     MessengerModule,
     GetterModule,
-    WebhookModule,
-    ConfigModule.forRoot(), // Loads .env file
+    WebhookModule
   ],
   controllers: [],
   providers: [
