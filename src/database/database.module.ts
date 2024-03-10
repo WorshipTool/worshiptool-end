@@ -9,7 +9,7 @@ import { GetterDomainService } from "../getter/modules/getter-domain/getter-doma
 import { AddSongDataService } from "../songs/services/adding/add.service";
 import { CreatorService } from "../songs/services/creator.service";
 import { MediaService } from "../songs/services/media.service";
-import { ParserService } from "../songs/services/parser.service";
+import { ParserService } from "../songs/services/parser/parser.service";
 import { PlaylistService } from "../songs/services/playlists/playlist.service";
 import { PlaylistUtilsService } from "../songs/services/playlists/playlistutils.service";
 import { SongService } from "../songs/services/song.service";

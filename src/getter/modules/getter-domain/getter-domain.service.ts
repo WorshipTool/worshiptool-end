@@ -58,7 +58,8 @@ const probalityKeys : KeyPair[] = [
     ["praise",0.1],
     ["tab"],
     ["akord"],
-    ["chord"]
+    ["chord"],
+    ["chval", 1.8]
 ]
 
 const keysAmountSum = probalityKeys.reduce((acc, pair) => acc + (pair[1] || 1), 0);

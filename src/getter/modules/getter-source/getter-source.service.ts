@@ -5,6 +5,7 @@ import { GetterSource } from "../../../database/entities/getter/getter-source.en
 import { isUrlValid } from "../../../tech/urls.tech";
 import { isUrlInLengthLimit } from "../../tech/utils";
 import { GetterDomainService } from "../getter-domain/getter-domain.service";
+import { GetterDomain } from "../../../database/entities/getter/getter-domain.entity";
 
 @Injectable()
 export class GetterSourceService{
@@ -70,5 +71,13 @@ export class GetterSourceService{
 
 
 
+    }
+
+    async getSourcesCountByDomain(domain: GetterDomain){
+        return await this.sourcesRepository.count({
+            where: {
+                domain
+            }
+        });
     }
 }

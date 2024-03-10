@@ -8,7 +8,7 @@ import { ScraperTemplate } from "../../../scripts/scrapers/template/ScraperTempl
 import { v4 } from 'uuid';
 import * as puppeteer from 'puppeteer';
 import { ScrapeResult } from "../../../scripts/scrapers/template/ScrapeResult";
-import { ParserService } from "../../../../songs/services/parser.service";
+import { ParserService } from "../../../../songs/services/parser/parser.service";
 import { GETTER_DOMAIN_REPOSITORY, GETTER_SOURCES_REPOSITORY } from "../../../../database/constants";
 import { Repository } from "typeorm";
 import { GetterSource } from "../../../../database/entities/getter/getter-source.entity";

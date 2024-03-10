@@ -5,7 +5,7 @@ import { GetterDomain } from "../database/entities/getter/getter-domain.entity";
 import { GetterSearch } from "../database/entities/getter/getter-search.entity";
 import { GetterSource } from "../database/entities/getter/getter-source.entity";
 import { MessengerService } from "../messenger/messenger.service";
-import { ParserService } from "../songs/services/parser.service";
+import { ParserService } from "../songs/services/parser/parser.service";
 import { isUrlValid } from "../tech/urls.tech";
 import { PostAddGetterSourceDto, PostProcessNextResult } from "./getter.dto";
 import { GetterDomainService } from "./modules/getter-domain/getter-domain.service";

@@ -15,7 +15,8 @@ export enum GetterSuburlType{
     Image = 1,
     Video = 2,
     Audio = 3,
-    Other = 4
+    Other = 4,
+    DomainShortcut = 5
 }
 
 @Entity()

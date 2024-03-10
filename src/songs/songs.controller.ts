@@ -6,8 +6,8 @@ import { AllowNonUser } from "../auth/decorators/allownonuser.decorator";
 import { AllowOnlyAdmin } from "../auth/decorators/allowonlyadmin.decorator";
 import { User as UserObject, ROLES } from "../database/entities/user.entity";
 import { AddSongDataService } from "./services/adding/add.service";
-import { ParserSongDataResult } from "./services/parser.dto";
-import { ParserService } from "./services/parser.service";
+import { ParserSongDataResult } from "./services/parser/parser.dto";
+import { ParserService } from "./services/parser/parser.service";
 import { PostCreatePlaylistBody, DeletePlaylistQuery, GetSongsInPlaylistParams, PostAddVariantToPlaylistBody, DeleteRemoveVariantFromPlaylistQuery, GetIsVariantInPlaylistQuery, GetSearchInPlaylistQuery, PostReorderPlaylistBody, PostTransposePlaylistItemBody } from "./services/playlists/playlist.dto";
 import { PlaylistService } from "./services/playlists/playlist.service";
 import { GetSongQuery, SearchQuery, ListQuery, GetCountResult, GetSongDataParam, PostMergeBody, PostAddSongDataBody, PostVerifyVariantParams, PostDeleteVariantParams, PostRenamePlaylistBody, GetSongListOfUserResult, PostEditVariantBody } from "./songs.dto";
@@ -530,7 +530,7 @@ export class SongsController{
     async parse(@UploadedFile() file: Express.Multer.File) : Promise<ParserSongDataResult>{
         if(!file) throw new BadRequestException("No file provided");
 
-        const result = this.parserService.parse(file.path);
+        const result = await this.parserService.parse(file.path);
 
         try{
             fs.unlinkSync(file.path);

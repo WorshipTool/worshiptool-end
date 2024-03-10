@@ -1,11 +1,12 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
+import { MoreThan, MoreThanOrEqual, Not, Repository } from 'typeorm';
 import { GETTER_DOMAIN_REPOSITORY, GETTER_SOURCES_REPOSITORY, GETTER_SUBURL_REPOSITORY } from '../../../database/constants';
 import { GetterDomain, GetterDomainStatus } from '../../../database/entities/getter/getter-domain.entity';
 import { MessengerService } from '../../../messenger/messenger.service';
 import { GetterSource } from '../../../database/entities/getter/getter-source.entity';
 import { isUrlValid } from '../../../tech/urls.tech';
-import { GetterSubUrl, GetterSubUrlExploreStatus } from '../../../database/entities/getter/getter-suburl.entity';
+import { GetterSubUrl, GetterSubUrlExploreStatus, GetterSuburlType } from '../../../database/entities/getter/getter-suburl.entity';
+import { isJSON } from '../../../tech/json.tech';
 
 
 const autoTitles = [
@@ -28,7 +29,10 @@ export class DomainApprovalService{
         private domainRepository: Repository<GetterDomain>,
 
         @Inject(GETTER_SOURCES_REPOSITORY)
-        private sourcesRepository: Repository<GetterSource>
+        private sourcesRepository: Repository<GetterSource>,
+
+        @Inject(GETTER_SUBURL_REPOSITORY)
+        private suburlRepository: Repository<GetterSubUrl>
     ){}
 
     async checkTimeToSend(){
@@ -95,14 +99,14 @@ export class DomainApprovalService{
                             }),
                         },
                         {
-                        "type":"postback",
-                        "title":"Zamítnout",
-                        "payload":JSON.stringify({
-                            method: "REJECT_DOMAIN",
-                            domain: domain.domain,
-                            autoCall: autoCall
-                        })
-                      }              
+                            "type":"postback",
+                            "title":"Zamítnout",
+                            "payload":JSON.stringify({
+                                method: "REJECT_DOMAIN",
+                                domain: domain.domain,
+                                autoCall: autoCall
+                            })
+                        }    
                     ]      
                   }
                 ]
@@ -175,11 +179,33 @@ export class DomainApprovalService{
             domain: existing
         })
 
+        // Remove all suburls  except one from this domain
+        // First try to find whole domain (* url), if not found, find any page
+        const oneurl = (await this.suburlRepository.findOne({
+            where:{
+                domain: existing,
+                type: GetterSuburlType.DomainShortcut
+            }
+        })) || (await this.suburlRepository.findOne({
+            where:{
+                domain: existing,
+                type: GetterSuburlType.Page
+            }
+        }));
+
+        if(oneurl){
+            await this.suburlRepository.delete({
+                domain: existing,
+                url: Not(oneurl.url)
+            })
+        }
+
         await this.messengerService.sendMessage(`Doména ${domain} byla zamítnuta.`)
     }
 
     async handlePostback(data: any){
         const payloadString = data.postback.payload;
+        if(!isJSON(payloadString)) return;
         const payload = JSON.parse(payloadString);
 
         switch(payload.method){

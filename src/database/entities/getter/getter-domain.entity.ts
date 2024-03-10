@@ -6,7 +6,8 @@ import { GetterSource } from "./getter-source.entity";
 export enum GetterDomainStatus {
     Approved = 0,
     Pending = 1,
-    Rejected = 2
+    Rejected = 2,
+    Ignored = 3, // Ignored by program
 }
 
 export const MAX_GETTER_DOMAIN_DESCRIPTION_LENGTH = 255;

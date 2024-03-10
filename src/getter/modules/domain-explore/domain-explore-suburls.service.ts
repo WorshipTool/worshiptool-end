@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { Repository, In, LessThan, Not, MoreThan } from "typeorm";
-import { GETTER_SUBURL_REPOSITORY } from "../../../database/constants";
-import { GetterDomainStatus } from "../../../database/entities/getter/getter-domain.entity";
+import { GETTER_DOMAIN_REPOSITORY, GETTER_SUBURL_REPOSITORY } from "../../../database/constants";
+import { GetterDomain, GetterDomainStatus } from "../../../database/entities/getter/getter-domain.entity";
 import { GetterSubUrl, GetterSuburlType, GetterSubUrlExploreStatus } from "../../../database/entities/getter/getter-suburl.entity";
 import { isUrlValid } from "../../../tech/urls.tech";
 import { GetterDomainService } from "../getter-domain/getter-domain.service";
@@ -30,19 +30,21 @@ const MAX_SYNC_COUNT = 12;
 const MAX_COUNT_PER_LOOP = 500;
 
 
+// Ignore threshold
+const PAGES_COUNT_THRESHOLD = 3000;
+const SUBURL_PROBABILITY_THRESHOLD = 30;
+
 @Injectable()
 export class DomainExploreSuburlsService {
     constructor(
         private readonly exploreUtils: DomainExploreUtilsService,
         @Inject(GETTER_SUBURL_REPOSITORY)
         private suburlRepository: Repository<GetterSubUrl>,
+        @Inject(GETTER_DOMAIN_REPOSITORY)
+        private domainRepository: Repository<GetterDomain>,
         private getterSuburlService: GetterSubUrlService,
-        private sourceService: GetterSourceService
-    ) {}
-
-
-
-
+        private sourceService: GetterSourceService,
+    ){}
 
     async getAllSubUrls(url : string, useTimeout?: boolean, print: boolean = true) : Promise<{
         urls: string[],
@@ -99,7 +101,7 @@ export class DomainExploreSuburlsService {
                     hasExplorer: false,
                     level: MoreThan(0)
                 },
-                type: GetterSuburlType.Page
+                type: GetterSuburlType.Page // Definitely not a whole domain (nott domain.cz/*)
             },
             order: {
                 domain: {
@@ -129,6 +131,70 @@ export class DomainExploreSuburlsService {
         return site;
     }
 
+    async checkIfItWasLastOfDomain(domain: GetterDomain){
+        const countUnprocessed = await this.suburlRepository.count({
+            where: {
+                domain: domain,
+                explored: In([
+                    GetterSubUrlExploreStatus.Unexplored,
+                    GetterSubUrlExploreStatus.Exploring
+                ]),
+                type: GetterSuburlType.Page
+            }
+        });
+
+        // If there are more unprocessed pages, continue;
+        if(countUnprocessed !== 0) return false;
+
+        // Check if there are any sources, if so, continue;
+        const countSources = await this.sourceService.getSourcesCountByDomain(domain);
+        if(countSources > 0) return false;
+
+        // If there are no sources, remove all suburls of this domain, and create allsuburl 
+        this.getterSuburlService.replaceSuburlsWithAllUrl(domain); 
+
+        return true;
+    }
+
+    async checkIfToIgnoreDomain(domain: GetterDomain){
+        // If domain is pending,
+        // If there are no sources
+        // and count of pages is larger than threshold
+        // and max probability is less than threshold, ignore domain
+
+
+
+        if(domain.status !== GetterDomainStatus.Pending) return false;
+
+
+        const sourcesCount = await this.sourceService.getSourcesCountByDomain(domain);
+        if(sourcesCount > 0) return false;
+
+
+        const urlsCount = await this.getterSuburlService.getUrlsCountByDomain(domain);
+        if(urlsCount < PAGES_COUNT_THRESHOLD) return false;
+
+
+        const maxProbabilityEntity = await this.suburlRepository.findOne({
+            where: {
+                domain: domain
+            },
+            order: {
+                probability: "DESC"
+            }
+        })
+
+        if(!maxProbabilityEntity) return false;
+        if(maxProbabilityEntity.probability > SUBURL_PROBABILITY_THRESHOLD) return false;
+
+        domain.status = GetterDomainStatus.Ignored;
+        await this.getterSuburlService.replaceSuburlsWithIgnoreUrl(domain);
+
+        this.domainRepository.save(domain);
+
+        return true;
+    }
+
     async processPage(site : GetterSubUrl, print: boolean = true) : Promise<string[] | null>{
         if(print) console.log("Exploring", site.url)
 
@@ -144,6 +210,7 @@ export class DomainExploreSuburlsService {
             site.explored = GetterSubUrlExploreStatus.ExploredWithError;
             site.exploredWithErrorCount++;
             await this.suburlRepository.save(site);
+
             return null
         }
 
@@ -254,6 +321,27 @@ export class DomainExploreSuburlsService {
 
 
             await this.getterSuburlService.addPages(urls);
+
+            // Get all domains, and filter out all object with same domain.domain property
+            const domains = sites.map((site)=>site.domain)
+                .filter((value, index, self)=>{
+                    return self.findIndex((v)=>v.domain === value.domain) === index;
+                })
+
+
+            // Check if it was last of domain
+            // Check if to ignore domain
+            for(const domain of domains){
+                // Check if it was last of domain
+                await this.checkIfItWasLastOfDomain(domain);
+
+                // Check if to ignore domain
+                const ignored = await this.checkIfToIgnoreDomain(domain);
+                if(ignored){
+                    if(print) console.log("Domain will be ignored next time:", domain.domain)
+                }
+            }
+
 
             // Print the progress
             const now = new Date().getTime();
