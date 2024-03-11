@@ -1,8 +1,8 @@
 name: Deploy to chvalotce.cz
 
 env:
-  SERVER_USERNAME: root
-  SERVER_URL: prijmeni.cz
+  SERVER_USERNAME: chvalotce-docker
+  SERVER_URL: chvalotce.cz
 
 on:
   workflow_dispatch:
@@ -32,12 +32,12 @@ jobs:
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
-          key: ${{ secrets.PRIJMENI_SSH_KEY }}
-          known_hosts: ${{ secrets.PRIJMENI_SSH_KNOWN_HOSTS }}
+          key: ${{ secrets.SSH_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
 
       - name: Redeploy application
         run: |
-          ssh -o ServerAliveInterval=1000 "${SERVER_USERNAME}@${SERVER_URL}" "cd /root/project-deploy/worshiptool && bash ./redeploy.sh" 
+          ssh -o ServerAliveInterval=1000 "${SERVER_USERNAME}@${SERVER_URL}" "cd /home/chvalotce.cz-docker/project-deploy/worshiptool && bash ./redeploy.sh" 
       
       - name: Send message to Messenger
         uses: fjogeleit/http-request-action@v1
