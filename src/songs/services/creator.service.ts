@@ -1,11 +1,10 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { CREATOR_REPOSITORY, CSVLINK_REPOSITORY } from "src/database/constants";
-import { Creator } from "src/database/entities/creator.entity";
-import { CSVLink } from "src/database/entities/csvlink.entity";
-import { In, Repository } from "typeorm";
+import { Repository } from "typeorm";
+import { CREATOR_REPOSITORY, CSVLINK_REPOSITORY } from "../../database/constants";
+import { Creator } from "../../database/entities/creator.entity";
+import { CSVLink } from "../../database/entities/csvlink.entity";
+import { SongVariant } from "../../database/entities/songvariant.entity";
 import { SongDataCreator } from "../songs.dto";
-import { Song } from "src/database/entities/song.entity";
-import { SongVariant } from "src/database/entities/songvariant.entity";
 
 @Injectable()
 export class CreatorService{

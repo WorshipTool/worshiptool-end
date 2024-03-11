@@ -1,4 +1,4 @@
-import { MediaTypes } from "src/database/entities/media.entity";
+import { MediaTypes } from "../database/entities/media.entity";
 
 export default function checkMediaFormat({type, url}:{type: MediaTypes, url: string}) : boolean{
     switch(type){

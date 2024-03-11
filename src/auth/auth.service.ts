@@ -1,12 +1,10 @@
 import { ConflictException, Injectable } from "@nestjs/common";
-import { UserService } from "./services/user.service";
-import { JwtResult, LoginInputData, LoginResult, PostGoogleLoginBody, SignUpInputData, SignUpResult, userToJWTFormat } from "./auth.dto";
-import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
-import { User } from "src/database/entities/user.entity";
-import { codes, formatted, messages } from "src/utils/formatted";
-import { MessengerService } from "src/messenger/messenger.service";
-import { RequestResult } from "src/utils/request.dto";
+import { User } from "../database/entities/user.entity";
+import { MessengerService } from "../messenger/messenger.service";
+import { LoginInputData, LoginResult, JwtResult, userToJWTFormat, SignUpInputData, PostGoogleLoginBody } from "./auth.dto";
+import { UserService } from "./services/user.service";
+import * as bcrypt from "bcrypt"
 
 @Injectable()
 export class AuthService{

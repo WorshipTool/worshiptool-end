@@ -1,14 +1,11 @@
 import { All, Body, Controller, Delete, Get, Param, Post, Query } from "@nestjs/common";
-import { AllowNonUser } from "src/auth/decorators/allownonuser.decorator";
+import { ApiTags, ApiOperation, ApiUnauthorizedResponse, ApiBearerAuth, ApiConflictResponse, ApiNotFoundResponse, ApiBadRequestResponse } from "@nestjs/swagger";
+import { AllowNonUser } from "../auth/decorators/allownonuser.decorator";
+import { AllowOnlyAdmin } from "../auth/decorators/allowonlyadmin.decorator";
+import { User as UserObject } from "../database/entities/user.entity";
+import { GetGroupsCountResult, GetGroupListItem, PostCreateGroupBody, DeleteGroupQuery, GetGroupInfoQuery, GetGroupSelectionQuery } from "./group.dto";
 import { GroupService } from "./group.service";
-import { codes, formatted } from "src/utils/formatted";
-import { AllowOnlyAdmin } from "src/auth/decorators/allowonlyadmin.decorator";
-import { DeleteGroupQuery, GetGroupInfoQuery, GetGroupInfoResult, GetGroupListItem, GetGroupSelectionQuery, GetGroupsCountResult, PostCreateGroupBody, PostCreateGroupResult } from "./group.dto";
-import { User } from "src/auth/decorators/user.decorator";
-import { User as UserObject } from 'src/database/entities/user.entity';
-import { ApiBadRequestResponse, ApiBearerAuth, ApiConflictResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
-import { Group } from "src/database/entities/group.entity";
-import { GetVariantsInPlaylistResult } from "src/songs/services/playlists/playlist.dto";
+import { User } from "../auth/decorators/user.decorator";
 
 @ApiTags("Group")
 @Controller()

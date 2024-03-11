@@ -1,27 +1,20 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { ROLES, User } from "src/database/entities/user.entity";
-import { NewSongData, NewSongDataProcessResult } from "./add.dto";
-import { codes, formatted } from "src/utils/formatted";
-import { SongService } from "../song.service";
-import { MediaService } from "../media.service";
-import { MessengerService } from "src/messenger/messenger.service";
-import { SourceService } from "../source.service";
-import { CREATOR_REPOSITORY, CSVLINK_REPOSITORY, MEDIA_REPOSITORY, SONG_NAMES_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, SOURCE_REPOSITORY, TAG_REPOSITORY } from "src/database/constants";
-import { In, Repository } from "typeorm";
-import { Song } from "src/database/entities/song.entity";
-import { SongVariant } from "src/database/entities/songvariant.entity";
-import { SongTitle } from "src/database/entities/songtitle.entity";
-import { Source } from "src/database/entities/source.entity";
-import { Media } from "src/database/entities/media.entity";
-import { Tag } from "src/database/entities/tag.entity";
-import { Creator, CreatorType } from "src/database/entities/creator.entity";
-import { CSVLink } from "src/database/entities/csvlink.entity";
-import checkMediaFormat from "src/utils/checkMediaFormat";
-import { SongsService } from "src/songs/songs.service";
-import normalizeSearchText from "src/utils/normalizeSearchText";
 import { Sheet } from "@pepavlin/sheet-api";
-import { RequestResult } from "src/utils/request.dto";
-
+import { Repository, In } from "typeorm";
+import { SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, SONG_NAMES_REPOSITORY, SOURCE_REPOSITORY, MEDIA_REPOSITORY, TAG_REPOSITORY, CREATOR_REPOSITORY, CSVLINK_REPOSITORY } from "../../../database/constants";
+import { Creator } from "../../../database/entities/creator.entity";
+import { CSVLink } from "../../../database/entities/csvlink.entity";
+import { Media } from "../../../database/entities/media.entity";
+import { Song } from "../../../database/entities/song.entity";
+import { SongTitle } from "../../../database/entities/songtitle.entity";
+import { SongVariant } from "../../../database/entities/songvariant.entity";
+import { Source } from "../../../database/entities/source.entity";
+import { Tag } from "../../../database/entities/tag.entity";
+import { User } from "../../../database/entities/user.entity";
+import checkMediaFormat from "../../../tech/checkMediaFormat";
+import normalizeSearchText from "../../../tech/normalizeSearchText";
+import { SongService } from "../song.service";
+import { NewSongData, NewSongDataProcessResult } from "./add.dto";
 @Injectable()
 export class AddSongDataService{
     constructor(

@@ -7,18 +7,26 @@ export class MessengerService {
     constructor(private readonly httpService: HttpService){}
 
 
-    sendMessage(message:string, after?: ()=>void){
-        const PAGE_ID = "111261511852057";
-        const PAGE_ACCESS_TOKEN = "EABWyv6p2zCEBAP5nBQuA67C8yyP9Pe2w94jeInVq3TdICJ4l0YK3iSd6w9ZA927HImMib3L06BKhd6EnxHZBpriq9WGIcDBR5jHEtUwWihpepZBhQv3ZB3BPKps4M0jJmjpVQZA3ZAjEKvCb7MHkfCbvIyCizXZBg7nZAZAI0xrJtPsUzBwNmQpyx";
-        const PSID = "5642371389193144";
+    async sendMessage(message:string, after?: ()=>void){
+       return await this.sendCustomMessage({text: message}, after);
 
-        const url = `https://graph.facebook.com/${PAGE_ID}/messages?recipient={'id':${PSID}}&messaging_type=RESPONSE&message={'text':'${message}'}&access_token=${PAGE_ACCESS_TOKEN}`;
+    }
+
+    async sendCustomMessage(messageJson: any, after?: ()=>void){
+        const PAGE_ID = process.env.META_PAGE_ID;
+        const PAGE_ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN;
+        const PSID = process.env.META_PSID;
+
+        const messageJsonString = JSON.stringify(messageJson);
+
+        const url = `https://graph.facebook.com/${PAGE_ID}/messages?recipient={'id':${PSID}}&messaging_type=RESPONSE&message=${messageJsonString}&access_token=${PAGE_ACCESS_TOKEN}`;
 
 
-        this.httpService.axiosRef.post(url).then(()=>{
+        return await this.httpService.axiosRef.post(url).then(()=>{
             if(after) after();
+        }).catch((e)=>{
+            console.log(e);
         });
-
     }
 
 }

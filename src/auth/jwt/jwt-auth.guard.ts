@@ -1,7 +1,8 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { AuthGuard } from "@nestjs/passport";
-import { ROLES } from "src/database/entities/user.entity";
+import { ROLES } from "../../database/entities/user.entity";
+import { monitorStatusPath } from "../../monitor/monitor.module";
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -11,7 +12,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     
       handleRequest(err, user, info, context) {
         const request = context.switchToHttp().getRequest();       
-    
+        const url = request.url;
+
+        // Ignorovat kontrolu na adrese /status
+        if (url.includes(monitorStatusPath)) {
+          return true; // Povolit přístup bez ověření JWT
+        }
+
         const allowAny = this.reflector.get<string[]>('allow-non-user', context.getHandler());
         if (user){
           const allowAdmin = this.reflector.get<string[]>('allow-admin', context.getHandler());

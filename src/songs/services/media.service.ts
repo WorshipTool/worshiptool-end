@@ -1,10 +1,9 @@
 import { Inject, Injectable } from "@nestjs/common"
-import { CREATOR_REPOSITORY, MEDIA_REPOSITORY, SONG_REPOSITORY } from "src/database/constants"
-import { Media } from "src/database/entities/media.entity"
-import { InsertResult, Repository } from "typeorm"
-import { SongDataMedia } from "./adding/add.dto"
-import { Song } from "src/database/entities/song.entity"
-
+import { Repository, InsertResult } from "typeorm";
+import { MEDIA_REPOSITORY, SONG_REPOSITORY } from "../../database/constants";
+import { Media } from "../../database/entities/media.entity";
+import { Song } from "../../database/entities/song.entity";
+import { SongDataMedia } from "../songs.dto";
 @Injectable()
 export class MediaService{
 

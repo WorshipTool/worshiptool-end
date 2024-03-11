@@ -1,16 +1,31 @@
 {
 	"version": "2.0.0",
 	"tasks": [
-		{
-			"type": "npm",
-			"script": "start:dev",
-			"problemMatcher": [],
-			"label": "npm: start",
-			"detail": "nest start",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
-		}
-	]
+        {
+            "type": "npm",
+            "script": "start:dev-with-webhook",
+            "problemMatcher": [],
+            "label": "npm: start",
+            "detail": "nest start",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "npm: test",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "test",
+                "${file}"
+            ],
+            "problemMatcher": [],
+            "detail": "npm run test",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ]
 }

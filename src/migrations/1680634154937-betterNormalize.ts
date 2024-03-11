@@ -1,6 +1,6 @@
 import { SongTitle } from "src/database/entities/songtitle.entity";
 import { SongVariant } from "src/database/entities/songvariant.entity";
-import normalizeSearchText from "src/utils/normalizeSearchText";
+import normalizeSearchText from "src/tech/normalizeSearchText";
 import { MigrationInterface, QueryRunner } from "typeorm"
 
 export class betterNormalize1680634154937 implements MigrationInterface {

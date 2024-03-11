@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 import { SongTitle } from '../database/entities/songtitle.entity';
-import normalizeSearchText from "src/utils/normalizeSearchText";
+import normalizeSearchText from "src/tech/normalizeSearchText";
 
 export class addSearchValueToSongName1680275721116 implements MigrationInterface {
     name = 'addSearchValueToSongName1680275721116'

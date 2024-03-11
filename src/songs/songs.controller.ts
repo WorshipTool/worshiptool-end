@@ -1,24 +1,20 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Query, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
-import { SongsService } from "./songs.service";
-import { codes, formatted } from "src/utils/formatted";
-import { GetSongQuery, SearchQuery, ListQuery, PostMergeBody, PostRenamePlaylistBody, PostEditVariantBody, SearchResult, ListResult, SongData, PostAddSongDataBody, PostVerifyVariantParams, PostDeleteVariantParams, GetCountResult, GetSongDataParam, GetSongListOfUserResult } from './songs.dto';
-import { User } from "src/auth/decorators/user.decorator";
-import { ROLES, User as UserObject } from "src/database/entities/user.entity";
-import { AllowNonUser } from "src/auth/decorators/allownonuser.decorator";
-import { AddSongDataService } from "./services/adding/add.service";
-import { GetSongsInPlaylistParams, PostCreatePlaylistBody, PostAddVariantToPlaylistBody, GetIsVariantInPlaylistQuery, PostDeletePlaylistBody, DeletePlaylistQuery, DeleteRemoveVariantFromPlaylistQuery, GetSearchInPlaylistQuery, PostReorderPlaylistBody, PostTransposePlaylistItemBody, GetPlaylistsResult, PostCreatePlaylistResult, GetVariantsInPlaylistResult, GetSearchInPlaylistResult } from './services/playlists/playlist.dto';
-import { AllowOnlyAdmin } from "src/auth/decorators/allowonlyadmin.decorator";
-import { PlaylistService } from "./services/playlists/playlist.service";
-import {spawnSync} from 'child_process';
 import { FileInterceptor } from "@nestjs/platform-express";
+import { ApiTags, ApiOperation, ApiNotFoundResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiBearerAuth, ApiConflictResponse, ApiForbiddenResponse, ApiResponse, ApiServiceUnavailableResponse, ApiBody, ApiConsumes } from "@nestjs/swagger";
 import { diskStorage } from "multer";
-import {v4} from "uuid"; 
-import * as fs from 'fs'
-import { ParserService } from "./services/parser.service";
-import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiConflictResponse, ApiConsumes, ApiExtraModels, ApiForbiddenResponse, ApiGoneResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiServiceUnavailableResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
-import { NewSongDataProcessResult } from "./services/adding/add.dto";
-import { SongVariantDTO } from "src/dtos/songvariant.dto";
-import { ParserSongDataResult } from "./services/parser.dto";
+import { AllowNonUser } from "../auth/decorators/allownonuser.decorator";
+import { AllowOnlyAdmin } from "../auth/decorators/allowonlyadmin.decorator";
+import { User as UserObject, ROLES } from "../database/entities/user.entity";
+import { AddSongDataService } from "./services/adding/add.service";
+import { ParserSongDataResult } from "./services/parser/parser.dto";
+import { ParserService } from "./services/parser/parser.service";
+import { PostCreatePlaylistBody, DeletePlaylistQuery, GetSongsInPlaylistParams, PostAddVariantToPlaylistBody, DeleteRemoveVariantFromPlaylistQuery, GetIsVariantInPlaylistQuery, GetSearchInPlaylistQuery, PostReorderPlaylistBody, PostTransposePlaylistItemBody } from "./services/playlists/playlist.dto";
+import { PlaylistService } from "./services/playlists/playlist.service";
+import { GetSongQuery, SearchQuery, ListQuery, GetCountResult, GetSongDataParam, PostMergeBody, PostAddSongDataBody, PostVerifyVariantParams, PostDeleteVariantParams, PostRenamePlaylistBody, GetSongListOfUserResult, PostEditVariantBody } from "./songs.dto";
+import { SongsService } from "./songs.service";
+import { User } from "../auth/decorators/user.decorator";
+import {v4} from "uuid";
+import * as fs from "fs";
 
 @ApiTags("Songs")
 @Controller("songs")
@@ -339,7 +335,7 @@ export class SongsController{
         description: "Playlist has no owner."
     })
     @ApiResponse({
-        status: codes["Already Added"],
+        status: 409,
         description: "Variant already exists in playlist."
     })
     @ApiBearerAuth()
@@ -534,7 +530,7 @@ export class SongsController{
     async parse(@UploadedFile() file: Express.Multer.File) : Promise<ParserSongDataResult>{
         if(!file) throw new BadRequestException("No file provided");
 
-        const result = this.parserService.parse(file.path);
+        const result = await this.parserService.parse(file.path);
 
         try{
             fs.unlinkSync(file.path);

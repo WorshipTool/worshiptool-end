@@ -6,14 +6,23 @@ import { APP_GUARD, Reflector } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt/jwt-auth.guard';
 import { MessengerModule } from './messenger/messenger.module';
 import { GroupModule } from './group/group.module';
+import { GetterModule } from './getter/getter.module';
+import { WebhookModule } from './webhook/webhook.module';
+import { ConfigModule } from '@nestjs/config';
+import { MonitorModule } from './monitor/monitor.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(), // Loads .env file
+    MonitorModule,
     DatabaseModule, 
     SongsModule, 
     GroupModule,
     AuthModule,
-    MessengerModule],
+    MessengerModule,
+    GetterModule,
+    WebhookModule
+  ],
   controllers: [],
   providers: [
     {
