@@ -3,10 +3,10 @@ import { Sheet } from "@pepavlin/sheet-api";
 import { Section } from "@pepavlin/sheet-api/lib/models/song/section";
 import { calculateSimilarity, normalizeCzechString } from "../../tech/string.tech";
 import { VariantRelationInDto } from "./song.adding.dto";
-import normalizeSearchText from '../../../dist/utils/normalizeSearchText';
 import { Repository } from "typeorm";
 import { SONG_VARIANTS_REPOSITORY } from "../../database/constants";
 import { SongVariant } from "../../database/entities/songvariant.entity";
+import normalizeSearchText from "../../tech/normalizeSearchText";
 
 
 
