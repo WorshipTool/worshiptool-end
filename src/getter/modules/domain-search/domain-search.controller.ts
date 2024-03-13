@@ -14,7 +14,7 @@ export class DomainSearchController {
             domainSearchService.clearLimitValue();
         });
 
-        cron.schedule('30 0 * * *', () => {
+        cron.schedule('0 1 * * *', () => {
             domainSearchService.searchLoop();
         });
     }

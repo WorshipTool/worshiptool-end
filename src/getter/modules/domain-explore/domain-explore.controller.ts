@@ -19,7 +19,7 @@ export class DomainExploreController{
         private readonly domainExploreSuburlsService: DomainExploreSuburlsService
     ){
 
-        cron.schedule('30 1 * * *', () => {
+        cron.schedule('30 0 */3 * *', () => {
             this.domainExploreService.checkUpdates();
         });
 
