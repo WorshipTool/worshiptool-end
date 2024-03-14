@@ -9,8 +9,13 @@ import { Playlist } from './playlist.entity';
 import { PlaylistItem } from "./playlistitem.entity";
 
 export enum VariantType{
-    "Original",
-    "Translation"
+    "Original" = 0,
+    "Translation" = 1,
+}
+
+export enum CreatedType{
+    "Manual" = 0,
+    "Parsed" = 1
 }
 
 @Entity()
@@ -31,7 +36,7 @@ export class SongVariant{
     toneKey: note
 
     @Column({nullable:true})
-    type: VariantType
+    type?: VariantType
     
     @OneToOne(()=>SongTitle)
     @JoinColumn()
@@ -57,6 +62,9 @@ export class SongVariant{
 
     @Column({default: false})
     deleted: boolean
+
+    @Column({default: CreatedType.Manual})
+    createdType: CreatedType
 
 
 }

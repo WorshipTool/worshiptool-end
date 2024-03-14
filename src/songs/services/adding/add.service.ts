@@ -7,7 +7,7 @@ import { CSVLink } from "../../../database/entities/csvlink.entity";
 import { Media } from "../../../database/entities/media.entity";
 import { Song } from "../../../database/entities/song.entity";
 import { SongTitle } from "../../../database/entities/songtitle.entity";
-import { SongVariant } from "../../../database/entities/songvariant.entity";
+import { CreatedType, SongVariant } from "../../../database/entities/songvariant.entity";
 import { Source } from "../../../database/entities/source.entity";
 import { Tag } from "../../../database/entities/tag.entity";
 import { User } from "../../../database/entities/user.entity";
@@ -138,7 +138,8 @@ export class AddSongDataService{
                     toneKey: null,
                     type: null,
                     playlistItems: [],
-                    deleted: false
+                    deleted: false,
+                    createdType: CreatedType.Manual
                 };
                 const variant : any = (await this.variantRepository.insert(variantData)).identifiers[0];
                 variantGuid = variant.guid;
