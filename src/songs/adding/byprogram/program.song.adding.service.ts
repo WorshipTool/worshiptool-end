@@ -4,12 +4,14 @@ import { SongAddingService } from "../song.adding.service";
 import { ROLES, User } from "../../../database/entities/user.entity";
 import { AuthService } from "../../../auth/auth.service";
 import { SourceTypes } from "../../../database/entities/source.entity";
+import { CreatedType } from "../../../database/entities/songvariant.entity";
 
 export type ProgramSongData = {
     confidence: number, // 0 - 1,
     title: string,
     sheetData: string,
-    url: string
+    url: string,
+    createdType: CreatedType
 }
 
 @Injectable()
@@ -77,7 +79,8 @@ export class ProgramSongAddingService{
                     source: {
                         type: SourceTypes.Url,
                         value: data.url
-                    }
+                    },
+                    createdType: data.createdType
                 }, user)
     
                 if(!variant) console.error("Failed to create variant")

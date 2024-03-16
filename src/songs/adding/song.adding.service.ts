@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { SongVariant } from "../../database/entities/songvariant.entity";
+import { CreatedType, SongVariant } from "../../database/entities/songvariant.entity";
 import { Song } from "../../database/entities/song.entity";
 import { In, Repository } from "typeorm";
 import { SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, SONG_NAMES_REPOSITORY, SOURCE_REPOSITORY } from "../../database/constants";
@@ -14,8 +14,8 @@ import { SongAddingTechService } from "./song.adding.tech.service";
 type CreateVariantInDto = {
     title: string,
     sheetData: string,
-    source?: SongDataSource
-
+    source?: SongDataSource,
+    createdType: CreatedType
 }
 
 @Injectable()
@@ -97,7 +97,8 @@ export class SongAddingService{
             toneKey: null,
             type: null,
             playlistItems: [],
-            deleted: false
+            deleted: false,
+            createdType: data.createdType
         };
         const variantGuid : string = (await this.variantRepository.insert(variantData)).identifiers[0].guid;
         const variant : SongVariant = await this.variantRepository.findOne({

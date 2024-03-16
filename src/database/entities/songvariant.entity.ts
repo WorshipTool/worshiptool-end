@@ -15,7 +15,8 @@ export enum VariantType{
 
 export enum CreatedType{
     "Manual" = 0,
-    "Parsed" = 1
+    "Scraped" = 1,
+    "Parsed" = 2,
 }
 
 @Entity()
