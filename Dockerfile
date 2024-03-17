@@ -52,9 +52,9 @@ FROM node:21-bullseye-slim as production
 WORKDIR /app
 
 
-# RUN apt-get update
-# RUN apt-get install -y python3-pip libopencv-dev python3-opencv tesseract-ocr
-# RUN pip3 install --upgrade setuptools pip
+RUN apt-get update
+RUN apt-get install -y python3-pip libopencv-dev python3-opencv tesseract-ocr
+RUN pip3 install --upgrade setuptools pip
 
 
 # Copy built files from the previous stage
