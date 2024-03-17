@@ -19,7 +19,7 @@ import { GetterExplore } from "../entities/getter/getter-explore.entity";
 
 export const dataSource = new DataSource({
     type: 'mysql',
-    host: process.env.DATABASE_HOST || 'localhost',
+    host: process.env.DATABASE_HOST || '::1',
     port: process.env.DATABASE_PORT ? parseInt(process.env.DATABASE_PORT) : 3306 ,
     username: process.env.DATABASE_USERNAME || 'root',
     password: process.env.DATABASE_PASSWORD || 'semice36',

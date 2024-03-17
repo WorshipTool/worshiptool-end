@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { isDevelopment } from './tech/development.tech';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -15,6 +16,8 @@ async function bootstrap() {
 
     const cors = require("cors");
     app.use(cors());
-    await app.listen(parseInt(process.env.LISTENS_PORT, 10) || 3300);
+    await app.listen(
+        parseInt(process.env.LISTENS_PORT, 10) || 3300, 
+        isDevelopment() ? "0.0.0.0" : undefined);
 }
 bootstrap();
