@@ -64,7 +64,8 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/src/pythonscripts ./src/pythonscripts
 
 # Instalace Python knihoven ze souboru requirements.txt
-# RUN pip3 install -r src/pythonscripts/image-parser/requirements.txt && \
+RUN pip3 install -r src/pythonscripts/image-parser/requirements.txt 
+# && \
 #     python3 src/pythonscripts/image-parser/prepare.py
 
 
