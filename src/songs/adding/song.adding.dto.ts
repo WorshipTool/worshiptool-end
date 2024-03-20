@@ -7,3 +7,10 @@ export class VariantRelationInDto{
     title: string
     sheetData: string
 }
+
+
+export class SameUrlVariantRelationInDto{
+    title: string
+    sheetData: string
+    url:string
+}

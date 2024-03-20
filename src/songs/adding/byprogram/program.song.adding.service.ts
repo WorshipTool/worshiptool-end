@@ -5,6 +5,8 @@ import { ROLES, User } from "../../../database/entities/user.entity";
 import { AuthService } from "../../../auth/auth.service";
 import { SourceTypes } from "../../../database/entities/source.entity";
 import { CreatedType } from "../../../database/entities/songvariant.entity";
+import { url } from "inspector";
+import { SongEditingService } from "../../editing/song.editing.service";
 
 export type ProgramSongData = {
     confidence: number, // 0 - 1,
@@ -19,6 +21,7 @@ export class ProgramSongAddingService{
     constructor(
         private similarService: SimilarVariantService,
         private addingService: SongAddingService,
+        private editingService: SongEditingService,
         private authService: AuthService
     ){}
 
@@ -55,13 +58,11 @@ export class ProgramSongAddingService{
         console.log("- - - Processed data from source: ", data.url, "|", data.title) 
 
         try{
-            const {
-                relation,
-                variant: similarVariant
-            } = await this.similarService.findMostSimilarVariant({
+            const existing = await this.similarService.findVariantWithSameSourceUrl({
+                sheetData: data.sheetData,
                 title: data.title,
-                sheetData: data.sheetData
-            },false);
+                url: data.url
+            })
     
             const user = await this.getProgramUser();
             if(!user){
@@ -69,7 +70,7 @@ export class ProgramSongAddingService{
                 return;
             }
     
-            if(!relation.isSameVariant){
+            if(!existing){
                 // Variant doesnt exist
                 // Create variant
     
@@ -86,10 +87,17 @@ export class ProgramSongAddingService{
                 if(!variant) console.error("Failed to create variant")
                 else console.log("Created new variant: ", variant.guid, data.title)
                 
+                //Try to find similar song and join variant to it
+                let {
+                    relation,
+                    variant: similarVariant
+                } = await this.similarService.findMostSimilarVariant({
+                    title: data.title,
+                    sheetData: data.sheetData
+                },false);
     
-                if(relation.isSameSong){
+                if(relation.isSameSong && !relation.isSameVariant){
                     // Join variant to song
-    
                     if(variant) 
                         this.addingService.joinVariantToSong(variant, similarVariant.song);
                     
@@ -97,7 +105,16 @@ export class ProgramSongAddingService{
             }else{
                 // Variant exists
                 // Update variant
-                // TODO
+                // Check if there is a need to update variant
+                if(existing.relation.similarity < 1){
+                    const edited = await this.editingService.editVariant(existing.variant, {
+                        sheetData: data.sheetData,
+                        title: data.title,
+                        createdType: data.createdType
+                    }, user)
+                    console.log("Updated variant: ", 
+                        existing.variant.guid, edited.prefferedTitle.title)
+                }
             }
         }catch(e){
             console.error(e);

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { Repository } from "typeorm";
-import { GETTER_SEARCH_REPOSITORY, SONG_NAMES_REPOSITORY } from "../../../database/constants";
+import { GETTER_SEARCH_REPOSITORY, SONG_TITLE_REPOSITORY } from "../../../database/constants";
 import { GetterSearch } from "../../../database/entities/getter/getter-search.entity";
 import { SongTitle } from "../../../database/entities/songtitle.entity";
 
@@ -40,7 +40,7 @@ export class DomainSearchQueryService{
         @Inject(GETTER_SEARCH_REPOSITORY)
         private searchRepository: Repository<GetterSearch>,
 
-        @Inject(SONG_NAMES_REPOSITORY)
+        @Inject(SONG_TITLE_REPOSITORY)
         private titlesRepository: Repository<SongTitle>,
     ){}
 

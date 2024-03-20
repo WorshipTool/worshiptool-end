@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { CreatedType, SongVariant } from "../../database/entities/songvariant.entity";
 import { Song } from "../../database/entities/song.entity";
 import { In, Repository } from "typeorm";
-import { SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, SONG_NAMES_REPOSITORY, SOURCE_REPOSITORY } from "../../database/constants";
+import { SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, SONG_TITLE_REPOSITORY, SOURCE_REPOSITORY } from "../../database/constants";
 import { SongTitle } from "../../database/entities/songtitle.entity";
 import normalizeSearchText from "../../tech/normalizeSearchText";
 import { Sheet } from "@pepavlin/sheet-api";
@@ -10,6 +10,7 @@ import { User } from "../../database/entities/user.entity";
 import { SongDataSource } from "../services/adding/add.dto";
 import { Source } from "../../database/entities/source.entity";
 import { SongAddingTechService } from "./song.adding.tech.service";
+import { SongTitleService } from "../modules/titles/song.title.service";
 
 type CreateVariantInDto = {
     title: string,
@@ -26,12 +27,12 @@ export class SongAddingService{
         private songRepository: Repository<Song>,
         @Inject(SONG_VARIANTS_REPOSITORY)
         private variantRepository: Repository<SongVariant>,
-        @Inject(SONG_NAMES_REPOSITORY)
+        @Inject(SONG_TITLE_REPOSITORY)
         private nameRepository: Repository<SongTitle>, 
         @Inject(SOURCE_REPOSITORY)
         private sourceRepository: Repository<Source>, 
-
-        private techService: SongAddingTechService
+        private techService: SongAddingTechService,
+        private titleService: SongTitleService
     ){}
 
     /**
@@ -56,16 +57,7 @@ export class SongAddingService{
 
         
         //Create title at first
-
-        const titleData : SongTitle = {
-            guid:undefined,
-            variant: undefined,
-            title: data.title,
-            searchValue: normalizeSearchText(data.title)
-        }
-        const titleGuid = (await this.nameRepository.insert(titleData)).identifiers[0].guid;
-        const title = await this.nameRepository.findOne({where:{guid:titleGuid}});
-
+        const title = await this.titleService.getOrCreateTitleObject(data.title)
         song.mainTitle = title;
         this.songRepository.save(song);
 
@@ -129,6 +121,21 @@ export class SongAddingService{
     joinVariantToSong(variant: SongVariant, song: Song) : SongVariant{
         console.log("Joining variant to song: ", variant.guid, song.guid)
         return null;
+    }
+
+    /**
+     * Creates copy of variant
+     * @param variant variant to copy
+     * @param user user who created copy
+     * @returns created variant or null if failed
+     */
+    async createCopy(variant: SongVariant, user: User) : Promise<SongVariant>{
+        const data : CreateVariantInDto = {
+            title: variant.prefferedTitle.title,
+            sheetData: variant.sheetData,
+            createdType: variant.createdType
+        }
+        return await this.createVariant(data, user);
     }
 
     

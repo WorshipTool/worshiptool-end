@@ -1,7 +1,7 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { Sheet } from "@pepavlin/sheet-api";
 import { Repository, In } from "typeorm";
-import { SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, SONG_NAMES_REPOSITORY, SOURCE_REPOSITORY, MEDIA_REPOSITORY, TAG_REPOSITORY, CREATOR_REPOSITORY, CSVLINK_REPOSITORY } from "../../../database/constants";
+import { SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY, SONG_TITLE_REPOSITORY, SOURCE_REPOSITORY, MEDIA_REPOSITORY, TAG_REPOSITORY, CREATOR_REPOSITORY, CSVLINK_REPOSITORY } from "../../../database/constants";
 import { Creator } from "../../../database/entities/creator.entity";
 import { CSVLink } from "../../../database/entities/csvlink.entity";
 import { Media } from "../../../database/entities/media.entity";
@@ -23,7 +23,7 @@ export class AddSongDataService{
         private songRepository: Repository<Song>,
         @Inject(SONG_VARIANTS_REPOSITORY)
         private variantRepository: Repository<SongVariant>,
-        @Inject(SONG_NAMES_REPOSITORY)
+        @Inject(SONG_TITLE_REPOSITORY)
         private nameRepository: Repository<SongTitle>,
         @Inject(SOURCE_REPOSITORY)
         private sourceRepository: Repository<Source>,

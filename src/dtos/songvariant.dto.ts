@@ -1,3 +1,4 @@
+import { CreatedType } from "../database/entities/songvariant.entity"
 import { CreatorDTO } from "./creator.dto"
 import { SourceDTO } from "./source.dto"
 
@@ -14,5 +15,6 @@ export class SongVariantDTO{
     sources: SourceDTO[]
     creators: CreatorDTO[]
     deleted:boolean
+    createdType: CreatedType
 }
 

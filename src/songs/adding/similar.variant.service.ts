@@ -2,11 +2,12 @@ import { Inject, Injectable } from "@nestjs/common";
 import { Sheet } from "@pepavlin/sheet-api";
 import { calculateSimilarity } from "../../tech/string.tech";
 import { Section } from "@pepavlin/sheet-api/lib/models/song/section";
-import { VariantRelationInDto } from "./song.adding.dto";
+import { SameUrlVariantRelationInDto, VariantRelationInDto } from "./song.adding.dto";
 import { SONG_VARIANTS_REPOSITORY } from "../../database/constants";
 import { Repository } from "typeorm";
 import { SongVariant } from "../../database/entities/songvariant.entity";
 import { SongAddingTechService, VariantRelationOutDto } from "./song.adding.tech.service";
+import { SourceTypes } from "../../database/entities/source.entity";
 
 @Injectable()
 export class SimilarVariantService{
@@ -84,5 +85,32 @@ export class SimilarVariantService{
 
 
     }
+
+    async findVariantWithSameSourceUrl(variant:SameUrlVariantRelationInDto){
+        const one =  await this.variantRepository.findOne({
+            where: {
+                sources: {
+                    type: SourceTypes.Url,
+                    value: variant.url
+                }
+            }
+        });
+
+        if(one==null) return null;
+
+
+        const data : VariantRelationInDto = {
+            title: one.prefferedTitle.title,
+            sheetData: one.sheetData,
+        }
+
+        let relation = this.techService.getVariantRelation(variant,data);
+
+        return {
+            relation,
+            variant: one
+        };
+    }
+
 
 }

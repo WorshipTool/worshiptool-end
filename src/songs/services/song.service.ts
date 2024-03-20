@@ -1,12 +1,12 @@
 import { BadRequestException, ConflictException, Get, Inject, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { Sheet } from "@pepavlin/sheet-api";
 import { Repository, In, Like, Not } from "typeorm";
-import { SONG_REPOSITORY, SONG_NAMES_REPOSITORY, SONG_VARIANTS_REPOSITORY, PLAYLIST_ITEMS_REPOSITORY, PLAYLIST_REPOSITORY } from "../../database/constants";
+import { SONG_REPOSITORY, SONG_TITLE_REPOSITORY, SONG_VARIANTS_REPOSITORY, PLAYLIST_ITEMS_REPOSITORY, PLAYLIST_REPOSITORY } from "../../database/constants";
 import { Playlist } from "../../database/entities/playlist.entity";
 import { PlaylistItem } from "../../database/entities/playlistitem.entity";
 import { Song } from "../../database/entities/song.entity";
 import { SongTitle } from "../../database/entities/songtitle.entity";
-import { SongVariant } from "../../database/entities/songvariant.entity";
+import { CreatedType, SongVariant } from "../../database/entities/songvariant.entity";
 import { User, ROLES } from "../../database/entities/user.entity";
 import { SongVariantDTO } from "../../dtos/songvariant.dto";
 import { mapSourceToDTO } from "../../dtos/source.dto";
@@ -21,7 +21,7 @@ export class SongService{
     constructor(
         @Inject(SONG_REPOSITORY)
         private songRepository: Repository<Song>,
-        @Inject(SONG_NAMES_REPOSITORY)
+        @Inject(SONG_TITLE_REPOSITORY)
         private nameRepository: Repository<SongTitle>,
         @Inject(SONG_VARIANTS_REPOSITORY)
         private variantRepository: Repository<SongVariant>,
@@ -88,6 +88,11 @@ export class SongService{
               song:true
             }
           },
+          order:{
+            variant: {
+              createdType: "ASC"
+            }
+          },
           skip: skipForPage(page),
           take: takePerPage
         })
@@ -130,7 +135,8 @@ export class SongService{
             order:{
                 createdBy: {
                     role: "DESC"
-                }
+                },
+                createdType: "ASC"
             },
           skip: skipForPage(page),
           take: takePerPage
@@ -154,7 +160,12 @@ export class SongService{
           return acc;
         }, []);
 
-        return uniq;
+        // Order it ASC
+        const ordered = uniq.sort((a,b)=>{
+            return a.variant.createdType-b.variant.createdType;
+        })
+
+        return ordered;
 
         
     }
@@ -180,11 +191,12 @@ export class SongService{
         where:{
           variants:[{
             verified:true,
-            deleted:false
+            deleted:false,
           },{
             createdBy: {
               role: ROLES.Loader
-            }
+            },
+            createdType: Not(CreatedType.Parsed)
           }]
         },
         relations: {
@@ -510,7 +522,8 @@ export class SongService{
           name: l.creator.name,
           type: l.type
         })),
-        deleted: variant.deleted
+        deleted: variant.deleted,
+        createdType: variant.createdType
 
       };
     }
