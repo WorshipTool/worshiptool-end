@@ -115,9 +115,6 @@ export class PostVerifyVariantParams{
     guid: string
 }
 
-export class PostDeleteVariantParams{
-    guid: string
-}
 
 export class GetCountResult{
     count: number

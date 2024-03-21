@@ -4,8 +4,8 @@ import { GROUP_REPOSITORY, PLAYLIST_REPOSITORY } from '../database/constants';
 import { Group } from '../database/entities/group.entity';
 import { Playlist } from '../database/entities/playlist.entity';
 import { User } from '../database/entities/user.entity';
-import { GetVariantsInPlaylistResult } from '../songs/services/playlists/playlist.dto';
-import { PlaylistService } from '../songs/services/playlists/playlist.service';
+import { GetVariantsInPlaylistResult } from '../songs/modules/playlists/playlist.dto';
+import { PlaylistService } from '../songs/modules/playlists/playlist.service';
 import { PostCreateGroupBody, PostCreateGroupResult, DeleteGroupQuery, GetGroupInfoQuery, GetGroupInfoResult } from './group.dto';
 
 @Injectable()

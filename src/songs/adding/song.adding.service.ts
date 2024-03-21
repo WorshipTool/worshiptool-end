@@ -58,7 +58,7 @@ export class SongAddingService{
 
         
         //Create title at first
-        const title = await this.titleService.getOrCreateTitleObject(data.title)
+        const title = await this.titleService.createTitleObject(data.title)
         song.mainTitle = title;
         this.songRepository.save(song);
 

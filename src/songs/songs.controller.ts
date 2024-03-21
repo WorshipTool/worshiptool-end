@@ -8,9 +8,9 @@ import { User as UserObject, ROLES } from "../database/entities/user.entity";
 import { AddSongDataService } from "./services/adding/add.service";
 import { ParserSongDataResult } from "./services/parser/parser.dto";
 import { ParserService } from "./services/parser/parser.service";
-import { PostCreatePlaylistBody, DeletePlaylistQuery, GetSongsInPlaylistParams, PostAddVariantToPlaylistBody, DeleteRemoveVariantFromPlaylistQuery, GetIsVariantInPlaylistQuery, GetSearchInPlaylistQuery, PostReorderPlaylistBody, PostTransposePlaylistItemBody } from "./services/playlists/playlist.dto";
-import { PlaylistService } from "./services/playlists/playlist.service";
-import { GetSongQuery, SearchQuery, ListQuery, GetCountResult, GetSongDataParam, PostMergeBody, PostAddSongDataBody, PostVerifyVariantParams, PostDeleteVariantParams, PostRenamePlaylistBody, GetSongListOfUserResult, PostEditVariantBody } from "./songs.dto";
+import { PostCreatePlaylistBody, DeletePlaylistQuery, GetSongsInPlaylistParams, PostAddVariantToPlaylistBody, DeleteRemoveVariantFromPlaylistQuery, GetIsVariantInPlaylistQuery, GetSearchInPlaylistQuery, PostReorderPlaylistBody, PostTransposePlaylistItemBody } from "./modules/playlists/playlist.dto";
+import { PlaylistService } from "./modules/playlists/playlist.service";
+import { GetSongQuery, SearchQuery, ListQuery, GetCountResult, GetSongDataParam, PostMergeBody, PostAddSongDataBody, PostVerifyVariantParams, PostRenamePlaylistBody, GetSongListOfUserResult, PostEditVariantBody } from "./songs.dto";
 import { SongsService } from "./songs.service";
 import { User } from "../auth/decorators/user.decorator";
 import {v4} from "uuid";
@@ -183,57 +183,8 @@ export class SongsController{
     }
 
 
-    /**
-     * The function deletes a variant by the given guid.
-     * @param {string} guid - The parameter `guid` is of type `string`.
-     * @param {UserObject} user - The parameter `user` is of type `UserObject`.
-     * @returns a formatted response indicating the success of the deletion.
-     */
-    @ApiOperation({summary: "Deletes a variant by the given guid."})
-    @ApiUnauthorizedResponse({
-        description: "The user is not authorized to delete the variant."
-    })
-    @ApiBadRequestResponse({
-        description: "Cant delete the variant."
-    })
-    @ApiNotFoundResponse({
-        description: "Variant has not been found."
-    })
-    @ApiConflictResponse({
-        description: "Variant is verified."
-    })
-    @ApiBearerAuth()
-    @Post("variant/delete/:guid")
-    async delete(@Param() {guid}: PostDeleteVariantParams, @User() user : UserObject){
-        return await this.songsService.deleteVariantByGUID(guid, user);
-    }
+    
 
-
-    /**
-     * The function restores a variant by the given guid.
-     * @param {string} guid - The parameter `guid` is of type `string`.
-     * @param {UserObject} user - The parameter `user` is of type `UserObject`.
-     * @returns a formatted response indicating the success of the restoration.
-     */
-    @ApiOperation({summary: "Restores a variant by the given guid."})
-    @ApiUnauthorizedResponse({
-        description: "The user is not authorized to restore the variant. Only admins can restore variants."
-    })
-    @ApiConflictResponse({
-        description: "Variant is not deleted."
-    })
-    @ApiNotFoundResponse({
-        description: "Variant has not been found."
-    })
-    @ApiBearerAuth()
-    @Post("variant/restore/:guid")
-    async restore(@Param() {guid}: PostDeleteVariantParams, @User() user : UserObject){
-        if((user.role!=ROLES.Admin))
-            throw new UnauthorizedException("Only admins can restore variants.");
-
-        const result = await this.songsService.restoreVariantByGuid(guid);
-        return result;
-    }
 
 
 
@@ -559,29 +510,5 @@ export class SongsController{
             variants: await this.songsService.getSongListOfUser(user)
         };
     }
-
-
-    /**
-     * The function edits a variant.
-     * @param {PostEditVariantBody} body - The parameter `body` is of type `PostEditVariantBody`.
-     * @param {UserObject} user - The parameter `user` is of type `UserObject`.
-     * @returns a formatted response indicating the success of the editing.
-     */
-    @ApiOperation({summary: "Edits a variant."})
-    @ApiUnauthorizedResponse({
-        description: "The user is not authorized to edit the variant."
-    })
-    @ApiNotFoundResponse({
-        description: "Variant has not been found."
-    })
-    @ApiConflictResponse({
-        description: "Cannot edit verified variant."
-    })
-    @ApiBearerAuth()
-    @Post("edit")
-    async editVariant(@Body() body: PostEditVariantBody, @User() user: UserObject){
-        return this.songsService.editVariant(body, user);
-    }
-
 
 }

@@ -5,9 +5,9 @@ import { SongVariantDTO } from "../dtos/songvariant.dto";
 import { MessengerService } from "../messenger/messenger.service";
 import { CreatorService } from "./services/creator.service";
 import { MediaService } from "./services/media.service";
-import { GetPlaylistsResult, PostCreatePlaylistBody, PostCreatePlaylistResult } from "./services/playlists/playlist.dto";
-import { PlaylistService } from "./services/playlists/playlist.service";
-import { PlaylistUtilsService } from "./services/playlists/playlistutils.service";
+import { GetPlaylistsResult, PostCreatePlaylistBody, PostCreatePlaylistResult } from "./modules/playlists/playlist.dto";
+import { PlaylistService } from "./modules/playlists/playlist.service";
+import { PlaylistUtilsService } from "./modules/playlists/playlistutils.service";
 import { SongService } from "./services/song.service";
 import { GetSongQuery, SearchResult, ListResult, SongData, SongDataVariant, PostMergeResult, PostEditVariantBody } from "./songs.dto";
 
@@ -122,9 +122,6 @@ export class SongsService{
     async unverifyVariantByGUID(guid:string){
         return await this.songService.unverifyVariantByGUID(guid);
     }
-    async deleteVariantByGUID(guid:string, user: User){
-        return await this.songService.deleteVariantByGUID(guid, user);
-    }
 
     async restoreVariantByGuid(guid:string){
         return await this.songService.restoreVariantByGuid(guid);
@@ -174,7 +171,4 @@ export class SongsService{
         return await this.songService.getSongListOfUser(user);
     }
 
-    async editVariant(body: PostEditVariantBody, user: User){
-        return await this.songService.editVariant(body, user);
-    }
 }

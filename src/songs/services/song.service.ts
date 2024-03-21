@@ -14,7 +14,7 @@ import normalizeSearchText from "../../tech/normalizeSearchText";
 import { skipForPage, takePerPage } from "../contants";
 import { SearchSongData, ListSongData, PostEditVariantBody } from "../songs.dto";
 import { NewSongData } from "./adding/add.dto";
-import { PlaylistUtilsService } from "./playlists/playlistutils.service";
+import { PlaylistUtilsService } from "../modules/playlists/playlistutils.service";
 
 @Injectable()
 export class SongService{
@@ -335,58 +335,7 @@ export class SongService{
         variant.verified=false;
         await this.variantRepository.save(variant);
     }
-    async deleteVariantByGUID(guid:string, user: User) : Promise<boolean>{
-        const variant = (await this.variantRepository.findOne({
-            where:{
-                guid
-            },
-            relations:{
-                createdBy:true,
-                playlistItems:{
-                    playlist:true
-                }
-            }
-        }))
 
-
-        if(!variant)
-            throw new NotFoundException("Variant not found");
-
-        if(variant.createdBy.guid!=user.guid && user.role!==ROLES.Admin)
-            throw new UnauthorizedException("User doesn't have permission to delete this variant");
-
-        if(variant.verified)
-            throw new BadRequestException("Cannot delete verified variant");
-
-        if(variant.deleted)
-            throw new ConflictException("Variant has been already deleted");
-
-        // remove from playlists
-        await Promise.all(variant.playlistItems.map(async (item)=>{
-            this.playlistUtilsService.removeVariantFromPlaylist(variant.guid, item.playlist.guid, user, true);
-        }))
-
-        variant.deleted=true;
-        await this.variantRepository.save(variant);
-
-        return true
-    }
-
-    async restoreVariantByGuid(guid:string){
-        const variant = (await this.variantRepository.findOneBy({
-            guid
-        }))
-    
-        if(!variant) throw new NotFoundException("Variant not found");
-    
-        if(!variant.deleted)
-            throw new ConflictException("Variant has not been deleted");
-    
-        variant.deleted=false;
-        await this.variantRepository.save(variant);
-
-        return true
-    }
 
     async getParentSongIfExists(data:Partial<NewSongData>):Promise<Song | undefined>{
 

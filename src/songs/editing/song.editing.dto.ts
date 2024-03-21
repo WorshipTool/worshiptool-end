@@ -5,3 +5,9 @@ export type VariantEditDataInDto = {
     title?: string,
     createdType?: CreatedType
 }
+
+export class PostEditVariantInDto{
+    guid: string
+    sheetData?: string
+    title?: string
+}

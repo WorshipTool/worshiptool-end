@@ -6,7 +6,7 @@ import { BadRequestException, Inject, Injectable, NotFoundException, Unauthorize
 import { GetPlaylistsResult, GetSearchInPlaylistResult, GetVariantsInPlaylistResult, PostCreatePlaylistBody, PostCreatePlaylistResult, PostDeletePlaylistResult } from './playlist.dto';
 import { User } from 'src/database/entities/user.entity';
 import { SongVariant } from '../../../database/entities/songvariant.entity';
-import { SongService } from '../song.service';
+import { SongService } from '../../services/song.service';
 import { PlaylistItem } from 'src/database/entities/playlistitem.entity';
 import { PlaylistItemDTO, ReorderPlaylistItemDTO } from 'src/dtos/playlistitem.dto';
 import { Chord, note } from '@pepavlin/sheet-api';
