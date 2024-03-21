@@ -139,7 +139,9 @@ export class AddSongDataService{
                     type: null,
                     playlistItems: [],
                     deleted: false,
-                    createdType: CreatedType.Manual
+                    createdType: CreatedType.Manual,
+                    parent: null,
+                    children: null
                 };
                 const variant : any = (await this.variantRepository.insert(variantData)).identifiers[0];
                 variantGuid = variant.guid;
