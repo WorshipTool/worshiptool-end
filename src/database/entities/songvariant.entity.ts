@@ -67,5 +67,10 @@ export class SongVariant{
     @Column({default: CreatedType.Manual})
     createdType: CreatedType
 
+    @ManyToOne(()=>SongVariant, (variant)=>variant.parent, {nullable:true})
+    children: SongVariant[]
+
+    @OneToMany(()=>SongVariant, (variant)=>variant.children, {nullable:true})
+    parent: SongVariant
 
 }

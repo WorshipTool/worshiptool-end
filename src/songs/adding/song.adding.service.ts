@@ -16,7 +16,8 @@ type CreateVariantInDto = {
     title: string,
     sheetData: string,
     source?: SongDataSource,
-    createdType: CreatedType
+    createdType: CreatedType,
+    parent?: SongVariant
 }
 
 @Injectable()
@@ -90,7 +91,9 @@ export class SongAddingService{
             type: null,
             playlistItems: [],
             deleted: false,
-            createdType: data.createdType
+            createdType: data.createdType,
+            parent: data.parent,
+            children: null
         };
         const variantGuid : string = (await this.variantRepository.insert(variantData)).identifiers[0].guid;
         const variant : SongVariant = await this.variantRepository.findOne({
@@ -133,7 +136,8 @@ export class SongAddingService{
         const data : CreateVariantInDto = {
             title: variant.prefferedTitle.title,
             sheetData: variant.sheetData,
-            createdType: variant.createdType
+            createdType: variant.createdType,
+            parent: variant
         }
         return await this.createVariant(data, user);
     }
