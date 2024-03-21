@@ -3,11 +3,12 @@ import { SongDeletingService } from "./song.deleting.service";
 import { SongDeletingController } from "./song.deleting.controller";
 import { DatabaseModule } from "../../database/database.module";
 import { PlaylistService } from "../modules/playlists/playlist.service";
+import { PlaylistModule } from "../modules/playlists/playlist.module";
 
 @Module({
     imports: [
         DatabaseModule,
-        PlaylistService
+        PlaylistModule
     ],
     controllers: [
         SongDeletingController

@@ -123,10 +123,6 @@ export class SongsService{
         return await this.songService.unverifyVariantByGUID(guid);
     }
 
-    async restoreVariantByGuid(guid:string){
-        return await this.songService.restoreVariantByGuid(guid);
-    }
-
     async mergeByGuids(guid1:string, guid2:string) : Promise<PostMergeResult>{
         if(guid1===guid2) throw new BadRequestException("Cannot merge the same variant");
 

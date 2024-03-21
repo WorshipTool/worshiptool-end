@@ -6,13 +6,15 @@ import { SongsController } from "./songs.controller";
 import { SongsService } from "./songs.service";
 import { SongAddingModule } from "./adding/song.adding.module";
 import { SongEditingModule } from "./editing/song.editing.module";
+import { SongDeletingModule } from "./deleting/song.deleting.module";
 
 @Module({
     imports: [
         DatabaseModule,
         MessengerModule,
         SongAddingModule,
-        SongEditingModule
+        SongEditingModule,
+        SongDeletingModule
     ],
     controllers: [SongsController],
     providers: [SongsService, ParserService]

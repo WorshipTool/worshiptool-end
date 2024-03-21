@@ -6,7 +6,7 @@ import { User } from "../../auth/decorators/user.decorator";
 import { SongDeletingService } from "./song.deleting.service";
 
 @ApiTags("Song Deleting")
-@Controller()
+@Controller("song/variant")
 export class SongDeletingController{
     constructor(
         private deletingService: SongDeletingService
@@ -20,7 +20,7 @@ export class SongDeletingController{
     }
 
     @ApiBearerAuth()
-    @Post("variant/restore/:guid")
+    @Post("restore/:guid")
     async restore(@Param() {guid}: PostDeleteVariantInDto, @User() user : UserObject){
         if((user.role!=ROLES.Admin))
             throw new UnauthorizedException("Only admins can restore variants.");

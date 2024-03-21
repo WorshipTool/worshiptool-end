@@ -1,10 +1,11 @@
-import { NotFoundException, UnauthorizedException, BadRequestException, ConflictException, Inject } from "@nestjs/common";
+import { NotFoundException, UnauthorizedException, BadRequestException, ConflictException, Inject, Injectable } from "@nestjs/common";
 import { ROLES, User } from "../../database/entities/user.entity";
 import { SONG_VARIANTS_REPOSITORY } from "../../database/constants";
 import { Repository } from "typeorm";
 import { SongVariant } from "../../database/entities/songvariant.entity";
 import { PlaylistUtilsService } from "../modules/playlists/playlistutils.service";
 
+@Injectable()
 export class SongDeletingService{
     constructor(
         @Inject(SONG_VARIANTS_REPOSITORY)

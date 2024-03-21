@@ -50,9 +50,19 @@ export class SongEditingService{
         // Edit copy
         if(data.sheetData) copy.sheetData = data.sheetData;
         if(data.createdType) copy.createdType = data.createdType;
+        if(data.title){
+            copy.prefferedTitle = await this.titleService.createTitleObject(data.title);
+        }
 
         // Save copy
         await this.variantRepository.save(copy);
+
+        this.switchVariantInAllPlaylist(variant, copy);
+
         return copy;
+    }
+
+    private switchVariantInAllPlaylist(from: SongVariant, to: SongVariant){
+        // TODO: Implement
     }
 }

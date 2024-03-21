@@ -7,11 +7,13 @@ import { UserSongAddingModule } from "./byuser/user.song.adding.module";
 import { DatabaseModule } from "../../database/database.module";
 import { SongAddingService } from "./song.adding.service";
 import { SongTitleModule } from "../modules/titles/song.title.module";
+import { SongVariantModule } from "../modules/variants/song.variant.module";
 
 @Module({
     imports: [
         DatabaseModule,
-        SongTitleModule
+        SongTitleModule,
+        SongVariantModule
     ],
     controllers: [
         SongAddingController

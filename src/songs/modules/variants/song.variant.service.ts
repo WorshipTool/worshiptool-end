@@ -11,6 +11,12 @@ export class SongVariantService{
     ){}
 
     getVariantByGuid(guid:string){
-        return this.variantRepository.findOne({where:{guid}});
+        return this.variantRepository.findOne({
+            where:{guid},
+            relations:{
+                prefferedTitle:true,
+                createdBy:true
+            }
+        });
     }
 }

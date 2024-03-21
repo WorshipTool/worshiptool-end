@@ -14,3 +14,7 @@ export class SameUrlVariantRelationInDto{
     sheetData: string
     url:string
 }
+
+export class PostCreateCopyInDto{
+    variantGuid: string
+}

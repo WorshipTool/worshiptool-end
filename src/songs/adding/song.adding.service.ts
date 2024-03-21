@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException, NotImplementedException } from "@nestjs/common";
 import { CreatedType, SongVariant } from "../../database/entities/songvariant.entity";
 import { Song } from "../../database/entities/song.entity";
 import { In, Repository } from "typeorm";
@@ -99,6 +99,9 @@ export class SongAddingService{
         const variant : SongVariant = await this.variantRepository.findOne({
             where:{
                 guid:variantGuid
+            },
+            relations: {
+                prefferedTitle:true            
             }
         });
 
@@ -133,8 +136,11 @@ export class SongAddingService{
      * @returns created variant or null if failed
      */
     async createCopy(variant: SongVariant, user: User) : Promise<SongVariant>{
+        if(!variant.prefferedTitle)
+            throw new NotImplementedException("Title relation is not included");
+
         const data : CreateVariantInDto = {
-            title: variant.prefferedTitle.title,
+            title: variant.prefferedTitle.title + " (kopie)",
             sheetData: variant.sheetData,
             createdType: variant.createdType,
             parent: variant
