@@ -7,6 +7,7 @@ import { SongsService } from "./songs.service";
 import { SongAddingModule } from "./adding/song.adding.module";
 import { SongEditingModule } from "./editing/song.editing.module";
 import { SongDeletingModule } from "./deleting/song.deleting.module";
+import { SongGettingModule } from "./getting/song.getting.module";
 
 @Module({
     imports: [
@@ -14,7 +15,8 @@ import { SongDeletingModule } from "./deleting/song.deleting.module";
         MessengerModule,
         SongAddingModule,
         SongEditingModule,
-        SongDeletingModule
+        SongDeletingModule,
+        SongGettingModule
     ],
     controllers: [SongsController],
     providers: [SongsService, ParserService]
