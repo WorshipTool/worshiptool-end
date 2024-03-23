@@ -1,50 +1,53 @@
 name: Deploy to chvalotce.cz
 
 env:
-  SERVER_USERNAME: chvalotce-docker
-  SERVER_URL: chvalotce.cz
+    SERVER_USERNAME: chvalotce-docker
+    SERVER_URL: chvalotce.cz
 
 on:
-  workflow_dispatch:
-  release:
-    types: [ published ]
-  push:
-    branches: [ "master" ]
-        
+    workflow_dispatch:
+    release:
+        types: [published]
+    push:
+        branches: ["master"]
+
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:    
-      - uses: actions/checkout@v3
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+            - name: Login to Docker Hub
+              uses: docker/login-action@v2
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build
-        run: docker build -t tomaspavlin/worshoptool:latest --target production .
+            - name: Build
+              run: docker build -t tomaspavlin/worshoptool:latest --target production .
 
-      - name: Push
-        run: docker push tomaspavlin/worshoptool:latest
+            - name: Log Images
+              run: docker images
 
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_KEY }}
-          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+            - name: Push
+              run: docker push tomaspavlin/worshoptool:latest
 
-      - name: Redeploy application
-        run: |
-          ssh -o ServerAliveInterval=1000 "${SERVER_USERNAME}@${SERVER_URL}" "cd /home/chvalotce.cz-docker/project-deploy/worshiptool && bash ./redeploy.sh" 
-      
-      - name: Send message to Messenger
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: 'https://chvalotce.cz/api/sendmessage'
-          method: 'POST'
-          customHeaders: '{"Content-Type": "application/x-www-form-urlencoded"}'
-          data: '{"message": "Nová verze backendu byla právě spuštěna."}'
-          timeout: 30000
-          preventFailureOnNoResponse: true
+            - name: Install SSH key
+              uses: shimataro/ssh-key-action@v2
+              with:
+                  key: ${{ secrets.SSH_KEY }}
+                  known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+
+            - name: Redeploy application
+              run: |
+                  ssh -o ServerAliveInterval=1000 "${SERVER_USERNAME}@${SERVER_URL}" "cd /home/chvalotce.cz-docker/project-deploy/worshiptool && bash ./redeploy.sh"
+
+            - name: Send message to Messenger
+              uses: fjogeleit/http-request-action@v1
+              with:
+                  url: "https://chvalotce.cz/api/sendmessage"
+                  method: "POST"
+                  customHeaders: '{"Content-Type": "application/x-www-form-urlencoded"}'
+                  data: '{"message": "Nová verze backendu byla právě spuštěna."}'
+                  timeout: 30000
+                  preventFailureOnNoResponse: true
