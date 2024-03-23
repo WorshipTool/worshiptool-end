@@ -13,6 +13,7 @@ import { GETTER_DOMAIN_REPOSITORY, GETTER_SOURCES_REPOSITORY } from "../../../..
 import { Repository } from "typeorm";
 import { GetterSource } from "../../../../database/entities/getter/getter-source.entity";
 import { GetterDomain } from "../../../../database/entities/getter/getter-domain.entity";
+import { CreatedType } from "../../../../database/entities/songvariant.entity";
 
 
 export type ParsePageGenericResult = {
@@ -81,9 +82,10 @@ export class SourceExtractService{
                     confidence: 0.2,
                     title: result.title,
                     sheetData: result.sheetData,
-                    url: url
+                    url: url,
+                    createdType: CreatedType.Parsed
                 }],
-                url: url
+                url: url,
             
             };
         }
@@ -125,7 +127,8 @@ export class SourceExtractService{
                     confidence: 1,
                     title: data.title?.length > 0 ? data.title : null,
                     sheetData: data.sheetData?.length > 0 ? data.sheetData : null,
-                    url: url
+                    url: url,
+                    createdType: CreatedType.Scraped
                 }
             ] : null
         };

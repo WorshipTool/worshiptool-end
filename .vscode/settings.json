@@ -1,6 +1,7 @@
 {
-    "docwriter.style": "JSDoc",
-    "github-actions.workflows.pinned.workflows": [
-        ".github/workflows/deploy-to-prijmeni.yml"
-    ]
+  "github-actions.workflows.pinned.workflows": [
+    ".github/workflows/deploy-to-prijmeni.yml"
+  ],
+  "prettier.tabWidth": 4,
+  "prettier.useTabs": false
 }

@@ -16,11 +16,12 @@ import { GetterDomain } from "../entities/getter/getter-domain.entity";
 import { GetterSearch } from "../entities/getter/getter-search.entity";
 import { GetterSubUrl } from "../entities/getter/getter-suburl.entity";
 import { GetterExplore } from "../entities/getter/getter-explore.entity";
+import { UrlAlias } from "../entities/urlalias.entity";
 
 export const dataSource = new DataSource({
     type: 'mysql',
-    host: process.env.DATABASE_HOST || 'localhost',
-    port: parseInt(process.env.DATABASE_PORT, 10) || 3306,
+    host: process.env.DATABASE_HOST || '::1',
+    port: process.env.DATABASE_PORT ? parseInt(process.env.DATABASE_PORT) : 3306 ,
     username: process.env.DATABASE_USERNAME || 'root',
     password: process.env.DATABASE_PASSWORD || 'semice36',
     database: process.env.DATABASE_DATABASE || 'worshiptool',
@@ -43,7 +44,8 @@ export const dataSource = new DataSource({
         GetterDomain,
         GetterSearch,
         GetterSubUrl,
-        GetterExplore
+        GetterExplore,
+        UrlAlias
     ],
     migrations: ["dist/migrations/**/*{.js,.ts}"],
     migrationsRun: true

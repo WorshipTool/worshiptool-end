@@ -14,6 +14,7 @@ export class DomainExploreUtilsService {
             this.browser = await puppeteer.launch({
                 headless: true,
                 args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                
             });
         }
     }
@@ -46,6 +47,13 @@ export class DomainExploreUtilsService {
         }
 
         const page = await browser.newPage();
+
+        // Disable download
+        const client = await page.target().createCDPSession();
+        await client.send('Page.setDownloadBehavior', {
+            behavior: 'deny'
+          });
+
         
         await page.goto(url, {
             timeout: useTimeout ? 10 * 1000 : 0
