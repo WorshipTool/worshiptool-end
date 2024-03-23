@@ -44,6 +44,7 @@ export class ListQuery {
 export class ListSongData {
     guid: string;
     title: string;
+    alias: string;
 }
 export class ListResult {
     songs: ListSongData[];
@@ -61,7 +62,7 @@ export class PostMergeResult {
     guid: string;
 }
 
-export class SongDataVariant extends SongVariantDto{};
+export class SongDataVariant extends SongVariantDto {}
 
 export class SongDataMedia {
     type: MediaTypes;

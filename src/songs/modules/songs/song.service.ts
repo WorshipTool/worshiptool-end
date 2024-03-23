@@ -235,7 +235,8 @@ export class SongService {
             },
             relations: {
                 variants: {
-                    createdBy: true
+                    createdBy: true,
+                    prefferedTitle: true
                 },
                 mainTitle: true
             },
@@ -248,12 +249,29 @@ export class SongService {
             skip: skipForPage(page)
         });
 
-        const data: ListSongData[] = songs.map((s) => {
-            return {
-                guid: s.guid,
-                title: s.mainTitle.title
-            };
-        });
+        console.log("Songs:", songs);
+
+        const data: ListSongData[] = await Promise.all(
+            songs.map(async (s) => {
+                let alias = await this.aliasService.getAliasFromValue(
+                    s.variants[0].guid,
+                    UrlAliasType.Variant
+                );
+                if (!alias) {
+                    alias = createVariantAlias(s.variants[0]);
+                    await this.aliasService.addAlias(
+                        alias,
+                        s.variants[0].guid,
+                        UrlAliasType.Variant
+                    );
+                }
+                return {
+                    guid: s.guid,
+                    title: s.mainTitle.title,
+                    alias: alias
+                };
+            })
+        );
         return data;
     }
 
