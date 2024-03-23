@@ -20,6 +20,7 @@ import { SongVariant } from "../../../database/entities/songvariant.entity";
 import { PlaylistItem } from "src/database/entities/playlistitem.entity";
 import { UrlAliasService } from "../../../urlaliases/url.alias.service";
 import { UrlAliasType } from "../../../database/entities/urlalias.entity";
+import { SongVariantService } from "../variants/song.variant.service";
 
 @Injectable()
 export class PlaylistUtilsService {
@@ -33,7 +34,8 @@ export class PlaylistUtilsService {
         @Inject(PLAYLIST_ITEMS_REPOSITORY)
         private itemRepository: Repository<PlaylistItem>,
 
-        private aliasService: UrlAliasService
+        private aliasService: UrlAliasService,
+        private variantService: SongVariantService
     ) {}
 
     async addVariantToPlaylist(
@@ -57,11 +59,7 @@ export class PlaylistUtilsService {
                 "You are not the owner of this playlist"
             );
 
-        const variant = await this.variantRepository.findOne({
-            where: {
-                guid: variantGuid
-            }
-        });
+        const variant = await this.variantService.getVariantByGuid(variantGuid);
 
         const alias = await this.aliasService.getAliasObjectFromValue(
             variantGuid,
