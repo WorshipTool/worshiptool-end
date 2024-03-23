@@ -249,8 +249,6 @@ export class SongService {
             skip: skipForPage(page)
         });
 
-        console.log("Songs:", songs);
-
         const data: ListSongData[] = await Promise.all(
             songs.map(async (s) => {
                 let alias = await this.aliasService.getAliasFromValue(
