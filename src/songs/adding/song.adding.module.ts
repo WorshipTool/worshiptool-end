@@ -8,12 +8,17 @@ import { DatabaseModule } from "../../database/database.module";
 import { SongAddingService } from "./song.adding.service";
 import { SongTitleModule } from "../modules/titles/song.title.module";
 import { SongVariantModule } from "../modules/variants/song.variant.module";
+import { UrlAliasModule } from "../../urlaliases/url.alias.module";
+import { AddSongDataService } from "../services/adding/add.service";
+import { SongModule } from "../modules/songs/song.module";
 
 @Module({
     imports: [
         DatabaseModule,
         SongTitleModule,
-        SongVariantModule
+        SongVariantModule,
+        UrlAliasModule,
+        SongModule
     ],
     controllers: [
         SongAddingController
@@ -21,7 +26,8 @@ import { SongVariantModule } from "../modules/variants/song.variant.module";
     providers: [
         SongAddingService,
         SimilarVariantService,
-        SongAddingTechService
+        SongAddingTechService,
+        AddSongDataService
     ],
     exports: [
         SongAddingService,

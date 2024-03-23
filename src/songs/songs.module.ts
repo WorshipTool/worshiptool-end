@@ -8,6 +8,13 @@ import { SongAddingModule } from "./adding/song.adding.module";
 import { SongEditingModule } from "./editing/song.editing.module";
 import { SongDeletingModule } from "./deleting/song.deleting.module";
 import { SongGettingModule } from "./getting/song.getting.module";
+import { SongModule } from "./modules/songs/song.module";
+import { CreatorsModule } from "./modules/creators/creators.module";
+import { MediaModule } from "./modules/media/media.module";
+import { PlaylistModule } from "./modules/playlists/playlist.module";
+import { PlaylistUtilsService } from "./modules/playlists/playlistutils.service";
+import { AddSongDataService } from "./services/adding/add.service";
+import { UrlAliasModule } from "../urlaliases/url.alias.module";
 
 @Module({
     imports: [
@@ -16,9 +23,14 @@ import { SongGettingModule } from "./getting/song.getting.module";
         SongAddingModule,
         SongEditingModule,
         SongDeletingModule,
-        SongGettingModule
+        SongGettingModule,
+        CreatorsModule,
+        MediaModule,
+        PlaylistModule,
+        SongModule,
+        UrlAliasModule
     ],
     controllers: [SongsController],
-    providers: [SongsService, ParserService]
+    providers: [SongsService, ParserService, PlaylistUtilsService, AddSongDataService]
 })
 export class SongsModule{}

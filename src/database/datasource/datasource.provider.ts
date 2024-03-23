@@ -16,6 +16,7 @@ import { GetterDomain } from "../entities/getter/getter-domain.entity";
 import { GetterSearch } from "../entities/getter/getter-search.entity";
 import { GetterSubUrl } from "../entities/getter/getter-suburl.entity";
 import { GetterExplore } from "../entities/getter/getter-explore.entity";
+import { UrlAlias } from "../entities/urlalias.entity";
 
 export const dataSource = new DataSource({
     type: 'mysql',
@@ -43,7 +44,8 @@ export const dataSource = new DataSource({
         GetterDomain,
         GetterSearch,
         GetterSubUrl,
-        GetterExplore
+        GetterExplore,
+        UrlAlias
     ],
     migrations: ["dist/migrations/**/*{.js,.ts}"],
     migrationsRun: true

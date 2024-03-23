@@ -4,6 +4,7 @@ import { SongDeletingController } from "./song.deleting.controller";
 import { DatabaseModule } from "../../database/database.module";
 import { PlaylistService } from "../modules/playlists/playlist.service";
 import { PlaylistModule } from "../modules/playlists/playlist.module";
+import { PlaylistUtilsService } from "../modules/playlists/playlistutils.service";
 
 @Module({
     imports: [
@@ -14,7 +15,8 @@ import { PlaylistModule } from "../modules/playlists/playlist.module";
         SongDeletingController
     ],
     providers: [
-        SongDeletingService
+        SongDeletingService,
+        PlaylistUtilsService
     ],
     exports: [
         SongDeletingService

@@ -1,17 +1,22 @@
 import { Module } from "@nestjs/common";
 import { PlaylistService } from "./playlist.service";
 import { DatabaseModule } from "../../../database/database.module";
+import { SongService } from "../songs/song.service";
+import { SongModule } from "../songs/song.module";
+import { PlaylistUtilsService } from "./playlistutils.service";
 
 @Module({
     imports:[
-        DatabaseModule
+        DatabaseModule,
+        SongModule
     ],
     controllers:[],
     providers:[
-        PlaylistService
+        PlaylistService,
+        
     ],
     exports:[
-        PlaylistService
+        PlaylistService,
     ]
 })
 export class PlaylistModule{}

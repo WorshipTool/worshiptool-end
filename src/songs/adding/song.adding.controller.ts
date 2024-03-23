@@ -2,7 +2,7 @@ import { Body, Controller, Get, NotFoundException, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { SimilarVariantService } from "./similar.variant.service";
 import { AllowNonUser } from "../../auth/decorators/allownonuser.decorator";
-import { PostCompareVariantsInDto, PostCreateCopyInDto, VariantRelationInDto } from "./song.adding.dto";
+import { PostCompareVariantsInDto, PostCreateCopyInDto, PostCreateCopyOutDto, VariantRelationInDto } from "./song.adding.dto";
 import { SongAddingTechService } from "./song.adding.tech.service";
 import { User } from "../../auth/decorators/user.decorator";
 import { User as UserObject } from 'src/database/entities/user.entity';
@@ -34,12 +34,11 @@ export class SongAddingController{
     @AllowNonUser()
     @ApiBearerAuth()
     @Post("create/copy")
-    async createCopy(@Body() data: PostCreateCopyInDto, @User() user: UserObject){
-        console.log("Creating copy of variant: ", data.variantGuid, " by user: ", user?.guid)
+    async createCopy(@Body() data: PostCreateCopyInDto, @User() user: UserObject) : Promise<PostCreateCopyOutDto>{
         const variant = await this.variantsService.getVariantByGuid(data.variantGuid);
         if(!variant) throw new NotFoundException("Variant not found.");
 
-        const copy = await this.addingService.createCopy(variant, user);
+        const copy : PostCreateCopyOutDto = await this.addingService.createCopy(variant, user);
         return copy;
     }
 }

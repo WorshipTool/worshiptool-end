@@ -6,6 +6,7 @@ import { DatabaseModule } from "../../database/database.module";
 import { SongTitleModule } from "../modules/titles/song.title.module";
 import { SongVariantModule } from "../modules/variants/song.variant.module";
 import { SongDeletingModule } from "../deleting/song.deleting.module";
+import { UrlAliasModule } from "../../urlaliases/url.alias.module";
 
 @Module({
     imports: [
@@ -13,7 +14,8 @@ import { SongDeletingModule } from "../deleting/song.deleting.module";
         SongAddingModule,
         SongTitleModule,
         SongVariantModule,
-        SongDeletingModule
+        SongDeletingModule,
+        UrlAliasModule
     ],
     controllers: [
         SongEditingController

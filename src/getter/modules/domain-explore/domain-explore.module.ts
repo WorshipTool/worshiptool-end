@@ -6,12 +6,14 @@ import { GetterSourceModule } from "../getter-source/getter-source.module";
 import { DomainExploreSuburlsService } from "./domain-explore-suburls.service";
 import { DatabaseModule } from "../../../database/database.module";
 import { GetterSuburlModule } from "../getter-suburl/getter-suburl.module";
+import { GetterDomainModule } from "../getter-domain/getter-domain.module";
 
 @Module({
     imports: [
         DatabaseModule,
         GetterSourceModule,
-        GetterSuburlModule
+        GetterSuburlModule,
+        GetterDomainModule
     ],
     controllers: [
         DomainExploreController

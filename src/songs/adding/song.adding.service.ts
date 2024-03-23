@@ -11,6 +11,9 @@ import { SongDataSource } from "../services/adding/add.dto";
 import { Source } from "../../database/entities/source.entity";
 import { SongAddingTechService } from "./song.adding.tech.service";
 import { SongTitleService } from "../modules/titles/song.title.service";
+import { UrlAliasService } from "../../urlaliases/url.alias.service";
+import { createVariantAlias } from "../../urlaliases/url.alias.tech";
+import { UrlAliasType } from "../../database/entities/urlalias.entity";
 
 type CreateVariantInDto = {
     title: string,
@@ -33,7 +36,8 @@ export class SongAddingService{
         @Inject(SOURCE_REPOSITORY)
         private sourceRepository: Repository<Source>, 
         private techService: SongAddingTechService,
-        private titleService: SongTitleService
+        private titleService: SongTitleService,
+        private aliasService: UrlAliasService
     ){}
 
     /**
@@ -135,7 +139,7 @@ export class SongAddingService{
      * @param user user who created copy
      * @returns created variant or null if failed
      */
-    async createCopy(variant: SongVariant, user: User) : Promise<SongVariant>{
+    async createCopy(variant: SongVariant, user: User){
         if(!variant.prefferedTitle)
             throw new NotImplementedException("Title relation is not included");
 
@@ -145,7 +149,24 @@ export class SongAddingService{
             createdType: variant.createdType,
             parent: variant
         }
-        return await this.createVariant(data, user);
+        const copy = await this.createVariant(data, user);
+
+        const aliasString = createVariantAlias(copy);
+        if(!aliasString) throw new Error("Failed to create alias for variant: " + copy.guid);
+
+
+        try{
+            await this.aliasService.addAlias(aliasString, copy.guid, UrlAliasType.Variant);
+        }catch(e){
+            console.log(e)
+            // Try to add alias second time
+            await this.aliasService.addAlias(aliasString, copy.guid, UrlAliasType.Variant);
+        }
+
+        return {
+            variant,
+            alias: aliasString
+        };
     }
 
     

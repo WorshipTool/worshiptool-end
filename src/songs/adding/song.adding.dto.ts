@@ -1,3 +1,5 @@
+import { SongVariant } from "../../database/entities/songvariant.entity";
+
 export class PostCompareVariantsInDto {
     variant1: VariantRelationInDto;
     variant2: VariantRelationInDto;
@@ -17,4 +19,9 @@ export class SameUrlVariantRelationInDto{
 
 export class PostCreateCopyInDto{
     variantGuid: string
+}
+
+export class PostCreateCopyOutDto{
+    variant: SongVariant
+    alias: string
 }

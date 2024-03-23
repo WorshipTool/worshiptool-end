@@ -31,6 +31,7 @@ export class NewSongData{
 export class NewSongDataProcessResult{
     message: string
     guid: string
+    alias: string
 }
 
 

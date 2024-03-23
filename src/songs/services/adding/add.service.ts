@@ -13,8 +13,11 @@ import { Tag } from "../../../database/entities/tag.entity";
 import { User } from "../../../database/entities/user.entity";
 import checkMediaFormat from "../../../tech/checkMediaFormat";
 import normalizeSearchText from "../../../tech/normalizeSearchText";
-import { SongService } from "../song.service";
 import { NewSongData, NewSongDataProcessResult } from "./add.dto";
+import { UrlAliasService } from "../../../urlaliases/url.alias.service";
+import { UrlAliasType } from "../../../database/entities/urlalias.entity";
+import { SongService } from "../../modules/songs/song.service";
+import { createVariantAlias } from "../../../urlaliases/url.alias.tech";
 @Injectable()
 export class AddSongDataService{
     constructor(
@@ -35,7 +38,8 @@ export class AddSongDataService{
         private creatorRepository: Repository<Creator>,
         @Inject(CSVLINK_REPOSITORY)
         private linkRepository: Repository<CSVLink>,
-        private songService: SongService
+        private songService: SongService,
+        private aliasService: UrlAliasService
     ){}
 
     async processNewSongData(data:Partial<NewSongData>, user:User) : Promise<NewSongDataProcessResult>{
@@ -69,7 +73,7 @@ export class AddSongDataService{
             throw new NotFoundException("Song not found.");
         }
 
-        let variant = undefined;
+        let variant : SongVariant = undefined;
         //create new variant
         if(data.sheetData||data.title||data.source){
 
@@ -149,7 +153,9 @@ export class AddSongDataService{
                 await this.nameRepository.save(title);
             }
             
-            variant = await this.variantRepository.findOne({where:{guid: variantGuid}, relations:{sources:true}});
+            variant = await this.variantRepository.findOne({
+                where:{guid: variantGuid}, 
+                relations:{sources:true, prefferedTitle:true}});
 
             
 
@@ -245,16 +251,21 @@ export class AddSongDataService{
             }
         }
 
+        const alias = variant ? createVariantAlias(variant) : null;
+        if(alias) await this.aliasService.addAlias(alias, variant.guid, UrlAliasType.Variant);
+
         if(!createdNew){
             return ({
                 guid: songGuid,
-                message: "Data add to existing song."
+                message: "Data add to existing song.",
+                alias: alias || ""
             })
         }
 
         return ({            
             guid: songGuid,
-            message: "New song created and filled with incoming data."
+            message: "New song created and filled with incoming data.",
+            alias: alias || ""
         });
 
 
