@@ -26,8 +26,6 @@ export class UrlAliasService {
     }
 
     async addAlias(alias: string, value: string, type: UrlAliasType) {
-        console.log("New alias", alias);
-
         // Try to find existing alias
         const existingAlias = await this.urlAliasRepository.findOne({
             where: { alias, type }

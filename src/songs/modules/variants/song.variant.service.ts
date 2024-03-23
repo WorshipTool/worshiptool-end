@@ -8,6 +8,7 @@ import { SongTitleService } from "../titles/song.title.service";
 import { SongVariantDataOutDto } from "./song.variant.dto";
 import { UrlAliasService } from "../../../urlaliases/url.alias.service";
 import { UrlAliasType } from "../../../database/entities/urlalias.entity";
+import { Sheet } from "@pepavlin/sheet-api";
 
 @Injectable()
 export class SongVariantService {
@@ -19,7 +20,7 @@ export class SongVariantService {
         private aliasService: UrlAliasService
     ) {}
 
-    getVariantByGuid(
+    async getVariantByGuid(
         guid: string,
         user?: User,
         relations?: FindOptionsRelations<SongVariant>
@@ -27,10 +28,18 @@ export class SongVariantService {
         relations = relations || {
             prefferedTitle: true
         };
-        return this.variantRepository.findOne({
+        const v = await this.variantRepository.findOne({
             where: { guid },
             relations
         });
+
+        if (v == null) return null;
+        if (!v.toneKey) {
+            const sheet = new Sheet(v.sheetData);
+            v.toneKey = sheet.getKeyChord()?.data.rootNote.toString();
+            if (v.toneKey) await this.variantRepository.save(v);
+        }
+        return v;
     }
 
     getVariantsBySongGuid(

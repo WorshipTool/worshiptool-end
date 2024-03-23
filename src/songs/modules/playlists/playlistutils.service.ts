@@ -87,7 +87,8 @@ export class PlaylistUtilsService {
         const item = await this.itemRepository.create({
             playlist,
             alias: alias,
-            order: items.length
+            order: items.length,
+            toneKey: variant.toneKey
         });
 
         await this.itemRepository.save(item);

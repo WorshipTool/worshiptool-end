@@ -104,7 +104,7 @@ export class SongAddingService {
             links: [],
             titles: [title],
             sources: sources,
-            toneKey: null,
+            toneKey: sheet.getKeyChord()?.data.rootNote.toString(),
             type: null,
             deleted: false,
             createdType: data.createdType,

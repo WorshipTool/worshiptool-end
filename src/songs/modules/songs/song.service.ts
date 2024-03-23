@@ -528,8 +528,6 @@ export class SongService {
             );
         }
 
-        console.log("Alias:", alias);
-
         return {
             guid: variant.guid,
             songGuid: variant.song.guid,

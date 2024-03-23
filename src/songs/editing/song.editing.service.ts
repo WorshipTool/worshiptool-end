@@ -21,6 +21,8 @@ import {
     createVariantAlias,
     shouldCreateNewAlias
 } from "../../urlaliases/url.alias.tech";
+import { Sheet } from "@pepavlin/sheet-api";
+import normalizeSearchText from "../../tech/normalizeSearchText";
 
 // TODO: When title is edited, all variant history should be updated..
 // maybe change title entity relation to ManyToOne, One title belongs to multiple variant?
@@ -78,7 +80,13 @@ export class SongEditingService {
         }
 
         // Edit copy
-        if (data.sheetData) copy.sheetData = data.sheetData;
+        if (data.sheetData) {
+            const sheet = new Sheet(data.sheetData);
+            let sheetText = normalizeSearchText(sheet.getText());
+            copy.sheetData = data.sheetData;
+            copy.searchValue = sheetText;
+            copy.toneKey = sheet.getKeyChord()?.data.rootNote.toString();
+        }
         if (data.createdType) copy.createdType = data.createdType;
         if (data.title) {
             copy.prefferedTitle = await this.titleService.createTitleObject(
