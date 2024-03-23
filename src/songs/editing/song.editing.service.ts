@@ -7,7 +7,7 @@ import {
 import { SongVariant } from "../../database/entities/songvariant.entity";
 import { EditVariantOutDto, VariantEditDataInDto } from "./song.editing.dto";
 import { SongAddingService } from "../adding/song.adding.service";
-import { User } from "../../database/entities/user.entity";
+import { ROLES, User } from "../../database/entities/user.entity";
 import {
     SONG_TITLE_REPOSITORY,
     SONG_VARIANTS_REPOSITORY
@@ -46,7 +46,13 @@ export class SongEditingService {
     ): Promise<EditVariantOutDto> {
         // Can edit only variant which is owned by user
         if (!variant.createdBy) throw new Error("Variant has no creator.");
-        if (variant.createdBy.guid !== user.guid)
+        if (
+            !(
+                variant.createdBy.role == ROLES.Loader &&
+                user.role === ROLES.Admin
+            ) &&
+            variant.createdBy.guid !== user.guid
+        )
             throw new UnauthorizedException(
                 "Variant cannot be edited by this user."
             );
@@ -78,7 +84,6 @@ export class SongEditingService {
             copy.prefferedTitle = await this.titleService.createTitleObject(
                 data.title
             );
-            console.log("New title: ", data.title);
         }
 
         // Save copy
