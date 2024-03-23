@@ -1,19 +1,38 @@
-
-import { Playlist } from 'src/database/entities/playlist.entity';
-import { PLAYLIST_ITEMS_REPOSITORY, PLAYLIST_REPOSITORY, SONG_REPOSITORY, SONG_VARIANTS_REPOSITORY } from '../../../database/constants';
-import { In, MoreThan, Repository } from 'typeorm';
-import { BadRequestException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { GetPlaylistsResult, GetSearchInPlaylistResult, GetVariantsInPlaylistResult, PostCreatePlaylistBody, PostCreatePlaylistResult, PostDeletePlaylistResult } from './playlist.dto';
-import { User } from 'src/database/entities/user.entity';
-import { SongVariant } from '../../../database/entities/songvariant.entity';
-import { PlaylistItem } from 'src/database/entities/playlistitem.entity';
-import { PlaylistItemDTO, ReorderPlaylistItemDTO } from 'src/dtos/playlistitem.dto';
-import { Chord, note } from '@pepavlin/sheet-api';
-import { SongService } from '../songs/song.service';
+import { Playlist } from "src/database/entities/playlist.entity";
+import {
+    PLAYLIST_ITEMS_REPOSITORY,
+    PLAYLIST_REPOSITORY,
+    SONG_REPOSITORY,
+    SONG_VARIANTS_REPOSITORY
+} from "../../../database/constants";
+import { In, MoreThan, Repository } from "typeorm";
+import {
+    BadRequestException,
+    Inject,
+    Injectable,
+    NotFoundException,
+    UnauthorizedException
+} from "@nestjs/common";
+import {
+    GetPlaylistsResult,
+    GetSearchInPlaylistResult,
+    GetVariantsInPlaylistResult,
+    PostCreatePlaylistBody,
+    PostCreatePlaylistResult,
+    PostDeletePlaylistResult
+} from "./playlist.dto";
+import { User } from "src/database/entities/user.entity";
+import { SongVariant } from "../../../database/entities/songvariant.entity";
+import { PlaylistItem } from "src/database/entities/playlistitem.entity";
+import {
+    PlaylistItemDTO,
+    ReorderPlaylistItemDTO
+} from "src/dtos/playlistitem.dto";
+import { Chord, note } from "@pepavlin/sheet-api";
+import { SongService } from "../songs/song.service";
 
 @Injectable()
-export class PlaylistService{
-
+export class PlaylistService {
     constructor(
         @Inject(PLAYLIST_REPOSITORY)
         private playlistRepository: Repository<Playlist>,
@@ -21,277 +40,329 @@ export class PlaylistService{
         @Inject(SONG_VARIANTS_REPOSITORY)
         private variantRepository: Repository<SongVariant>,
 
-
         @Inject(PLAYLIST_ITEMS_REPOSITORY)
         private itemRepository: Repository<PlaylistItem>,
 
         private songService: SongService
-    ){}  
+    ) {}
 
-    async getPlaylistByUser(user: User) : Promise<GetPlaylistsResult>{
+    async getPlaylistByUser(user: User): Promise<GetPlaylistsResult> {
         const playlists = await this.playlistRepository.find({
-            where:{
-                owner: {guid: user.guid},
+            where: {
+                owner: { guid: user.guid },
                 isSelection: false
             }
-        })
+        });
         return {
-            playlists: playlists.map((p)=>{
+            playlists: playlists.map((p) => {
                 return {
                     guid: p.guid,
                     title: p.title
-
-                }
+                };
             })
-        }
+        };
     }
 
-    async createPlaylist(body: PostCreatePlaylistBody, user: User) : Promise<PostCreatePlaylistResult>{
-        const playlistData : Partial<Playlist> = {
+    async createPlaylist(
+        body: PostCreatePlaylistBody,
+        user: User
+    ): Promise<PostCreatePlaylistResult> {
+        const playlistData: Partial<Playlist> = {
             title: body.title,
             owner: user
-        }
-        const playlistGuid = await (await this.playlistRepository.insert(playlistData)).identifiers[0].guid;
+        };
+        const playlistGuid = await (
+            await this.playlistRepository.insert(playlistData)
+        ).identifiers[0].guid;
 
         return {
             guid: playlistGuid
-        }
+        };
     }
 
-    async deletePlaylist(guid:string, user:User) : Promise<PostDeletePlaylistResult>{
-        const playlist = await this.playlistRepository.findOne({where:{
+    async deletePlaylist(
+        guid: string,
+        user: User
+    ): Promise<PostDeletePlaylistResult> {
+        const playlist = await this.playlistRepository.findOne({
+            where: {
                 guid
             },
-            relations:{
-                owner:true
+            relations: {
+                owner: true
             }
         });
-        if(!playlist) throw new NotFoundException("Playlist not found");
-        if(playlist.owner.guid != user.guid) 
-            throw new UnauthorizedException("You are not the owner of this playlist");
+        if (!playlist) throw new NotFoundException("Playlist not found");
+        if (playlist.owner.guid != user.guid)
+            throw new UnauthorizedException(
+                "You are not the owner of this playlist"
+            );
 
         await this.playlistRepository.remove(playlist);
-        return true
+        return true;
     }
 
-    async getVariantsInPlaylist(guid : string) : Promise<GetVariantsInPlaylistResult>{
+    async getVariantsInPlaylist(
+        guid: string
+    ): Promise<GetVariantsInPlaylistResult> {
         const playlist = await this.playlistRepository.findOne({
-            where:{
+            where: {
                 guid
             }
-        })
+        });
 
-        if(!playlist) throw new NotFoundException("Playlist not found");
+        if (!playlist) throw new NotFoundException("Playlist not found");
 
         const results = await this.itemRepository.find({
-            where:{
+            where: {
                 playlist
             },
-            relations:{
-                variant:true
+            relations: {
+                alias: true
             },
-            order:{
-                order: 'ASC'
+            order: {
+                order: "ASC"
             }
-        })
+        });
 
-        const items : PlaylistItemDTO[] = await Promise.all(results.map(async (item)=>{
-            return {
-                guid: item.guid,
-                order: item.order,
-                toneKey: item.toneKey,
-                variant: await this.songService.getVariantByGuid(item.variant.guid)
-            }
-        }));
+        const items: PlaylistItemDTO[] = await Promise.all(
+            results.map(async (item) => {
+                return {
+                    guid: item.guid,
+                    order: item.order,
+                    toneKey: item.toneKey,
+                    variant: await this.songService.getVariantByGuid(
+                        item.alias.value
+                    )
+                };
+            })
+        );
 
-        const result : GetVariantsInPlaylistResult = {
+        const result: GetVariantsInPlaylistResult = {
             title: playlist.title,
             items
-        }
+        };
         return result;
     }
 
-    async isVariantInPlaylist(variant:string, playlist:string) : Promise<boolean>{
+    async isVariantInPlaylist(
+        variant: string,
+        playlist: string
+    ): Promise<boolean> {
         const existingItem = await this.itemRepository.findOne({
-            where:{
-                variant: {
-                    guid: variant
+            where: {
+                alias: {
+                    value: variant
                 },
                 playlist: {
                     guid: playlist
                 }
             }
         });
-       
+
         return existingItem !== null;
     }
 
-    async searchInPlaylist(guid: string, searchKey: string, page: number, user: User) : Promise<GetSearchInPlaylistResult>{
-        if(!guid) throw new BadRequestException("Guid is undefined");
+    async searchInPlaylist(
+        guid: string,
+        searchKey: string,
+        page: number,
+        user: User
+    ): Promise<GetSearchInPlaylistResult> {
+        if (!guid) throw new BadRequestException("Guid is undefined");
 
-        if(searchKey===undefined)searchKey="";
-        if(page===undefined)page=0;
-        
-       const variants =  await this.songService.search({
-            searchKey,
-            page,
-            playlist: guid,
-       }, user);
+        if (searchKey === undefined) searchKey = "";
+        if (page === undefined) page = 0;
 
-       const variantGuids = variants.map((v)=>v.variant.guid);
-
-       const results = await this.itemRepository.find({
-              where:{
-                    variant: {
-                        guid: In(variantGuids)
-                    },
-                    playlist: {
-                        guid
-                    }
-                },
-                relations:{
-                    variant:true
-                }
-            });
-
-
-        const items : PlaylistItemDTO[] = await Promise.all(results.map(async (item)=>{
-            return {
-                guid: item.guid,
-                order: item.order,
-                toneKey: item.toneKey,
-                variant: await this.songService.getVariantByGuid(item.variant.guid)
-            }
-        }));
-
-        const result : GetSearchInPlaylistResult = {
-            guid,
-            items
-        }
-
-        return result
-    }
-
-    async renamePlaylist(guid: string, title: string, user: User) : Promise<boolean>{
-        if(!guid) throw new BadRequestException("Guid is undefined");
-        if(!title) throw new BadRequestException("Title is undefined");
-
-        const playlist = await this.playlistRepository.findOne({
-            where:{
-                guid
+        const variants = await this.songService.search(
+            {
+                searchKey,
+                page,
+                playlist: guid
             },
-            relations:{
-                owner:true
+            user
+        );
+
+        const variantGuids = variants.map((v) => v.variant.guid);
+
+        const results = await this.itemRepository.find({
+            where: {
+                alias: {
+                    value: In(variantGuids)
+                },
+                playlist: {
+                    guid
+                }
+            },
+            relations: {
+                alias: true
             }
         });
-        if(!playlist) throw new NotFoundException("Playlist not found");
-        if(playlist.owner.guid!==user.guid)
-            throw new UnauthorizedException("You are not the owner of this playlist");
+
+        const items: PlaylistItemDTO[] = await Promise.all(
+            results.map(async (item) => {
+                return {
+                    guid: item.guid,
+                    order: item.order,
+                    toneKey: item.toneKey,
+                    variant: await this.songService.getVariantByGuid(
+                        item.alias.value
+                    )
+                };
+            })
+        );
+
+        const result: GetSearchInPlaylistResult = {
+            guid,
+            items
+        };
+
+        return result;
+    }
+
+    async renamePlaylist(
+        guid: string,
+        title: string,
+        user: User
+    ): Promise<boolean> {
+        if (!guid) throw new BadRequestException("Guid is undefined");
+        if (!title) throw new BadRequestException("Title is undefined");
+
+        const playlist = await this.playlistRepository.findOne({
+            where: {
+                guid
+            },
+            relations: {
+                owner: true
+            }
+        });
+        if (!playlist) throw new NotFoundException("Playlist not found");
+        if (playlist.owner.guid !== user.guid)
+            throw new UnauthorizedException(
+                "You are not the owner of this playlist"
+            );
 
         playlist.title = title;
         await this.playlistRepository.save(playlist);
-        return true
+        return true;
     }
 
-    async reorderPlaylist(guid: string, items: ReorderPlaylistItemDTO[], user: User) : Promise<boolean>{
-        if(!guid) throw new BadRequestException("Guid is undefined");
-        if(items.length==0) 
+    async reorderPlaylist(
+        guid: string,
+        items: ReorderPlaylistItemDTO[],
+        user: User
+    ): Promise<boolean> {
+        if (!guid) throw new BadRequestException("Guid is undefined");
+        if (items.length == 0)
             throw new BadRequestException("No items to reorder");
 
         // check if all items order number is unique
-        const orderNumbers = items.map((i)=>i.order);
-        if(orderNumbers.length !== new Set(orderNumbers).size) 
+        const orderNumbers = items.map((i) => i.order);
+        if (orderNumbers.length !== new Set(orderNumbers).size)
             throw new BadRequestException("Item's order are not unique");
 
         const playlist = await this.playlistRepository.findOne({
-            where:{
+            where: {
                 guid
             },
-            relations:{
-                owner:true
+            relations: {
+                owner: true
             }
         });
 
-        if(!playlist) throw new NotFoundException("Playlist not found");
-        if(playlist.owner.guid!==user.guid)
-            throw new UnauthorizedException("You are not the owner of this playlist");
+        if (!playlist) throw new NotFoundException("Playlist not found");
+        if (playlist.owner.guid !== user.guid)
+            throw new UnauthorizedException(
+                "You are not the owner of this playlist"
+            );
 
-        
         const existingItems = await this.itemRepository.find({
-            where:{
+            where: {
                 playlist
             }
         });
 
-        const existingItemGuids = existingItems.map((i)=>i.guid);
+        const existingItemGuids = existingItems.map((i) => i.guid);
 
-        const itemsToSave = items.filter((i)=> existingItemGuids.includes(i.guid) && i.order);
+        const itemsToSave = items.filter(
+            (i) => existingItemGuids.includes(i.guid) && i.order
+        );
 
         let outCount = 0;
         let savedCount = 0;
 
-        await Promise.all(itemsToSave.map(async (item)=>{
-            const existingItem = existingItems.find((i)=>i.guid===item.guid);
+        await Promise.all(
+            itemsToSave.map(async (item) => {
+                const existingItem = existingItems.find(
+                    (i) => i.guid === item.guid
+                );
 
-            // if items order is out of bounds, ignore it
-            if(item.order<0 || item.order>=existingItems.length){
-                outCount++;
-                return;
-            };
-
-
-            if(existingItem){
-
-                const itemWithThatOrder = existingItems.find((i)=>i.order===item.order);
-                if(itemWithThatOrder){
-                    itemWithThatOrder.order = existingItem.order;
-                    await this.itemRepository.save(itemWithThatOrder);
+                // if items order is out of bounds, ignore it
+                if (item.order < 0 || item.order >= existingItems.length) {
+                    outCount++;
+                    return;
                 }
 
-                existingItem.order = item.order;
-                await this.itemRepository.save(existingItem);
-                savedCount++;
-            }
-        }));
+                if (existingItem) {
+                    const itemWithThatOrder = existingItems.find(
+                        (i) => i.order === item.order
+                    );
+                    if (itemWithThatOrder) {
+                        itemWithThatOrder.order = existingItem.order;
+                        await this.itemRepository.save(itemWithThatOrder);
+                    }
 
+                    existingItem.order = item.order;
+                    await this.itemRepository.save(existingItem);
+                    savedCount++;
+                }
+            })
+        );
 
+        if (savedCount == 0) {
+            if (outCount > 0)
+                throw new BadRequestException(
+                    "No items changed, because all items were out of bounds"
+                );
+            throw new BadRequestException("No items changed");
+        }
 
-        if(savedCount==0){
-            if(outCount>0)
-                throw new BadRequestException("No items changed, because all items were out of bounds");
-            throw new BadRequestException("No items changed");     
-        };
-
-        // if(outCount>0) 
+        // if(outCount>0)
         //     return formatted(undefined, codes['Success'], "Reordered, but some items ignored as out of bounds");
 
-        return true
+        return true;
     }
 
-    async transposePlaylistItem(guid: string, keyChord: string, user: User) : Promise<boolean>{
-        if(!guid) throw new BadRequestException("Guid is undefined");
-        if(!keyChord) throw new BadRequestException("Key chord is undefined");
-        
+    async transposePlaylistItem(
+        guid: string,
+        keyChord: string,
+        user: User
+    ): Promise<boolean> {
+        if (!guid) throw new BadRequestException("Guid is undefined");
+        if (!keyChord) throw new BadRequestException("Key chord is undefined");
+
         const chord = new Chord(keyChord);
 
         const existingItem = await this.itemRepository.findOne({
-            where:{
+            where: {
                 guid
             },
-            relations:{
-                playlist:{
-                    owner:true
+            relations: {
+                playlist: {
+                    owner: true
                 }
             }
         });
 
-        if(!existingItem) throw new NotFoundException("Item not found");
-        if(existingItem.playlist.owner.guid!==user.guid) 
-            throw new UnauthorizedException("You are not the owner of this playlist");
+        if (!existingItem) throw new NotFoundException("Item not found");
+        if (existingItem.playlist.owner.guid !== user.guid)
+            throw new UnauthorizedException(
+                "You are not the owner of this playlist"
+            );
 
         existingItem.toneKey = chord.data.rootNote.toString();
         await this.itemRepository.save(existingItem);
 
-        return true
+        return true;
     }
 }

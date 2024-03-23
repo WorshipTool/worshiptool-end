@@ -67,4 +67,13 @@ export class UrlAliasService {
         if (!aliasObject) return null;
         return aliasObject.alias;
     }
+
+    async getAliasObjectFromValue(
+        value: string,
+        type: UrlAliasType
+    ): Promise<UrlAlias> {
+        return await this.urlAliasRepository.findOne({
+            where: { value, type }
+        });
+    }
 }

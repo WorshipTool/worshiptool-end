@@ -75,13 +75,13 @@ export class SongService {
                 }
             },
             relations: {
-                variant: true
+                alias: true
             }
         });
 
         const conditionsSame = {
             guid: playlist
-                ? In(playlistItems.map((i) => i.variant.guid))
+                ? In(playlistItems.map((i) => i.alias.value))
                 : undefined,
             deleted: false
         };
