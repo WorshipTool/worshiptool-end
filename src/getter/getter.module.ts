@@ -4,7 +4,7 @@ import { DomainSearchModule } from "./modules/domain-search/domain-search.module
 import { DomainExploreModule } from "./modules/domain-explore/domain-explore.module";
 import { SourceExtractModule } from "./modules/source-process/source-extract/source-extract.module";
 import { SourceProcessModule } from "./modules/source-process/source-process.module";
-
+import { GetterController } from "./getter.controller";
 
 @Module({
     imports: [
@@ -13,7 +13,7 @@ import { SourceProcessModule } from "./modules/source-process/source-process.mod
         DomainExploreModule,
         SourceProcessModule
     ],
-    controllers: [],
+    controllers: [GetterController],
     providers: []
 })
-export class GetterModule{}
+export class GetterModule {}

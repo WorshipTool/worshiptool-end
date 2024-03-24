@@ -15,6 +15,7 @@ import { PlaylistModule } from "./modules/playlists/playlist.module";
 import { PlaylistUtilsService } from "./modules/playlists/playlistutils.service";
 import { AddSongDataService } from "./services/adding/add.service";
 import { UrlAliasModule } from "../urlaliases/url.alias.module";
+import { SongVariantModule } from "./modules/variants/song.variant.module";
 
 @Module({
     imports: [
@@ -28,9 +29,15 @@ import { UrlAliasModule } from "../urlaliases/url.alias.module";
         MediaModule,
         PlaylistModule,
         SongModule,
-        UrlAliasModule
+        UrlAliasModule,
+        SongVariantModule
     ],
     controllers: [SongsController],
-    providers: [SongsService, ParserService, PlaylistUtilsService, AddSongDataService]
+    providers: [
+        SongsService,
+        ParserService,
+        PlaylistUtilsService,
+        AddSongDataService
+    ]
 })
-export class SongsModule{}
+export class SongsModule {}

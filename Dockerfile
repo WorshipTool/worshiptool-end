@@ -42,9 +42,9 @@ FROM node:21-bullseye-slim as production
 WORKDIR /app
 
 
-RUN apt-get update && \
-    apt-get install -y python3-pip libopencv-dev python3-opencv tesseract-ocr && \
-    pip3 install --upgrade setuptools pip
+# RUN apt-get update && \
+#     apt-get install -y python3-pip libopencv-dev python3-opencv tesseract-ocr && \
+#     pip3 install --upgrade setuptools pip
 
 
 # Copy built files from the previous stage
@@ -54,8 +54,8 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/src/pythonscripts ./src/pythonscripts
 
 # Instalace Python knihoven ze souboru requirements.txt
-RUN pip3 install -r src/pythonscripts/image-parser/requirements.txt && \
-    python3 src/pythonscripts/image-parser/prepare.py
+# RUN pip3 install -r src/pythonscripts/image-parser/requirements.txt && \
+#     python3 src/pythonscripts/image-parser/prepare.py
 
 
 # Expose application port
