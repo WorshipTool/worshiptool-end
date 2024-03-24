@@ -113,7 +113,7 @@ export class SongsService {
                     v.guid
                 );
                 return {
-                    songGuid: v.song.guid,
+                    songGuid: v.song?.guid,
                     guid: v.guid,
                     prefferedTitle: titleObject ? titleObject.title : null,
                     titles: titles.map((t) => t.title),
