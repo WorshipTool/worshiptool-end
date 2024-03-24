@@ -23,6 +23,7 @@ import {
 } from "../../urlaliases/url.alias.tech";
 import { Sheet } from "@pepavlin/sheet-api";
 import normalizeSearchText from "../../tech/normalizeSearchText";
+import { SongDeletingService } from "../deleting/song.deleting.service";
 
 // TODO: When title is edited, all variant history should be updated..
 // maybe change title entity relation to ManyToOne, One title belongs to multiple variant?
@@ -34,7 +35,8 @@ export class SongEditingService {
         @Inject(SONG_VARIANTS_REPOSITORY)
         private variantRepository: Repository<SongVariant>,
         private titleService: SongTitleService,
-        private aliasService: UrlAliasService
+        private aliasService: UrlAliasService,
+        private deletingService: SongDeletingService
     ) {}
 
     /**
@@ -119,6 +121,9 @@ export class SongEditingService {
                 UrlAliasType.Variant
             );
         }
+
+        //Delete old variant
+        this.deletingService.deleteVariant(variant.guid, user);
 
         return {
             variant: copy,

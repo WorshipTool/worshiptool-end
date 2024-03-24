@@ -187,7 +187,7 @@ export class SongAddingService {
         }
 
         return {
-            variant,
+            variant: copy,
             alias: aliasString
         };
     }

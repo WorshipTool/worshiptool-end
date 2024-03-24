@@ -118,7 +118,10 @@ export class SongService {
             },
             order: {
                 variant: {
-                    createdType: "ASC"
+                    createdType: "ASC",
+                    createdBy: {
+                        role: "ASC"
+                    }
                 }
             },
             skip: skipForPage(page),
@@ -166,7 +169,7 @@ export class SongService {
             },
             order: {
                 createdBy: {
-                    role: "DESC"
+                    role: "ASC"
                 },
                 createdType: "ASC"
             },
@@ -174,13 +177,15 @@ export class SongService {
             take: takePerPage
         });
 
-        const arr2: SearchSongData[] = await Promise.all(
-            variants.map(async (v) => ({
-                guid: v.song.guid,
-                variant: await this.getVariantByGuid(v.guid),
-                alias: "todo"
-            }))
-        );
+        const arr2: SearchSongData[] = (
+            await Promise.all(
+                variants.map(async (v) => ({
+                    guid: v.song.guid,
+                    variant: await this.getVariantByGuid(v.guid),
+                    alias: "todo"
+                }))
+            )
+        ).filter((v) => v.variant);
 
         const merged = [...arr1, ...arr2];
 
@@ -511,6 +516,7 @@ export class SongService {
             }
         });
         if (!variant) return undefined;
+        if (!variant.createdBy) return undefined;
 
         let alias = await this.aliasService.getAliasFromValue(
             variant.guid,
